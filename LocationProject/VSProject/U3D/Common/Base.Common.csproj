@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BB586869-D384-4B52-AAE0-AA934194E267}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Base.Common</RootNamespace>
+    <AssemblyName>Base.Common</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>
+    </DocumentationFile>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UWP|AnyCPU'">
+    <OutputPath>bin\UWP\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Base.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\ShareLib\Base.Interfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GB2312, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\ShareLib\GB2312.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Array\Arrays.cs" />
+    <Compile Include="Helpers\AttributeHelper.cs" />
+    <Compile Include="MiniDump.cs" />
+    <Compile Include="ProgressWindows\IProgressWindow.cs" />
+    <Compile Include="ProgressWindows\ProgressWindowManager.cs" />
+    <Compile Include="Threads\BackgroundWorkerHelper.cs" />
+    <Compile Include="Helpers\BytesHelper.cs" />
+    <Compile Include="Helpers\CloneHelper.cs" />
+    <Compile Include="Helpers\EventHelper.cs" />
+    <Compile Include="Extensions\DictExtension.cs" />
+    <Compile Include="Array\DictionaryList.cs" />
+    <Compile Include="Helpers\EncodingHelper.cs" />
+    <Compile Include="Extensions\ExtensionBase.cs" />
+    <Compile Include="Extensions\XmlNodeExtension.cs" />
+    <Compile Include="FileLock.cs" />
+    <Compile Include="Unity\FunctionInfo.cs" />
+    <Compile Include="Unity\FunctionInfoList.cs" />
+    <Compile Include="Threads\IAsyncTask.cs" />
+    <Compile Include="ILoadingForm.cs" />
+    <Compile Include="Unity\InvokeMethodInfo.cs" />
+    <Compile Include="Array\KeyValue.cs" />
+    <Compile Include="Array\KeyValueList.cs" />
+    <Compile Include="Array\ListEx.cs" />
+    <Compile Include="Logs\Log.cs" />
+    <Compile Include="Logs\LogArg.cs" />
+    <Compile Include="Logs\LogArgList.cs" />
+    <Compile Include="Logs\LogType.cs" />
+    <Compile Include="PinYinConverter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RandomString.cs" />
+    <Compile Include="SerializeHelper.cs" />
+    <Compile Include="StringCompute.cs" />
+    <Compile Include="Array\StringDict.cs" />
+    <Compile Include="Strings.cs" />
+    <Compile Include="Threads\Task.cs" />
+    <Compile Include="Threads\ThreadHelper.cs" />
+    <Compile Include="TimeCounter.cs" />
+    <Compile Include="CommandSystems\UICommand.cs" />
+    <Compile Include="CommandSystems\UICommandList.cs" />
+    <Compile Include="CommandSystems\CommandSystem.cs" />
+    <Compile Include="Helpers\XmlHelper.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetFileName) ..\..\..\..\Bin\$(ConfigurationName)\
+copy $(TargetFileName) ..\..\..\..\Bin\ShareLib\
+copy *.pdb ..\..\..\..\Bin\PDB\$(ConfigurationName)\
+copy $(TargetFileName)	..\..\..\..\..\Assets\Plugins\		</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
