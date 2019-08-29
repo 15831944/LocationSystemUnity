@@ -8,6 +8,8 @@ using HighlightingSystem;
 
 public class DepNode : MonoBehaviour
 {
+    public string Tag = "";
+
     public string NodeKKS;
     public string NodeName;
     /// <summary>
@@ -15,30 +17,164 @@ public class DepNode : MonoBehaviour
     /// </summary>
     public int NodeID;
 
-
-    private PhysicalTopology _topoNode;
+    [System.NonSerialized]  private PhysicalTopology _topoNode;
     public PhysicalTopology TopoNode
     {
         get { return _topoNode; }
-        set
-        {
-            _topoNode = value;
-            if (value != null)
-            {
-                NodeID = value.Id;
-                NodeName = value.Name;
-                //if (value.Nodekks != null)
-                //    NodeKKS = value.Nodekks.KKS;
-                NodeKKS = value.KKS;
-                //Log.Info("----------------------SetDepNode.TopoNode!!!!!!!!!!!!!!!!!!!!!!", this.ToString());
+        //set
+        //{
+        //    SetTopoNode(value);
+        //}
+    }
 
-                HaveTopNode = true;
+    public T GetParentNode<T>() where T : DepNode
+    {
+        if(this is T)
+        {
+            return (T)this;
+        }
+        if (ParentNode != null)
+        {
+            if (ParentNode is T)
+            {
+                return (T)ParentNode;
             }
             else
             {
-                HaveTopNode = false;
+                return ParentNode.GetParentNode<T>();
             }
         }
+        return null;
+    }
+
+    /// <summary>
+    /// 找到相关的节点（ID相同的）
+    /// </summary>
+    /// <param name="focusNode"></param>
+    /// <returns></returns>
+    public DepNode FindRelationNode(DepNode node)
+    {
+        if (node == null)
+        {
+            //Debug.LogError("DepNode.FindRelationNode node==null ");
+            return this;//漫游进入建筑，没有focusNode
+        }
+        DepNode rNode = null;
+        if (this.NodeID == node.NodeID)
+        {
+            rNode = this;
+        }
+        else
+        {
+            if(ChildNodes!=null)
+                foreach (DepNode child in ChildNodes)
+                {
+                    rNode = child.FindRelationNode(node);
+                    if (rNode != null)
+                    {
+                        return rNode;
+                    }
+                }
+        }
+        return rNode;
+    }
+
+    public void SetTopoNode(PhysicalTopology node)
+    {
+        _topoNode = node;
+        if (node != null)
+        {
+            //Debug.Log("DepNode.SetTopoNode:" + node.Name);
+            NodeID = node.Id;
+            NodeName = node.Name;
+            NodeKKS = node.KKS;
+            HaveTopNode = true;
+        }
+        else
+        {
+            HaveTopNode = false;
+        }
+    }
+
+    public void SetTopoNodeEx(PhysicalTopology node)
+    {
+        SetTopoNode(node);
+        if (node.Children != null)
+        {
+
+        }
+    }
+
+    [ContextMenu("RefreshChildrenNodes")]
+    public virtual void RefreshChildrenNodes()
+    {
+        //var childNodes = this.gameObject.GetComponentsInChildren<DepNode>();
+        //ChildNodes = new List<DepNode>();
+        //ChildNodes.AddRange(childNodes);
+        ChildNodes = new List<DepNode>();
+        for (int i = 0; i < this.transform.childCount; i++)
+        {
+            var child = this.transform.GetChild(i);
+            var depNode = child.GetComponent<DepNode>();
+            if (depNode)
+            {
+                ChildNodes.Add(depNode);
+                depNode.ParentNode = this;
+            }
+            else
+            {
+                //处理J6J11的情况
+                for (int j = 0; j < child.childCount; j++)
+                {
+                    var subChild = child.GetChild(j);
+                    var depNode2 = subChild.GetComponent<DepNode>();
+                    if (depNode2)
+                    {
+                        ChildNodes.Add(depNode2);
+                        depNode2.ParentNode = this;
+                    }
+                }
+            }
+        }
+
+        foreach (var item in ChildNodes)
+        {
+            item.RefreshChildrenNodes();//递归
+        }
+    }
+
+    public bool IsRoom()
+    {
+        if (TopoNode == null)
+        {
+            Debug.LogError("IsRoom TopoNode == null");
+            return false;
+        }
+        return TopoNode.Type == AreaTypes.机房 || TopoNode.Type == AreaTypes.范围;
+    }
+
+    public bool IsFloor()
+    {
+        if (TopoNode == null)
+        {
+            Debug.LogError("IsFloor TopoNode == null");
+            return false;
+        }
+        return TopoNode.Type == AreaTypes.楼层;
+    }
+
+    /// <summary>
+    /// 是否是大楼
+    /// </summary>
+    /// <returns></returns>
+    public bool IsBuild()
+    {
+        if (TopoNode == null)
+        {
+            Debug.LogError("IsFloor TopoNode == null");
+            return false;
+        }
+        return TopoNode.Type == AreaTypes.大楼;
     }
 
     public bool HaveTopNode;
@@ -56,6 +192,16 @@ public class DepNode : MonoBehaviour
     /// 区域物体
     /// </summary>
     public GameObject NodeObject;
+    /// <summary>
+    /// 静态设备存放处
+    /// </summary>
+    [HideInInspector]
+    public GameObject StaticDevContainer;
+    /// <summary>
+    /// 静态设备(建筑)
+    /// </summary>
+    public List<FacilityDevController> StaticDevList;
+
     /// <summary>
     /// 区域范围
     /// </summary>
@@ -78,7 +224,7 @@ public class DepNode : MonoBehaviour
     /// <summary>
     /// 地板方块，用于高层定位调整高度，设备编辑等
     /// </summary>
-    public Transform floorCube;
+    public FloorCubeInfo floorCube;
     /// <summary>
     /// 区域设备是否创建
     /// </summary>
@@ -86,7 +232,7 @@ public class DepNode : MonoBehaviour
     public bool IsDevCreate;
     protected virtual void Start()
     {
-
+        NodeObject = gameObject;
     }
 
     public bool HaveChildren()
@@ -139,6 +285,12 @@ public class DepNode : MonoBehaviour
     {
 
     }
+
+    public virtual void Unload()
+    {
+
+    }
+
     #region 区域高亮
     /// <summary>
     /// 高亮设备
@@ -207,5 +359,45 @@ public class DepNode : MonoBehaviour
         door.DoorDep = this;
         Doors = door;
     }
+
+    public bool IsUnload = false;
+
+    public void SetIsUnload()
+    {
+        IsUnload = true;
+        if(ChildNodes!=null)
+            foreach (var item in ChildNodes)
+            {
+                item.SetIsUnload();
+            }
+    }
+
+    public bool IsLoaded = false;
+
+    public void SetIsLoaded()
+    {
+        IsLoaded = true;
+        if (ChildNodes != null)
+            foreach (var item in ChildNodes)
+            {
+                item.SetIsLoaded();
+            }
+    }
+
     #endregion
+
+    private bool isInitBounds = false;
+
+    private Bounds bounds;
+
+    public virtual bool IsInBounds(Transform t)
+    {
+        if (isInitBounds == false)
+        {
+            bounds = ColliderHelper.CaculateBounds(gameObject.transform, false);//不用碰撞体，计算包围盒就行了
+            isInitBounds = true;
+        }
+
+        return bounds.Contains(t.position);
+    }
 }

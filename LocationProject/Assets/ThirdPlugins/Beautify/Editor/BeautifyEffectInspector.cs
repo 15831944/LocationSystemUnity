@@ -100,7 +100,7 @@ namespace BeautifyEffect
 			_effect.ditherDepth = EditorGUILayout.Slider (_effect.ditherDepth, 0, 1f);
 			EditorGUILayout.EndHorizontal ();
 
-			if (_effect.cameraEffect != null && !_effect.cameraEffect.hdr) {
+			if (_effect.cameraEffect != null && !_effect.cameraEffect.allowHDR) {
 				EditorGUILayout.BeginHorizontal ();
 				DrawLabel ("   Note: dither works better with HDR enabled.");
 				EditorGUILayout.EndHorizontal ();

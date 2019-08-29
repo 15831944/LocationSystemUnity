@@ -12,7 +12,8 @@ public class InspectionTrackHub : Hub
     /// <summary>
     /// 移动巡检回调
     /// </summary>
-    public event Action<List<InspectionTrack>> OnInspectionTrackRecieved;
+    public event Action<InspectionTrackList> OnInspectionTrackRecieved;
+
     public InspectionTrackHub(): base("inspectionTrackHub")
     {
         // Setup server-called functions     
@@ -26,8 +27,28 @@ public class InspectionTrackHub : Hub
     /// <param name="methodCall"></param>
     private void GetInspectionTrack(Hub hub, MethodCallMessage methodCall)
     {
-        string arg0 = JsonMapper.ToJson(methodCall.Arguments[0]);
-        List<InspectionTrack> inspection = JsonMapper.ToObject<List<InspectionTrack>>(arg0);
-        if (OnInspectionTrackRecieved != null) OnInspectionTrackRecieved(inspection);
+        try
+        {
+            //Debug.LogError("GetInspectionTrack");
+            var arg0 = methodCall.Arguments[0];
+            //Debug.LogError(arg0);
+            string json = JsonMapper.ToJson(arg0);
+            //Debug.LogError(json);
+            InspectionTrackList inspection = JsonMapper.ToObject<InspectionTrackList>(json);
+            
+            //List<InspectionTrack> inspections = JsonMapper.ToObject<List<InspectionTrack>>(json);
+            //Debug.LogError(inspection == null);
+            //if (inspection != null)
+            //{
+            //    Debug.LogError(inspection.Count);
+            //}
+
+            if (OnInspectionTrackRecieved != null) OnInspectionTrackRecieved(inspection);
+        }
+        catch (Exception ex)
+        {
+            //Debug.LogError("GetInspectionTrack:" + ex);
+        }
+
     }
 }

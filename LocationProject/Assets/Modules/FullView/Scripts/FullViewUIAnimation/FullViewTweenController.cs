@@ -63,7 +63,7 @@ public class FullViewTweenController : MonoBehaviour {
     public void AfterLoadParkEDITOR()
     {
         CompleteAllTween();
-        RoomFactory.Instance.Init();
+        //RoomFactory.Instance.Init();
 
     }
 
@@ -73,8 +73,15 @@ public class FullViewTweenController : MonoBehaviour {
     public void AfterLoadParkPack()
     {
         displayFullViewTween = true;
-        StartTweenOnStart();
-        RoomFactory.Instance.Init();
+        if(SystemSettingHelper.systemSetting.IsShowHomePage)
+        {
+            StartTweenOnStart();
+        }
+        else
+        {
+            fullViewController.ExitFullViewImmediately();
+        }
+        //RoomFactory.Instance.Init();
     }
 
     /// <summary>

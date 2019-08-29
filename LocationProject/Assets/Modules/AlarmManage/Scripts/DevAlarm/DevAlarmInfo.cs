@@ -5,6 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 设备告警信息脚本
+/// </summary>
 public class DevAlarmInfo : MonoBehaviour {
 
     /// <summary>
@@ -33,7 +36,9 @@ public class DevAlarmInfo : MonoBehaviour {
         currentDev = dev;
         currentDev.isAlarm = true;
         AlarmInfo = alarmContent;
+        dev.AddAlarm(alarmContent);
     }
+
     /// <summary>
     /// 开始告警
     /// </summary>
@@ -86,14 +91,14 @@ public class DevAlarmInfo : MonoBehaviour {
         DepNode dep = currentDev.ParentDepNode;
         if (isAlarm)
         {
-            if (dep is RoomController && dep.monitorRangeObject != null)
+            if ((dep is RoomController||dep is FloorController) && dep.monitorRangeObject != null)
             {
                 dep.monitorRangeObject.AlarmOn();
             }
         }
         else
         {
-            if(dep is RoomController)
+            if((dep is RoomController || dep is FloorController))
             {
                 List<DevNode>roomDevs = RoomFactory.Instance.GetDepDevs(dep);
                 if (roomDevs == null||roomDevs.Count==0) return;

@@ -10,10 +10,12 @@ public class CameraInfoSetting : MonoBehaviour {
     public InputField PassWord;
     public InputField Port;
     public InputField CameraIndex;//通道号
+    public InputField RtspURL;//Rtsp取流地址
 
     public Toggle SettingToggle;
     public GameObject SettingWindow;//设置窗体
     private CameraDevController CameraTemp;//参数缓存
+    private bool isInitValue;//是否第一次填充数据
 	// Use this for initialization
 	void Start () {
         SettingToggle.onValueChanged.AddListener(OnToggleValueChanged);
@@ -22,6 +24,7 @@ public class CameraInfoSetting : MonoBehaviour {
         PassWord.onValueChanged.AddListener(OnCameraInfoValueChanged);
         Port.onValueChanged.AddListener(OnCameraInfoValueChanged);
         CameraIndex.onValueChanged.AddListener(OnCameraInfoValueChanged);
+        RtspURL.onEndEdit.AddListener(OnCameraInfoValueChanged);
 
     }
     private void OnToggleValueChanged(bool isOn)
@@ -34,7 +37,7 @@ public class CameraInfoSetting : MonoBehaviour {
     /// <param name="value"></param>
     private void OnCameraInfoValueChanged(string value)
     {
-        if (string.IsNullOrEmpty(value)|| CameraTemp == null) return;
+        if (isInitValue || string.IsNullOrEmpty(value)|| CameraTemp == null) return;
         if(IsValueChanged())
         {
             SaveCameraInfo();
@@ -42,7 +45,9 @@ public class CameraInfoSetting : MonoBehaviour {
             if(service)
             {
                 Dev_CameraInfo info = CameraTemp.GetCameraInfo(CameraTemp.Info);
-                bool isSave = service.ModifyCameraInfo(info);
+                Dev_CameraInfo isSave = service.ModifyCameraInfo(info);
+                RtspURL.text = isSave.RtspUrl;
+                info .RtspUrl = isSave.RtspUrl;
                 Debug.Log("Save CameraInfo:"+isSave);
             }
         }
@@ -58,6 +63,7 @@ public class CameraInfoSetting : MonoBehaviour {
     {
         SettingToggle.isOn = false;
         SettingToggle.gameObject.SetActive(false);
+        OnCameraInfoValueChanged("SaveInfo");//防止直接关界面，没触发InputField.OnEndEdit
     }
     /// <summary>
     /// 设置信息
@@ -73,14 +79,16 @@ public class CameraInfoSetting : MonoBehaviour {
         }
         CameraTemp = camDev;
         Dev_CameraInfo info = CameraTemp.GetCameraInfo(camDev.Info);
+        isInitValue = true;
         if (info!=null)
         {
-            SetInputFiledValue(info.Ip,info.UserName,info.PassWord,info.Port.ToString(),info.CameraIndex.ToString());
+            SetInputFiledValue(info.Ip,info.UserName,info.PassWord,info.Port.ToString(),info.CameraIndex.ToString(),info.RtspUrl);
         }
         else
         {
-            SetInputFiledValue("","","","","");
+            SetInputFiledValue("","","","","","");
         }
+        isInitValue = false;
     }
     /// <summary>
     /// 设置输入框的值
@@ -90,13 +98,14 @@ public class CameraInfoSetting : MonoBehaviour {
     /// <param name="passWord"></param>
     /// <param name="port"></param>
     /// <param name="cameraIndex"></param>
-    private void SetInputFiledValue(string ip,string userName,string passWord,string port,string cameraIndex)
+    private void SetInputFiledValue(string ip,string userName,string passWord,string port,string cameraIndex,string rtspUrl)
     {
         IP.text = ip;
         UserName.text = userName;
         PassWord.text = passWord;
         Port.text = port;
         CameraIndex.text = cameraIndex;
+        RtspURL.text = string.IsNullOrEmpty(rtspUrl) ? "" : rtspUrl;
     }
     /// <summary>
     /// 参数是否变化
@@ -111,6 +120,7 @@ public class CameraInfoSetting : MonoBehaviour {
         else if (info.PassWord != PassWord.text) return true;
         else if (info.Port.ToString() != Port.text) return true;
         else if (info.CameraIndex.ToString() != CameraIndex.text) return true;
+        else if (info.RtspUrl != RtspURL.text) return true;
         else return false;
     }
 
@@ -125,6 +135,7 @@ public class CameraInfoSetting : MonoBehaviour {
         info.PassWord = PassWord.text;
         info.Port = TryParseInt(Port.text);
         info.CameraIndex = TryParseInt(CameraIndex.text);
+        info.RtspUrl = RtspURL.text;
     }
 
     /// <summary>

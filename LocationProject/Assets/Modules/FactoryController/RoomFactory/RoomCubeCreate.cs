@@ -33,7 +33,7 @@ public class RoomCubeCreate : MonoBehaviour {
             //    StartCoroutine(CreateBlocks(blocks, roomDevContainer));
             //}
 
-            CommunicationObject.Instance.GetAreaBoundsByPidAsync(room.NodeID, (points) =>
+            CommunicationObject.Instance.GetPointsByPid(room.NodeID, (points) =>
              {
                  if (points != null)
                  {
@@ -53,7 +53,7 @@ public class RoomCubeCreate : MonoBehaviour {
             //    Debug.Log("Blcok Count:" + blocks);
             //    StartCoroutine(CreateBlocks(blocks,roomDevContainer));
             //}
-            CommunicationObject.Instance.GetAreaBoundsByPidAsync(floor.NodeID, (points) =>
+            CommunicationObject.Instance.GetPointsByPid(floor.NodeID, (points) =>
             {
                 if (points != null)
                 {

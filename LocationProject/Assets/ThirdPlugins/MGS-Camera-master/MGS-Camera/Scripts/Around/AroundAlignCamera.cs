@@ -21,6 +21,13 @@ namespace Mogoson.CameraExtension
     [AddComponentMenu("Mogoson/CameraExtension/AroundAlignCamera")]
     public class AroundAlignCamera : AroundCamera
     {
+        public static AroundAlignCamera Instance;
+
+        void Awake()
+        {
+            Instance = this;
+        }
+
         #region Field and Property
         /// <summary>
         /// Damper for align.
@@ -55,11 +62,17 @@ namespace Mogoson.CameraExtension
         protected float anglesSpeed, directionSpeed, distanceSpeed;
         protected float anglesOffset, directionOffset, distanceOffset;
         protected bool linearAdsorbent;
+
+        private DateTime alignStartTime;
+        private bool isCheckAlignTime=true;//是否开启时间检测
+        private bool isCheckTimeSet;
+        private float AlignTimeout = 1f;//AlignEnd超时时间
         #endregion
 
         #region Protected Method
         protected override void LateUpdate()
         {
+            //if (CameraSceneManager.Instance.theThirdPersonCamera.enabled == true) return;
             if (IsAligning)
                 AutoAlignView();
             else
@@ -87,12 +100,13 @@ namespace Mogoson.CameraExtension
             var currentDirectionOffset = (targetDirection - currentDirection).magnitude;
             var currentDistanceOffset = Mathf.Abs(targetDistance - CurrentDistance);
             CheckValue(ref currentAnglesOffset,ref currentDirectionOffset,ref currentDistanceOffset);
-
+            AlignEndTimeOut();
             //Check align finish.
             if (currentAnglesOffset < Vector3.kEpsilon && currentDirectionOffset < Vector3.kEpsilon &&
                 currentDistanceOffset < Vector3.kEpsilon)
             {
                 IsAligning = false;
+                isCheckTimeSet = false;//正常结束，把处理超时的标志位设为false
                 if (OnAlignEnd != null)
                     OnAlignEnd.Invoke();
             }
@@ -129,7 +143,7 @@ namespace Mogoson.CameraExtension
                 }
 
                 //Update position and rotation.
-                transform.position = target.position + currentDirection.normalized * CurrentDistance;
+                transform.position = GetTargetPosition() + currentDirection.normalized * CurrentDistance;
                 transform.rotation = Quaternion.Euler(CurrentAngles);
             }
         }
@@ -144,6 +158,7 @@ namespace Mogoson.CameraExtension
         {
             CurrentAngles = angle;
         }
+
         /// <summary>
         /// Align camera veiw to target.
         /// </summary>
@@ -152,10 +167,22 @@ namespace Mogoson.CameraExtension
         /// <param name="distance">Distance from camera to target.</param>
         public void AlignVeiwToTarget(Transform center, Vector2 angles, float distance)
         {
-            target = center;
+            //target = center;
+            targetPos = new TransformPos(center);
             targetAngles = angles;
             targetDistance = distance;
 
+            AlignVeiwToTarget();
+        }
+
+        public void AlignVeiwToTarget(Transform center)
+        {
+            targetPos = new TransformPos(center);
+            AlignVeiwToTarget();
+        }
+
+        private void AlignVeiwToTarget()
+        {
             //Optimal angles.
             while (targetAngles.y - CurrentAngles.y > 180)
                 targetAngles.y -= 360;
@@ -163,9 +190,9 @@ namespace Mogoson.CameraExtension
                 targetAngles.y += 360;
 
             //Calculate lerp parameter.
-            currentDirection = (transform.position - target.position).normalized;
+            currentDirection = (transform.position - GetTargetPosition()).normalized;
             targetDirection = (Quaternion.Euler(targetAngles) * Vector3.back).normalized;
-            CurrentDistance = Vector3.Distance(transform.position, target.position);
+            CurrentDistance = Vector3.Distance(transform.position, GetTargetPosition());
 
             //Calculate offset.
             anglesOffset = Mathf.Max((targetAngles - CurrentAngles).magnitude, Vector3.kEpsilon);
@@ -175,8 +202,39 @@ namespace Mogoson.CameraExtension
             //Start align.
             linearAdsorbent = false;
             IsAligning = true;
+            SetAlignStartTime();
             if (OnAlignStart != null)
                 OnAlignStart.Invoke();
+        }
+        /// <summary>
+        /// 记录视角移动开始时间
+        /// </summary>
+        private void SetAlignStartTime()
+        {
+            if(isCheckAlignTime)
+            {
+                isCheckTimeSet = true;
+                alignStartTime = DateTime.Now;
+            }
+        }
+        /// <summary>
+        /// 处理移动超时情况
+        /// </summary>
+        private void AlignEndTimeOut()
+        {
+            if(isCheckAlignTime&&isCheckTimeSet)
+            {
+                float maxTimeout = alignDamper + AlignTimeout;
+                if ((alignStartTime - DateTime.Now).TotalSeconds > maxTimeout)
+                {
+                    Debug.LogErrorFormat("Error: AroundAlignCamera.AlignEndTimeOut->targetName:{0}",target.name);
+                    //移动意外卡住，超时自动结束
+                    IsAligning = false;
+                    isCheckTimeSet = false;//执行完之后，等待下次的记录时间
+                    if (OnAlignEnd != null)
+                        OnAlignEnd.Invoke();
+                }
+            }
         }
 
         /// <summary>
@@ -191,6 +249,7 @@ namespace Mogoson.CameraExtension
             angleRange = alignTarget.angleRange;
             distanceRange = alignTarget.distanceRange;
         }
+
         #endregion
     }
 }

@@ -35,10 +35,7 @@ public class DevAlarmType : MonoBehaviour {
         }
         DevTypedropdownItem.captionText.text = showName[0];
     }
-    //public void ShowDropdownFirstData()
-    //{
-    //    DevTypedropdownItem.captionText.text = "设备类型";
-    //}
+   
     /// <summary>
     /// 添加名字
     /// </summary>

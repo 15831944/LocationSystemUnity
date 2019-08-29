@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UIWidgets;
@@ -6,6 +7,7 @@ using UnityEngine;
 
 public class ChangeTreeView : TreeView
 {
+    public bool EnableImage = true;
     public Sprite HighlightImage;
     public Sprite SelectColoringImage;
     public Sprite DefaultImage;
@@ -30,13 +32,18 @@ public class ChangeTreeView : TreeView
     protected override void HighlightColoring(TreeViewComponent component)
     {
         base.HighlightColoring(component);
-
-        component.Background.sprite = HighlightImage;
+        if (EnableImage)
+        {
+            component.Background.sprite = HighlightImage;
+        }
     }
     protected override void SelectColoring(TreeViewComponent component)
     {
         base.SelectColoring(component);
-        component.Background.sprite = SelectColoringImage;
+        if (EnableImage)
+        {
+            component.Background.sprite = SelectColoringImage;
+        }
     }
 
 
@@ -47,58 +54,78 @@ public class ChangeTreeView : TreeView
             return;
         }
         base.DefaultColoring(component);
-        if (component.Text != null)
+        if (EnableImage)
         {
-
             component.Background.sprite = DefaultImage;
         }
     }
     /// <summary>
     /// 选中节点，根据数据,区域划分
     /// </summary>
-    public void SelectNodeByType(object Data)
+    public TreeNode<TreeViewItem> SelectNodeByType(object Data)
     {
         TreeNode<TreeViewItem> nodeT = FindNodeById(Data, Nodes);
-        FindSelectNode(nodeT);
+        if (nodeT == null)
+        {
+            Debug.LogError("ChangeTreeView.SelectNodeByType nodeT == null Data:"+Data);
+        }
+        else
+        {
+            FindSelectNode(nodeT);
+        }
+        return nodeT;
     }
-  
+
     /// <summary>
     /// 找到选中节点
     /// </summary>
     /// <param name="nodeT"></param>
     /// <param name="isExpandLastNode">是否展开当前节点</param>
-    public void FindSelectNode(TreeNode<TreeViewItem> nodeT,bool isExpandLastNode=true)
+    public void FindSelectNode(TreeNode<TreeViewItem> nodeT, bool isExpandLastNode = true)
     {
-       
+
         if (nodeT != null)
         {
             SelectedNodes = new List<TreeNode<TreeViewItem>>() { nodeT };
             List<TreeNode<TreeViewItem>> nodesT = GetPathNodes(nodeT);
             for (int i = nodesT.Count - 1; i >= 0; i--)
             {
-                if (!nodesT[i].IsExpanded)
+                try
                 {
-                    List<int> indexs = Nodes2Indicies(new List<TreeNode<TreeViewItem>>() { nodesT[i] });
-                    try
+                    var item = nodesT[i];
+                    List<int> indexs = Nodes2Indicies(new List<TreeNode<TreeViewItem>>() { item });
+                    if (indexs.Count == 0) continue;//应该不会有的
+                    var index = indexs[0];
+                    if (!item.IsExpanded)
                     {
+
                         if (!isExpandLastNode && i == 0)
                         {
-                            Debug.Log(string.Format("Node {0} not expand.",i));
+                            Debug.Log(string.Format("Node {0} not expand.", i));
                         }
                         else
                         {
-                            ToggleNode(indexs[0]);
-                        }                           
+                            ToggleNode(index);
+                        }
                         if (i == 0)
                         {
-                            Select(indexs[0]);
-                            ScrollTo(indexs[0]);
+                            Select(index);
+                            ScrollTo(index);
+                        }
+
+                    }
+                    else//2019_05_09_cww:已经展开了的节点也要滚动滚动条到该节点的位置
+                    {
+                        if (i == 0)//选中具体节点，其他已经展开了的节点就不用管了
+                        {
+                            Select(index);
+                            ScrollTo(index);
                         }
                     }
-                    catch
-                    {
-                        int ii = 0;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError("ChangeTreeView.FindSelectNode:" + ex);
                 }
             }
         }
@@ -163,8 +190,47 @@ public class ChangeTreeView : TreeView
     public void AreaSelectNodeByType(object Data)
     {
         TreeNode<TreeViewItem> nodeT = AreaFindNodeById(Data, Nodes);
-        FindSelectNode(nodeT);
+        if (nodeT==null&&(FactoryDepManager.Instance&&Data.ToString()==FactoryDepManager.Instance.NodeID.ToString()))
+        {
+            TreeNode<TreeViewItem> selectNodeTemp = SelectedNode;
+            RetractTreeNode(selectNodeTemp);
+        }
+        else
+        {
+            //TreeNode<TreeViewItem> nodeT = AreaFindNodeById(Data, Nodes);
+            FindSelectNode(nodeT);
+        }        
     }
+    /// <summary>
+    /// 收起展开的节点
+    /// </summary>
+    /// <param name="selectNodeTemp"></param>
+    private void RetractTreeNode(TreeNode<TreeViewItem> selectNodeTemp)
+    {
+        if (selectNodeTemp == null) return;
+        if(selectNodeTemp.IsExpanded)
+        {
+            List<int> indexs = Nodes2Indicies(new List<TreeNode<TreeViewItem>>() { selectNodeTemp });
+            if (indexs.Count == 0) return;//应该不会有的
+            var index = indexs[0];
+            ToggleNode(index);
+            if(selectNodeTemp.Parent!=null)
+            {
+                RetractTreeNode(selectNodeTemp.Parent);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 区域划分，选中节点
+    /// </summary>
+    /// <param name="personnelT"></param>
+    public TreeNode<TreeViewItem> AreaFindNodeById(object AreaT)
+    {
+        TreeNode<TreeViewItem> nodeT = AreaFindNodeById(AreaT, Nodes);
+        return nodeT;
+    }
+
     /// <summary>
     /// 区域划分，选中节点
     /// </summary>
@@ -240,10 +306,15 @@ public class ChangeTreeView : TreeView
         }
     }
 
+    public TreeNode<TreeViewItem> FindNodeByData(object Data)
+    {
+        return FindNodeByData(Data, Nodes);
+    }
+
     /// <summary>
     /// 选中节点，根据数据
     /// </summary>
-    public void SelectNodeByData(object Data)
+    public TreeNode<TreeViewItem> SelectNodeByData(object Data)
     {
         //TreeNode<TreeViewItem> nodeT = nodes.Find((item) => item.Item.Tag == personnelT);
         TreeNode<TreeViewItem> nodeT = FindNodeByData(Data, Nodes);
@@ -285,8 +356,9 @@ public class ChangeTreeView : TreeView
         }
         else
         {
-            Debug.LogError("异常：该人员在拓扑树中找不到！");
+            Debug.LogError("异常：该人员在拓扑树中找不到！："+Data);
         }
+        return nodeT;
     }
     /// <summary>
     /// 获取节点的index
@@ -366,21 +438,23 @@ public class ChangeTreeView : TreeView
         {
             foreach (TreeNode<TreeViewItem> nodeT in nodesT)
             {
-                if (nodeT.Item.Name.Contains("初灵大楼一层"))
-                {
-                    int h = 0;
-                }
-
-                if (nodeT.Item.Name.Contains("邱先生"))
-                {
-                    int h = 0;
-                }
                 if (nodeT == null) continue;
                 try
                 {
                     if (nodeT.Item.Tag != null)
                     {
-                        if (nodeT.Item.Tag.ToString() == personnelT.ToString())
+                        object tagTemp = nodeT.Item.Tag;
+                        if (tagTemp is Personnel)
+                        {
+                            //DepartmentTree.Tag由int变成了personnel,这样才能找到节点
+                            Personnel person = tagTemp as Personnel;
+                            if(person.Id.ToString()==personnelT.ToString())
+                            {
+                                node = nodeT;
+                                break;
+                            }
+                        }
+                        else if (nodeT.Item.Tag.ToString() == personnelT.ToString())
                         {
                             node = nodeT;
                             break;

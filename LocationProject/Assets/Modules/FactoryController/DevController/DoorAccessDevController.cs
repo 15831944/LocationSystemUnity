@@ -19,14 +19,22 @@ public class DoorAccessDevController : DevNode {
     // Use this for initialization
     public override void Start()
     {
-        base.Start();
-        DoubleClickEventTrigger_u3d trigger = DoubleClickEventTrigger_u3d.Get(gameObject);
-        trigger.onClick = OnClick;
-        trigger.onDoubleClick = OnDoubleClick;
+        if(Info!=null)
+        {
+            base.Start();
+            DoubleClickEventTrigger_u3d trigger = DoubleClickEventTrigger_u3d.Get(gameObject);
+            trigger.onClick = OnClick;
+            trigger.onDoubleClick = OnDoubleClick;
+        }
+        else
+        {
+            Debug.LogError("DoorAccessDevController.DevInfo is null->TransformName:"+transform.name);
+        }
+        
     }
     private void OnClick()
     {
-        if (DevSubsystemManage.IsRoamState) return;
+        if (DevSubsystemManage.IsRoamState||DoorItem==null) return;
         if (!IsDoorOpen)
         {
             IsDoorOpen = true;

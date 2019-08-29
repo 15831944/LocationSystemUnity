@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MainMonitorInfo : MonoBehaviour {
     /// <summary>
@@ -24,6 +25,10 @@ public class MainMonitorInfo : MonoBehaviour {
     /// 空数据显示
     /// </summary>
     public GameObject EmptyValueText;
+    /// <summary>
+    /// 滚动条
+    /// </summary>
+    public Scrollbar scrollBar;
     /// <summary>
     /// 监控项集合
     /// </summary>
@@ -66,6 +71,7 @@ public class MainMonitorInfo : MonoBehaviour {
             }
         }
         NodePrefabPoor.AddRange(NewItems);
+        if (scrollBar) scrollBar.value = 1;
         //NodePrefabPoor[0].SelectItem();
     }
    

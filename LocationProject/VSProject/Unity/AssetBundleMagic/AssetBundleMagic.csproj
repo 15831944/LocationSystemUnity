@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F43EF29B-369F-4825-BED7-CE41C3F2D6A2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AssetBundleMagic</RootNamespace>
+    <AssemblyName>AssetBundleMagic</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\Assets\Plugins\Lib\ThirdAssets\AssetBundleMagic\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEditor">
+      <HintPath>..\UnityEditorLib\Managed\UnityEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\UnityEditorLib\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\UnityEditorLib\GUISystem\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Editor\AssetBundleMagicEditor.cs" />
+    <Compile Include="Editor\ChunkManagerEditor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scenes\Scripts\BackToImagesTest.cs" />
+    <Compile Include="Scenes\Scripts\ChunksTestGame.cs" />
+    <Compile Include="Scenes\Scripts\ImageTestGame.cs" />
+    <Compile Include="Scenes\Scripts\PlayerController.cs" />
+    <Compile Include="Scripts\AssetBundleMagic.cs" />
+    <Compile Include="Scripts\ChunkManager.cs" />
+    <Compile Include="Scripts\Util\SerializableDictionary.cs" />
+    <Compile Include="Scripts\Util\VersionData.cs" />
+    <Compile Include="Scripts\Util\VersionDataCollection.cs" />
+    <Compile Include="Scripts\Version.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Animations.meta" />
+    <None Include="Animations\Pickup.anim" />
+    <None Include="Animations\Pickup.anim.meta" />
+    <None Include="Animations\Pickup.controller" />
+    <None Include="Animations\Pickup.controller.meta" />
+    <None Include="Docs.meta" />
+    <None Include="Docs\GettingStarted.pdf" />
+    <None Include="Docs\GettingStarted.pdf.meta" />
+    <None Include="Editor.meta" />
+    <None Include="Editor\AssetBundleMagicEditor.cs.meta" />
+    <None Include="Editor\ChunkManagerEditor.cs.meta" />
+    <None Include="Images.meta" />
+    <None Include="Images\colored_circle.png.meta" />
+    <None Include="Images\loading.png.meta" />
+    <None Include="Images\loading_bg.png.meta" />
+    <None Include="Images\progress-bar.png.meta" />
+    <None Include="Images\rotating_loading.png.meta" />
+    <None Include="Models.meta" />
+    <None Include="Models\Materials.meta" />
+    <None Include="Models\Materials\Box.mat" />
+    <None Include="Models\Materials\Box.mat.meta" />
+    <None Include="Models\Materials\Floor.mat" />
+    <None Include="Models\Materials\Floor.mat.meta" />
+    <None Include="Models\Materials\House.mat" />
+    <None Include="Models\Materials\House.mat.meta" />
+    <None Include="Models\Materials\SmallBox.mat" />
+    <None Include="Models\Materials\SmallBox.mat.meta" />
+    <None Include="Models\Materials\Wall.mat" />
+    <None Include="Models\Materials\Wall.mat.meta" />
+    <None Include="Models\Objects.fbx" />
+    <None Include="Models\Objects.fbx.meta" />
+    <None Include="Prefabs.meta" />
+    <None Include="Prefabs\AssetBundlesMagic.prefab" />
+    <None Include="Prefabs\AssetBundlesMagic.prefab.meta" />
+    <None Include="Prefabs\Canvas.prefab" />
+    <None Include="Prefabs\Canvas.prefab.meta" />
+    <None Include="Prefabs\ChunkManager.prefab" />
+    <None Include="Prefabs\ChunkManager.prefab.meta" />
+    <None Include="Prefabs\LoadingIndicator.prefab" />
+    <None Include="Prefabs\LoadingIndicator.prefab.meta" />
+    <None Include="Scenes.meta" />
+    <None Include="Scenes\Canvas.prefab" />
+    <None Include="Scenes\Canvas.prefab.meta" />
+    <None Include="Scenes\ChunksTest.unity" />
+    <None Include="Scenes\ChunksTest.unity.meta" />
+    <None Include="Scenes\ImagesTest.unity" />
+    <None Include="Scenes\ImagesTest.unity.meta" />
+    <None Include="Scenes\ImagesTest2.unity" />
+    <None Include="Scenes\ImagesTest2.unity.meta" />
+    <None Include="Scenes\Materials.meta" />
+    <None Include="Scenes\Materials\Player.mat" />
+    <None Include="Scenes\Materials\Player.mat.meta" />
+    <None Include="Scenes\Materials\Player.physicMaterial" />
+    <None Include="Scenes\Materials\Player.physicMaterial.meta" />
+    <None Include="Scenes\Materials\PlayerGlasses.mat" />
+    <None Include="Scenes\Materials\PlayerGlasses.mat.meta" />
+    <None Include="Scenes\s1.unity" />
+    <None Include="Scenes\s1.unity.meta" />
+    <None Include="Scenes\s2.unity" />
+    <None Include="Scenes\s2.unity.meta" />
+    <None Include="Scenes\s3.unity" />
+    <None Include="Scenes\s3.unity.meta" />
+    <None Include="Scenes\s4.unity" />
+    <None Include="Scenes\s4.unity.meta" />
+    <None Include="Scenes\Scripts.meta" />
+    <None Include="Scenes\Scripts\BackToImagesTest.cs.meta" />
+    <None Include="Scenes\Scripts\ChunksTestGame.cs.meta" />
+    <None Include="Scenes\Scripts\ImageTestGame.cs.meta" />
+    <None Include="Scenes\Scripts\PlayerController.cs.meta" />
+    <None Include="Scenes\Variants.meta" />
+    <None Include="Scenes\Variants\hd.meta" />
+    <None Include="Scenes\Variants\hd\img1.jpg.meta" />
+    <None Include="Scenes\Variants\hd\img2.jpg.meta" />
+    <None Include="Scenes\Variants\hd\img3.jpg.meta" />
+    <None Include="Scenes\Variants\hd\img4.jpg.meta" />
+    <None Include="Scenes\Variants\sd.meta" />
+    <None Include="Scenes\Variants\sd\img1.jpg.meta" />
+    <None Include="Scenes\Variants\sd\img2.jpg.meta" />
+    <None Include="Scenes\Variants\sd\img3.jpg.meta" />
+    <None Include="Scenes\Variants\sd\img4.jpg.meta" />
+    <None Include="Scripts.meta" />
+    <None Include="Scripts\AssetBundleMagic.cs.meta" />
+    <None Include="Scripts\ChunkManager.cs.meta" />
+    <None Include="Scripts\Util.meta" />
+    <None Include="Scripts\Util\SerializableDictionary.cs.meta" />
+    <None Include="Scripts\Util\VersionData.cs.meta" />
+    <None Include="Scripts\Util\VersionDataCollection.cs.meta" />
+    <None Include="Scripts\Version.cs.meta" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\colored_circle.png" />
+    <Content Include="Images\loading.png" />
+    <Content Include="Images\loading_bg.png" />
+    <Content Include="Images\progress-bar.png" />
+    <Content Include="Images\rotating_loading.png" />
+    <Content Include="Scenes\Variants\hd\img1.jpg" />
+    <Content Include="Scenes\Variants\hd\img2.jpg" />
+    <Content Include="Scenes\Variants\hd\img3.jpg" />
+    <Content Include="Scenes\Variants\hd\img4.jpg" />
+    <Content Include="Scenes\Variants\sd\img1.jpg" />
+    <Content Include="Scenes\Variants\sd\img2.jpg" />
+    <Content Include="Scenes\Variants\sd\img3.jpg" />
+    <Content Include="Scenes\Variants\sd\img4.jpg" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

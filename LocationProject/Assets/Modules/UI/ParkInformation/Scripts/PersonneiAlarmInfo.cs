@@ -40,17 +40,18 @@ public class PersonneiAlarmInfo : MonoBehaviour
             StartTime.text = NewTime.ToString("yyyy年MM月dd日 HH:mm:ss");
         }
 
-        string endTime1 = info.HandleTime.ToString();
+        string HandleTime1 = info.HandleTime.ToString();
 
-        if (endTime1 == "1/1/2000 12:00:00 AM")
+        if (HandleTime1.Contains("2000"))
         {
             EndTime.text = "<color=#C66BABFF>未消除</color>"; ;
         }
         else
         {
-            DateTime NewTime = Convert.ToDateTime(endTime1);
+            DateTime NewTime = Convert.ToDateTime(HandleTime1);
             EndTime.text = "<color=#FFFFFFFF>已消除</color>" + " " + NewTime.ToString("yyyy年MM月dd日 HH:mm:ss");
         }
+        
         PerID = info.TagId.ToString();
         But.onClick.AddListener(() =>
        {

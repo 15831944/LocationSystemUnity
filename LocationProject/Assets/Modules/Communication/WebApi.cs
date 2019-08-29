@@ -1,4 +1,8 @@
-﻿using System.Collections;
+﻿using Location.WCFServiceReferences.LocationServices;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -7,9 +11,7 @@ using UnityEngine.UI;
 
 public class WebApi : MonoBehaviour
 {
-
     string cookie;
-
     public InputField inputRegisterEmail;
     public InputField inputRegisterPassword;
 
@@ -32,6 +34,7 @@ public class WebApi : MonoBehaviour
     {
         cookie = "";
     }
+
 
     public void Register()
     {
@@ -115,7 +118,8 @@ public class WebApi : MonoBehaviour
     {
         using (UnityWebRequest www = new UnityWebRequest())
         {
-            www.url = "http://localhost:2572/api/account/loginOut";
+            //www.url = "http://localhost:2572/api/account/loginOut";
+            www.url = "http://localhost:8733/api/tags";
             www.method = UnityWebRequest.kHttpVerbGET;
 
             www.SetRequestHeader("Cookie", cookie);
@@ -280,6 +284,7 @@ public class WebApi : MonoBehaviour
             }
         }
     }
+
 
     public void DeleteAnime()
     {

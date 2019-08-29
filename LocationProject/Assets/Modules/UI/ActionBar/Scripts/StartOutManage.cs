@@ -43,7 +43,9 @@ public class StartOutManage : MonoBehaviour {
         BackButton.onClick.AddListener(OnBackButtonClick);
         ExitDevEditButton.onClick.AddListener(HideDevEditButton);
         SceneEvents.DepNodeChanged+=OnDepNodeChanged;
-	}
+        SceneEvents.FullViewStateChange += OnFullVeiwStateChange;
+
+    }
     private void Update()
     {
         if(Input.GetKeyDown(KeyCode.Escape))
@@ -52,7 +54,14 @@ public class StartOutManage : MonoBehaviour {
             EscToBack();
         }
     }
-
+    private void OnFullVeiwStateChange(bool isFullView)
+    {
+        //不显示首页情况下，隐藏返回首页按钮
+        if(!isFullView&&!SystemSettingHelper.systemSetting.IsShowHomePage)
+        {
+            MainPageButton.gameObject.SetActive(false);
+        }
+    }
     private void EscToBack()
     {
         if(CameraSceneManager.Instance.alignCamera.IsAligning)
@@ -85,6 +94,7 @@ public class StartOutManage : MonoBehaviour {
         else
         {
             //BackButton.gameObject.SetActive(true);
+            if (LocationManager.Instance.currentLocationFocusObj != null) return;
             SetUpperStoryButtonActive(true);
         }
     }
@@ -109,6 +119,7 @@ public class StartOutManage : MonoBehaviour {
     {
         UGUIMessageBox.Show("是否确定退出软件？", () =>
          {
+             Log.Info("StartoutManage.Application.Quit->退出程序");
              Application.Quit();
          }, () =>
          {
@@ -122,6 +133,7 @@ public class StartOutManage : MonoBehaviour {
     private void OnMainPageButtonClick()
     {
         FullViewController.Instance.SwitchToFullView();
+        if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
     }
     /// <summary>
     /// 返回上一层按钮
@@ -200,6 +212,7 @@ public class StartOutManage : MonoBehaviour {
     public void SetMainPageAndBackState(bool isOn)
     {
         ExitButton.gameObject.SetActive(isOn);
-        MainPageButton.gameObject.SetActive(isOn);
+        bool isMainPageButonOn = SystemSettingHelper.systemSetting.IsShowHomePage && isOn ? true : false;
+        MainPageButton.gameObject.SetActive(isMainPageButonOn);
     }
 }

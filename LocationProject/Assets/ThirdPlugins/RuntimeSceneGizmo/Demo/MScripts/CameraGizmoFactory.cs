@@ -106,7 +106,7 @@ public class CameraGizmoFactory : MonoBehaviour {
     private void SetClippingPlaneDis()
     {
         if (mainCamera.orthographic) mainCamera.farClipPlane = 2000;
-        else mainCamera.farClipPlane = 1000;
+        else mainCamera.farClipPlane = 1500;
     }
 
     /// <summary>
@@ -208,6 +208,7 @@ public class CameraGizmoFactory : MonoBehaviour {
     /// <param name="isOrthographic"></param>
     private void SetIntroduceInfo(bool isOrthographic)
     {
-        IntroduceText.text = isOrthographic ? "ISO":"Persp";
+        //IntroduceText.text = isOrthographic ? "ISO":"Persp";
+        IntroduceText.text = isOrthographic ? "平行视角" : "普通视角";
     }
 }

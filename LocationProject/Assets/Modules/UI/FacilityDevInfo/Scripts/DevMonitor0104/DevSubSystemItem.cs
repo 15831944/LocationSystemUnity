@@ -15,6 +15,7 @@ public class DevSubSystemItem : MonoBehaviour, IPointerDownHandler, IPointerEnte
     /// <summary>
     /// 系统信息
     /// </summary>
+    [System.NonSerialized]
     private Dev_Monitor SystemInfo;
     /// <summary>
     /// 名称文本框
@@ -55,6 +56,7 @@ public class DevSubSystemItem : MonoBehaviour, IPointerDownHandler, IPointerEnte
     //Todo:关闭界面的时候，取消选中
     public void Init(Dev_Monitor systemInfo, Sprite normalSprite)
     {
+        IsSelect = false;
         SystemInfo = systemInfo;
         Normal = normalSprite;
         TargetGraphic.overrideSprite = Normal;

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,18 +12,25 @@ public class MobileInspectionHistoryRouteDetails : MonoBehaviour {
     /// 窗体
     /// </summary>
     public GameObject window;
-
     public PatrolPointHistory info;//工作票信息
-    public List<PatrolPointItemHistory> HistoryPatrolPointItemList;
- 
+    public List<PatrolPointItemHistory> HistoryPatrolPointItemList;//巡检项历史列表
 
     public Text TxtPersonnelNum;//巡检人工号
     public Text TxtPerson;//巡检人
     public Text devText;//巡检设备名称
-
     public Text Title;
     public GameObject ItemPrefab;//措施单项
     public VerticalLayoutGroup Grid;//措施列表
+
+    [System.NonSerialized]
+    List<PatrolPointItemHistory> newHistoryPatrolPointItemLis = new List<PatrolPointItemHistory>(); //一页存放的列表
+    public int pageLine = 10; //每页显示条数
+    private int startPageNum = 0; //切页数据
+    private int pageNum = 1; //页数
+    public Text pageTotalNum; //总页数
+    public InputField pageNumText; //输入页数
+    public Button nextPageBtn; //下一页
+    public Button prevPageBtn; //上一页
 
     public Button closeBtn;//关闭
     public Sprite Singleline;
@@ -33,6 +41,10 @@ public class MobileInspectionHistoryRouteDetails : MonoBehaviour {
     {
         Instance = this;
         closeBtn.onClick.AddListener(CloseBtn_OnClick);
+
+        pageNumText.onValueChanged.AddListener(InputPage);
+        nextPageBtn.onClick.AddListener(NextPage);
+        prevPageBtn.onClick.AddListener(PreviousPage);
     }
 
     // Update is called once per frame
@@ -43,12 +55,58 @@ public class MobileInspectionHistoryRouteDetails : MonoBehaviour {
 
     public void Show(PatrolPointHistory infoT)
     {
+        if(infoT.Checks == null)
+        {
+            UGUIMessageBox.Show("历史巡检项为空！");
+            return;
+        }
         HistoryPatrolPointItemList.Clear();
         info = infoT ;
         HistoryPatrolPointItemList.AddRange (info.Checks );
         UpdateData();
-        CreateMeasuresItems();
+        //CreateMeasuresItems();
         SetWindowActive(true);
+
+        startPageNum = 0;
+        pageNum = 1;
+        GetListPages();
+        pageNumText.text = "1";
+        TotalLine();
+    }
+
+    //根据列表数量生成页数
+    public void TotalLine()
+    {
+        if (HistoryPatrolPointItemList.Count != 0)
+        {
+            if (HistoryPatrolPointItemList.Count % pageLine == 0)
+            {
+                pageTotalNum.text = (HistoryPatrolPointItemList.Count / pageLine).ToString();
+            }
+            else
+            {
+                pageTotalNum.text = Convert.ToString(Math.Ceiling((double)HistoryPatrolPointItemList.Count / (double)pageLine));//有小数加1
+            }
+        }
+        else
+        {
+            pageTotalNum.text = "1";
+        }
+    }
+
+    //生成的页数
+    public void GetListPages()
+    {
+        newHistoryPatrolPointItemLis.Clear();
+        if (startPageNum * pageLine < HistoryPatrolPointItemList.Count)
+        {
+            var QueryData = HistoryPatrolPointItemList.Skip(startPageNum * pageLine).Take(pageLine);
+            foreach (var list in QueryData)
+            {
+                newHistoryPatrolPointItemLis.Add(list);
+            }
+            CreateMeasuresItems(newHistoryPatrolPointItemLis);
+        }
     }
 
     /// <summary>
@@ -66,12 +124,12 @@ public class MobileInspectionHistoryRouteDetails : MonoBehaviour {
     /// <summary>
     /// 创建措施列表
     /// </summary>
-    public void CreateMeasuresItems()
+    public void CreateMeasuresItems(List<PatrolPointItemHistory> newHistoryPatrolPointItemLis)
     {
 
         ClearMeasuresItems();
-        if (HistoryPatrolPointItemList == null || HistoryPatrolPointItemList.Count == 0) return;
-        foreach (PatrolPointItemHistory sm in HistoryPatrolPointItemList)
+        if (newHistoryPatrolPointItemLis == null || newHistoryPatrolPointItemLis.Count == 0) return;
+        foreach (PatrolPointItemHistory sm in newHistoryPatrolPointItemLis)
         {
             i = i + 1;
             GameObject itemT = CreateMeasuresItem();
@@ -133,6 +191,72 @@ public class MobileInspectionHistoryRouteDetails : MonoBehaviour {
         for (int i = childCount - 1; i >= 0; i--)
         {
             DestroyImmediate(Grid.transform.GetChild(i).gameObject);
+        }
+    }
+
+    //下一页
+    public void NextPage()
+    {
+        startPageNum += 1;
+        if (startPageNum <= HistoryPatrolPointItemList.Count / pageLine)
+        {
+            pageNum += 1;
+            pageNumText.text = pageNum.ToString();
+            ClearMeasuresItems();
+            GetListPages();
+        }
+    }
+
+    //上一页
+    public void PreviousPage()
+    {
+        if (startPageNum > 0)
+        {
+            startPageNum--;
+            pageNum -= 1;
+            if (pageNum == 1)
+            {
+                pageNumText.text = "1";
+            }
+            else
+            {
+                pageNumText.text = pageNum.ToString();
+            }
+            ClearMeasuresItems();
+            GetListPages();
+        }
+    }
+
+    //选中页输入框
+    public void InputPage(string value)
+    {
+        int currentPage = 0;
+        currentPage = int.Parse(pageNumText.text);
+        int maxPage = (int)Math.Ceiling((double)HistoryPatrolPointItemList.Count / (double)pageLine);
+        if (maxPage == 0)
+        {
+            pageNumText.text = "1";
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(pageNumText.text))
+            {
+                currentPage = 1;
+            }
+            else if (currentPage >= maxPage)
+            {
+                currentPage = maxPage;
+                pageNumText.text = currentPage.ToString();
+            }
+            else if (currentPage <= 0)
+            {
+                currentPage = 1;
+                pageNumText.text = currentPage.ToString();
+            }
+            startPageNum = currentPage - 1;
+            pageNum = currentPage;
+            ClearMeasuresItems();
+            GetListPages();
         }
     }
 

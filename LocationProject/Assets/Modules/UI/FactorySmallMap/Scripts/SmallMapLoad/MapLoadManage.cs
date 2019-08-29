@@ -25,6 +25,47 @@ public class MapLoadManage : MonoBehaviour {
         //InitBuildingId();
     }
 
+    public void ReplaceDepNode(DepNode buildingNode)
+    {
+        if (buildingNode == null)
+        {
+            Debug.LogError("MapLoadManage.ReplaceDepNode buildingNode == null");
+            return;
+        }
+
+        //foreach (var item in BuildingList)
+        //{
+        //    item.ReplaceDepNode(buildingNode);
+        //}
+        //if (CurrentBuilding)
+        //{
+        //    CurrentBuilding.ReplaceDepNode(buildingNode);
+        //}
+
+        MapBuilding mapBuilding = FindMapBuilding(buildingNode);
+        if (mapBuilding)
+        {
+            mapBuilding.ReplaceDepNode(buildingNode);
+        }
+        else
+        {
+            Debug.LogWarning(string.Format("MapLoadManage.ReplaceDepNode Id={0},Name={1}", buildingNode.NodeID, buildingNode.NodeName));
+        }
+    }
+
+    private MapBuilding FindMapBuilding(DepNode buildingNode)
+    {
+        if (buildingNode == null) return null;
+        foreach (var item in BuildingList)
+        {
+            if(item.BuildingId == buildingNode.NodeID)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+
     void Start()
     {
         InitBuildingId();
@@ -36,7 +77,7 @@ public class MapLoadManage : MonoBehaviour {
     /// <summary>
     /// 绑定建筑ID
     /// </summary>
-    private void InitBuildingId()
+    public void InitBuildingId()
     {
         Log.Info("InitBuildingId");
         RoomFactory factory = RoomFactory.Instance;
@@ -45,16 +86,8 @@ public class MapLoadManage : MonoBehaviour {
             foreach (var item in BuildingList)
             {
                 DepNode node = factory.GetDepNode(item.BuildingName);
-                if (node == null)
-                {
-                    Debug.LogError(string.Format("Building not find! Id:{0},Name:{1}", item.BuildingId,
-                        item.BuildingName));
-                }
-                else
-                {
-                    item.Node = node;
-                    item.InitFloor();
-                }
+                item.SetNode(node);
+                item.InitFloor();
             }
         }
     }

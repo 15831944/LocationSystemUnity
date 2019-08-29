@@ -21,9 +21,9 @@ public class WorkTicketHistoryPath : HistoryPath
     {
         StartInit();
 
-        foreach (List<Vector3> splinePointsT in splinePointsList)
+        foreach (PositionInfoList splinePointsT in PosInfoGroup)
         {
-            CreateHistoryPath(splinePointsT, splinePointsT.Count);
+            CreateHistoryPath(splinePointsT.GetVector3List(), splinePointsT.Count);
         }
 
         isCreatePathComplete = true;
@@ -39,25 +39,35 @@ public class WorkTicketHistoryPath : HistoryPath
         base.LateUpdate();
     }
 
-    /// <summary>
-    /// 初始化
-    /// </summary>
-    public void Init(Personnel personnelT, Color colorT, List<Vector3> splinePointsT, List<DateTime> timelistT, int segmentsT, bool pathLoopT)
+    ///// <summary>
+    ///// 初始化
+    ///// </summary>
+    //public void Init(Personnel personnelT, Color colorT, List<Vector3> splinePointsT, List<DateTime> timelistT, int segmentsT, bool pathLoopT)
+    //{
+    //    personnel = personnelT;
+    //    segments = segmentsT;
+    //    splinePoints = splinePointsT;
+    //    timelist = timelistT;
+    //    color = colorT;
+    //    pathLoop = pathLoopT;
+    //}
+
+    public void Init(PathInfo pathInfo, bool pathLoopT)
     {
-        personnel = personnelT;
-        segments = segmentsT;
-        splinePoints = splinePointsT;
-        timelist = timelistT;
-        color = colorT;
+        personnel = pathInfo.personnelT;
+        segments = pathInfo.posList.Count;
+        //splinePoints = splinePointsT;
+        //timelist = timelistT;
+        PosInfoList = pathInfo.posList;
+        color = pathInfo.color;
         pathLoop = pathLoopT;
     }
 
     protected override void StartInit()
     {
         lines = new List<VectorLine>();
-        dottedlines = new List<VectorLine>();
-        splinePointsList = new List<List<Vector3>>();        timelistLsit = new List<List<DateTime>>();        CreatePathParent();        //LocationHistoryManager.Instance.AddHistoryPath(this as LocationHistoryPath);
-        //transform.SetParent(pathParent);        if (splinePoints.Count <= 1) return;
+        dottedlines = new List<VectorLine>();        CreatePathParent();        //LocationHistoryManager.Instance.AddHistoryPath(this as LocationHistoryPath);
+        //transform.SetParent(pathParent);        if (PosCount <= 1) return;
 
         GroupingLine();
     }

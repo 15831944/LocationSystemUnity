@@ -49,17 +49,17 @@ public class MapSwitch : MonoBehaviour {
     /// <summary>
     /// 界面开启时，是否刷新
     /// </summary>
-    private bool IsRefreshEnable = false;
+    private bool IsRefreshUpdate = false;
     // Use this for initialization
     void Awake () {
         LayoutGroup = FloorButtonGroup.GetComponent<VerticalLayoutGroup>();
         FrontButton.onClick.AddListener(SelectLast);
         NextButton.onClick.AddListener(SelectNext);
     }
-    void OnEnable()
+    void Update()
     {
         //Debug.LogError("MapSwith.OnEnbale.");
-        if(IsRefreshEnable)
+        if(IsRefreshUpdate && Window.activeInHierarchy)
         {
             SelectItem(CurrentSelcetIndex);
         }
@@ -228,7 +228,7 @@ public class MapSwitch : MonoBehaviour {
                 posY = -(LayoutHeight / 2 - MaskHeight / 2);
 
             }
-            else if (ChildIndex == ItemList.Count - 1)
+            else if (ChildIndex>1&&ChildIndex == ItemList.Count - 1)
             {
                 int newIndex = ChildIndex - 2;
                 posY = -(LayoutHeight / 2 - MaskHeight / 2) + (ButtonOffset * newIndex);
@@ -239,6 +239,7 @@ public class MapSwitch : MonoBehaviour {
                 posY = -(LayoutHeight / 2 - MaskHeight / 2) + (ButtonOffset * newIndex);
             }
             FloorButtonGroup.transform.localPosition = new Vector3(0, posY, 0);
+            IsRefreshUpdate = false;
         });       
     }
     /// <summary>
@@ -247,9 +248,9 @@ public class MapSwitch : MonoBehaviour {
     /// <param name="onComplete"></param>
     private void RebuildLayout(Action onComplete)
     {       
-        if(!gameObject.activeInHierarchy)
+        if(Window!=null&&!Window.activeInHierarchy)
         {
-            IsRefreshEnable = true;
+            IsRefreshUpdate = true;
             return;
         }
         StopCoroutine("RebuildLayoutCorutine");

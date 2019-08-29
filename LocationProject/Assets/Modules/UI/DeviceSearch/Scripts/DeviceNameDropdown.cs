@@ -15,6 +15,7 @@ public class DeviceNameDropdown : MonoBehaviour {
         devNameList = new List<string>();
         AddName();
         SetDropdownDate(devNameList);
+        devNameDropdown. onValueChanged.AddListener(DeviceDataPaging.Instance.DeviceNamee_Click);
     }
 	
     private void SetDropdownDate(List <string > data)
@@ -26,6 +27,7 @@ public class DeviceNameDropdown : MonoBehaviour {
             tempData.text = data[i];
             devNameDropdown.options.Add(tempData);
         }
+        devNameDropdown.captionText.text = data[0].ToString();
     }
 	// Update is called once per frame
 	void Update () {
@@ -36,8 +38,10 @@ public class DeviceNameDropdown : MonoBehaviour {
         string n0 = "厂家名称";
         string n1 = "艾默生";
         string n2 = "霍尼韦尔";
+       
         devNameList.Add(n0);
         devNameList.Add(n1);
         devNameList.Add(n2);
+        
     }
 }

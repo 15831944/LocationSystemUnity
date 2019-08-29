@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Location.WCFServiceReferences.LocationServices;
+using UnityEngine.UI;
+
 public class DevSubSystem : MonoBehaviour {
 
     /// <summary>
@@ -24,6 +26,7 @@ public class DevSubSystem : MonoBehaviour {
     /// 空数据显示
     /// </summary>
     public GameObject EmptyValueText;
+    public Scrollbar scrollBar;
     /// <summary>
     /// 监控项集合
     /// </summary>
@@ -40,7 +43,18 @@ public class DevSubSystem : MonoBehaviour {
         bool isValueEmpty = subSystem == null || subSystem.Length == 0 ? true : false;
         SubSystemContent.gameObject.SetActive(!isValueEmpty);
         EmptyValueText.gameObject.SetActive(isValueEmpty);
-        if (isValueEmpty) return;
+        if (isValueEmpty)
+        {
+            if (DevSubSystemItem.CurrentSelectItem != null)
+            {
+                DevSubSystemItem.CurrentSelectItem.DeselectItem();
+            }
+            if(FacilityDevManage.Instance&& FacilityDevManage.Instance.SubSytemTree!=null)
+            {
+                FacilityDevManage.Instance.SubSytemTree.InitTree(null);
+            }
+            return;
+        }
         int lastSystemIndex = NodePrefabPoor.Count - 1;
         List<DevSubSystemItem> NewItems = new List<DevSubSystemItem>();
         for (int i = 0; i < subSystem.Length; i++)
@@ -63,6 +77,7 @@ public class DevSubSystem : MonoBehaviour {
             }
         }
         NodePrefabPoor.AddRange(NewItems);
+        if (scrollBar) scrollBar.value = 1;
         NodePrefabPoor[0].SelectItem();
     }
     /// <summary>

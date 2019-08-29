@@ -1,5 +1,6 @@
 ﻿using HighlightingSystem;
 using Location.WCFServiceReferences.LocationServices;
+using Mogoson.CameraExtension;
 using MonitorRange;
 using RTEditor;
 using System;
@@ -64,6 +65,8 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     //名称UI
     public GameObject followNameUI;
 
+    public AreaNameUIController areaNameUIController;
+
     private float MinX;
     private float MaxX;
     private float MinY;
@@ -124,21 +127,25 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     /// 区域范围XZ平面的点集合(逆时针)
     /// </summary>
     List<Vector2> XZpointList;
-    /// <summary>
-    /// 是否告警
-    /// </summary>
-    public bool isAlarm;
+    ///// <summary>
+    ///// 是否告警
+    ///// </summary>
+    //public bool isAlarm;
     /// <summary>
     /// 是否处于告警中
     /// </summary>
     public bool isAlarming;
+    /// <summary>
+    /// 编辑界面，新增区域
+    /// </summary>
+    public bool isNewAdd;
 
     // Use this for initialization
     void Start()
     {
         alarmPersons = new List<LocationObject>();
         locationPersons = new List<LocationObject>();
-        SetDepNode();
+        InitDepNode();
 
         SetEditEvent(true);
 
@@ -147,13 +154,36 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
 
         GameObject targetTagObj = UGUIFollowTarget.CreateTitleTag(gameObject, Vector3.zero);
         followNameUI = UGUIFollowManage.Instance.CreateItem(MonitorRangeManager.Instance.NameUI, targetTagObj, "MapAreasUI", null, false, false);
+        areaNameUIController = followNameUI.GetComponent<AreaNameUIController>();
+        if (areaNameUIController)
+        {
+            areaNameUIController.SetMonitorRangeObject(this);
+        }
         Text ntxt = followNameUI.GetComponentInChildren<Text>();
         ntxt.text = info.Name;
         oriFollowUIColor = followNameUI.GetComponentInChildren<Image>().color;
         if (MonitorRangeManager.Instance.isShowRangeRender == false)
         {
-            SetFollowNameUIEnable(false);
+            if (!MonitorRangeManager.Instance.IsEditState)
+            {
+                SetFollowNameUIEnable(false);
+            }
         }
+
+        if (isNewAdd)
+        {
+            areaNameUIController.SetImageRaycast(false);
+        }
+
+        if (MonitorRangeManager.Instance.IsEditState)
+        {
+            SetSelectedUI(true);
+        }
+    }
+
+    public void SetIsNewAdd(bool b)
+    {
+        isNewAdd = b;
     }
 
     /// <summary>
@@ -195,24 +225,33 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     /// <summary>
     /// 设置DepNode
     /// </summary>
-    private void SetDepNode()
+    private void InitDepNode()
     {
         if (depNode == null)
         {
-            depNode = RoomFactory.Instance.GetDepNodeById(info.Id);
+            depNode = RoomFactory.Instance.GetDepNodeByTopo(info);
         }
         if (depNode != null)
         {
-            followTarget = depNode.NodeObject;
+            //followTarget = depNode.NodeObject;
+            SetFollowTarget(depNode.NodeObject);
             //depNode.SetMonitorRangeObject(this);
             if (followTarget)
             {
                 followOffset = transform.position - followTarget.transform.position;
             }
         }
-
-
     }
+
+    /// <summary>
+    /// 设置区域的跟随建筑物
+    /// </summary>
+    /// <param name="o"></param>
+    public void SetFollowTarget(GameObject o)
+    {
+        followTarget = o;
+    }
+
     /// <summary>
     /// 设置区域监控范围
     /// </summary>
@@ -376,30 +415,31 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     /// <summary>
     /// 初始化
     /// </summary>
-    public void Init(int idT, PhysicalTopology infoT, RangeNode rangenodeT, DepNode depNodeT)
+    public void Init(PhysicalTopology areaInfo, RangeNode rangeNode, DepNode depNode)
     {
-        Id = idT;
-        info = infoT;
-        depNode = depNodeT;
-        rangeNode = rangenodeT;
-        SetDepNode();
-        oriSize = gameObject.GetGlobalSize();
-        UpdatePosSize(infoT);
+        this.Id = areaInfo.Id;
+        this.info = areaInfo;
+        this.depNode = depNode;
+        this.rangeNode = rangeNode;
+        InitDepNode();
+        oriSize = gameObject.GetGlobalSize();//三维物体的大小
+        UpdatePosSize(areaInfo);
         SetPosSize();
         SetDepMonitorRange();
         //isUpdate = true;
         //CreateBoundPoints(info.EditBound);
-        if (infoT.Transfrom != null)
+
+        if (areaInfo.Transfrom != null)
         {
-            IsCreateAreaByData = infoT.Transfrom.IsCreateAreaByData;
-            IsOnAlarmArea = infoT.Transfrom.IsOnAlarmArea;
-            IsOnLocationArea = infoT.Transfrom.IsOnLocationArea;
+            IsCreateAreaByData = areaInfo.Transfrom.IsCreateAreaByData;
+            IsOnAlarmArea = areaInfo.Transfrom.IsOnAlarmArea;
+            IsOnLocationArea = areaInfo.Transfrom.IsOnLocationArea;
         }
 
-        if (gameObject.name.Contains("电子设备间"))
-        {
-            int i = 0;
-        }
+        //if (gameObject.name.Contains("电子设备间"))
+        //{
+        //    int i = 0;
+        //}
         InitXZpointList();
     }
 
@@ -485,97 +525,154 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
         {
             rangeParent = depNode.ParentNode.monitorRangeObject;
         }
-        rangeNode.thisRange = this; //创建自身区域范围
+        rangeNode.rangeObject = this; //创建自身区域范围
 
-        //p.
+        if (!tranM.IsCreateAreaByData && info.Type == AreaTypes.范围)//tranM.IsOnAlarmArea && 
+        {
+            Debug.LogErrorFormat("告警区域：[{0}]，没根据CAD数据来创建（IsCreateAreaByData没设置为true），可能导致创建出错！", info.Name);
+        }
+
         if (tranM.IsCreateAreaByData) //利用数据创建区域范围
         {
-            UpdatePosSizeInfoOP(tranM);
+            Log.Info("MonitorRangeObject.UpdatePosSizeInfo","brach 1");
+            UpdatePosSizeByTransform(tranM);
         }
         else//利用自身大小创建区域范围
         {
             if (followTarget != null)
             {
-                Vector3 pos = Vector3.zero;
-                Vector3 angles = Vector3.zero;
-                pos = followTarget.transform.position;//获取相对父区域范围的坐标
-                angles = followTarget.transform.eulerAngles;//获取相对父区域范围的角度
-
-                targetPos = pos;
-                Vector3 size = followTarget.GetGlobalSize();
-                if (size.y > yOffset)//为了处理楼层的区域范围计算不用太高，以至于超出楼层高度
-                {
-                    size = new Vector3(size.x, size.y - yOffset, size.z);
-                    //targetPos = new Vector3(targetPos.x, targetPos.y - (1f / 2), targetPos.z);
-                }
-                targetScale = new Vector3(Mathf.Abs(size.x / oriSize.x), Mathf.Abs(size.y / oriSize.y), Mathf.Abs(size.z / oriSize.z)); ;//就跟BoxCollider一样大
-                targetAngles = angles;
+                Log.Info("MonitorRangeObject.UpdatePosSizeInfo", "brach 2");
+                UpdatePosSizeByFollowTarget();
             }
             else
             {
-                UpdatePosSizeInfoOP(tranM);
+                Log.Info("MonitorRangeObject.UpdatePosSizeInfo", "brach 3");
+                UpdatePosSizeByTransform(tranM);
             }
         }
 
         if (transform.parent != null)
         {//因为这里的计算出来的比例为真实大小比例，而不是相对比例
 
-
         }
-
     }
 
-    private void UpdatePosSizeInfoOP(TransformM tranM)
+    private void UpdatePosSizeByFollowTarget()
     {
-        Vector3 pos = new Vector3((float)tranM.X, (float)tranM.Y, (float)tranM.Z);
-        Vector3 angles = new Vector3((float)tranM.RX, (float)tranM.RY, (float)tranM.RZ);
-        Vector3 size = new Vector3((float)tranM.SX, (float)tranM.SY, (float)tranM.SZ);
+        Vector3 pos = Vector3.zero;
+        Vector3 angles = Vector3.zero;
+        pos = followTarget.transform.position; //获取相对父区域范围的坐标
+        angles = followTarget.transform.eulerAngles; //获取相对父区域范围的角度
+
+        targetPos = pos;
+        Vector3 size = followTarget.GetGlobalSize();
+        if (size.y > yOffset) //为了处理楼层的区域范围计算不用太高，以至于超出楼层高度
+        {
+            size = new Vector3(size.x, size.y - yOffset, size.z);
+            //targetPos = new Vector3(targetPos.x, targetPos.y - (1f / 2), targetPos.z);
+        }
+
+        targetScale = new Vector3(Mathf.Abs(size.x / oriSize.x), Mathf.Abs(size.y / oriSize.y),
+            Mathf.Abs(size.z / oriSize.z));
+        ; //就跟BoxCollider一样大
+        if (targetScale == Vector3.zero)
+        {
+            targetScale = Vector3.one;
+        }
+
+        targetAngles = angles;
+    }
+
+    private void UpdatePosSizeByTransform(TransformM tranM)
+    {
+        Vector3 pos = new Vector3((float) tranM.X, (float) tranM.Y, (float) tranM.Z);
+        Vector3 angles = new Vector3((float) tranM.RX, (float) tranM.RY, (float) tranM.RZ);
+        Vector3 size = new Vector3((float) tranM.SX, (float) tranM.SY, (float) tranM.SZ);
 
         targetPos = LocationManager.GetRealSizeVector(pos);
         Vector3 realsize = LocationManager.GetRealSizeVector(size);
-        targetScale = new Vector3(Mathf.Abs(realsize.x / oriSize.x), Mathf.Abs(realsize.y / oriSize.y), Mathf.Abs(realsize.z / oriSize.z));
-        if (!info.Transfrom.IsRelative)
+        targetScale = new Vector3(Mathf.Abs(realsize.x / oriSize.x), Mathf.Abs(realsize.y / oriSize.y),
+            Mathf.Abs(realsize.z / oriSize.z));
+        if (!info.Transfrom.IsRelative) //绝对坐标，加上二维和三维转换时的坐标偏移就行
         {
+            Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 0 : axisZero");
             targetPos += LocationManager.Instance.axisZero;
         }
-        else
+        else //相对坐标，要考虑父物体的坐标
         {
             if (rangeNode.parentNode != null)
             {
-                PhysicalTopology buldingNode = rangeNode.parentNode.info;
-                TransformM tm = buldingNode.Transfrom;
+                RangeNode parentRangeNode = rangeNode.parentNode;
+                var parentRangeObject = parentRangeNode.rangeObject;
+                PhysicalTopology parentArea = parentRangeNode.info;
+                TransformM parentTransform = parentArea.Transfrom;
+
+                Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", string.Format("parentArea:"+ parentArea.Name));
+
+                //接下来计算建筑物的左下角坐标
                 Vector3 buildPos = Vector3.zero;
-                if (tm != null && tm.IsCreateAreaByData)
+                if (parentTransform != null && parentTransform.IsCreateAreaByData)
                 {
-                    Vector3 pos2D = new Vector3((float)(tm.SX / 2f), (float)(tm.SY / 2), (float)(tm.SZ / 2));//建筑物的左下角坐标
-                                                                                                             //Log.Info("建筑物的右下角坐标:" + pos2D);
-
-                    buildPos = -LocationManager.GetRealSizeVector(pos2D);
-                    buildPos += rangeNode.parentNode.thisRange.transform.position;
-
+                    Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 1 : by parentTransform");
+                    Vector3 sizeT = new Vector3((float) (parentTransform.SX / 2f), (float) (parentTransform.SY / 2),
+                        (float) (parentTransform.SZ / 2)); //二维坐标尺寸
+                    var offset = LocationManager.GetRealSizeVector(sizeT); //三维坐标尺寸，也就是偏移量
+                    buildPos = parentRangeObject.transform.position - offset; //父物体（中心）位置-父物体一半大小=父物体左下角坐标
+                    Log.Info("MonitorRangeObject.UpdatePosSizeByTransform",
+                        string.Format("sizeT:{0},sizeR:{1},buildPos:{2}", sizeT, offset, buildPos));
                 }
                 else
                 {
-                    if (rangeNode.parentNode.thisRange)
+                    if (parentRangeObject)
                     {
-                        Vector3 pSize = rangeNode.parentNode.thisRange.gameObject.GetGlobalSize();
-                        buildPos += rangeNode.parentNode.thisRange.transform.position;
-                        buildPos += new Vector3((float)(pSize.x / 2f), (float)(-(pSize.y + rangeNode.parentNode.thisRange.yOffset) / 2), (float)(pSize.z / 2));//建筑物的左下角坐标
+                        Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 2 : parentRangeObject");
+                        Vector3 sizeR = parentRangeObject.gameObject.GetGlobalSize();//父物体真实大小
+                        Vector3 offset= new Vector3((float)(sizeR.x / 2f),
+                            (float)(-(sizeR.y + parentRangeObject.yOffset) / 2),
+                            (float)(sizeR.z / 2)); //
+                        buildPos = parentRangeObject.transform.position+offset;//父物体（中心）位置-偏移=父物体左下角坐标
+
+                        Log.Info("MonitorRangeObject.UpdatePosSizeByTransform",
+                            string.Format("sizeR:{0},offset:{1},buildPos:{2}", sizeR, offset, buildPos));
                     }
                     else
                     {
                         if (rangeNode.parentNode.info.Type == Types.范围)
                         {
+                            Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 3");
                             targetPos += LocationManager.Instance.axisZero;
+                        }
+                        else
+                        {
+                            Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 4");
                         }
                     }
                 }
 
                 targetPos += buildPos;
+
+                Log.Info("MonitorRange.UpdatePosSizeByTransform",
+                    string.Format("targetPos:{0},buildPos:{1}", targetPos, buildPos));
+
+                ShowTestPoint(buildPos, "buildPos_"+ parentArea.Name);
+                ShowTestPoint(targetPos, "targetPos_"+info.Name);
+            }
+            else
+            {
+                Log.Error("MonitorRange.UpdatePosSizeByTransform", "rangeNode.parentNode == null");
             }
         }
 
-        targetAngles = new Vector3((float)tranM.RX, (float)tranM.RY, (float)tranM.RZ);
+        targetAngles = new Vector3((float) tranM.RX, (float) tranM.RY, (float) tranM.RZ);
+    }
+
+    private void ShowTestPoint(Vector3 v,string n)
+    {
+#if  UNITY_EDITOR
+        GameObject p = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        p.name = n;
+        p.transform.position = v;
+#endif
     }
 
     ///// <summary>
@@ -611,6 +708,7 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     {
         transform.localPosition = targetPos;
         transform.localScale = new Vector3(targetScale.x, targetScale.y, targetScale.z);
+
         Transform p = transform.parent;
         if (p != null)
         {
@@ -691,7 +789,10 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     {
         Highlighter h = gameObject.AddMissingComponent<Highlighter>();
         h.FlashingOff();
-        SetRendererEnable(false);
+        if (!MonitorRangeManager.Instance.IsEditState)
+        {
+            SetRendererEnable(false);
+        }
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -756,7 +857,7 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
             locationPersons.Remove(locationObject);
             if (gameObject.name.Contains("四会热电厂"))
             {
-                Debug.Log("四会热电厂移除locationPersons");
+                //Debug.Log("四会热电厂移除locationPersons");
             }
         }
     }
@@ -827,13 +928,13 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
                     Vector3 pos2D = new Vector3((float)(tm.SX / 2f), (float)(tm.SY / 2), (float)(tm.SZ / 2));//建筑物的左下角坐标
 
                     buildPos = -LocationManager.GetRealSizeVector(pos2D);
-                    buildPos += rangeNode.parentNode.thisRange.transform.position;
+                    buildPos += rangeNode.parentNode.rangeObject.transform.position;
                 }
                 else
                 {
-                    Vector3 pSize = rangeNode.parentNode.thisRange.gameObject.GetGlobalSize();
-                    buildPos += rangeNode.parentNode.thisRange.transform.position;
-                    buildPos += new Vector3((float)(pSize.x / 2f), (float)(-(pSize.y + rangeNode.parentNode.thisRange.yOffset) / 2), (float)(pSize.z / 2));//建筑物的左下角坐标
+                    Vector3 pSize = rangeNode.parentNode.rangeObject.gameObject.GetGlobalSize();
+                    buildPos += rangeNode.parentNode.rangeObject.transform.position;
+                    buildPos += new Vector3((float)(pSize.x / 2f), (float)(-(pSize.y + rangeNode.parentNode.rangeObject.yOffset) / 2), (float)(pSize.z / 2));//建筑物的左下角坐标
                 }
 
                 targetposT += buildPos;
@@ -936,7 +1037,8 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     /// </summary>
     public void SaveInfo()
     {
-        if (!info.Transfrom.IsCreateAreaByData) return;
+        //if (!info.Transfrom.IsCreateAreaByData) return;--宝信新增一个区域后，不能修改，所以把这句屏蔽掉（现在好像没有告警区域这个概念）
+        Debug.LogError("MonitorRangeObject.SaveInfo");
         //Log.Info("SaveInfo", string.Format("Pos1:{0},Pos2:{1}", transform.localPosition, transform.position));
 
         //Vector3 pos = Vector3.zero;
@@ -975,9 +1077,20 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
         InitXZpointList();
         //CommunicationObject.Instance.EditMonitorRange(info);
         PhysicalTopology p = new PhysicalTopology();
-        p.Id = info.Id;
-        p.Transfrom = info.Transfrom;
-        p.InitBound = info.InitBound;
+        //p.Name = info.Name;
+        //p.Id = info.Id;
+        //p.Transfrom = info.Transfrom;
+        //p.InitBound = info.InitBound;
+        //p.IsCreateAreaByData = info.IsCreateAreaByData;
+
+        p = info;
+        var parentDep = depNode.ParentNode;
+        if (parentDep!=null&&parentDep.TopoNode.Type == AreaTypes.楼层) //宝信项目坐标系偏移，应该也是兼容其他项目的
+        {
+            p.Transfrom.X += parentDep.TopoNode.InitBound.MinX;
+            p.Transfrom.Z += parentDep.TopoNode.InitBound.MinY;
+        }
+
         CommunicationObject.Instance.EditMonitorRange(p);
     }
 
@@ -1032,7 +1145,8 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
         {
             foreach (LocationObject obj in alarmPersons)
             {
-                obj.OnTriggerExitEx(this);
+                //obj.OnTriggerExitEx(this);
+                obj.HideAlarm(depNode.NodeID);
             }
             alarmPersons.Clear();
         }
@@ -1071,7 +1185,10 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     public void SetRendererEnable(bool isEnable)
     {
         //if (MonitorRangeManager.Instance.IsShowAlarmArea && IsOnAlarmArea && !isEnable) return;
-
+        if (depNode!=null&&depNode.NodeID == 499)
+        {
+            int i = 0;
+        }
         GetRenderer();
         render.enabled = isEnable;
         SetFollowNameUIEnable(isEnable);
@@ -1096,7 +1213,7 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     {
         if (depNode == null)
         {
-            depNode = RoomFactory.Instance.GetDepNodeById(info.Id);
+            depNode = RoomFactory.Instance.GetDepNodeByTopo(info);
         }
 
         //if(depNodeT==null || depNodeT.TopoNode.Type== Types.楼层|| depNodeT.TopoNode.Type == Types.r)
@@ -1174,14 +1291,20 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     /// </summary>
     public void ShowAlarm(LocationObject locationObject)
     {
+        if (locationObject.name.Contains("耿宜"))
+        {
+            int i = 0;
+        }
         if (!alarmPersons.Contains(locationObject))
         {
-            Debug.LogErrorFormat("区域：{0},告警了！", info.Name);
+            //Debug.LogErrorFormat("区域：{0},告警了！", info.Name);
             alarmPersons.Add(locationObject);
-            if (isAlarming) return;
-            isAlarming = true;
-            AlarmOn();
+            //if (isAlarming) return;
+            //isAlarming = true;
+            //AlarmOn();
         }
+        isAlarming = true;
+        AlarmOn();
     }
 
     /// <summary>
@@ -1206,7 +1329,7 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
         alarmPersons.Remove(locationObject);
         if (alarmPersons.Count == 0)
         {
-            Debug.LogErrorFormat("区域：{0},消警了！", info.Name);
+            //Debug.LogErrorFormat("区域：{0},消警了！", info.Name);
             if (isAlarming == false) return;
             AlarmOff();
             isAlarming = false;
@@ -1360,5 +1483,34 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     public Vector2 PointForPointToPolygon(Vector2 point)
     {
         return MonitorRangeManager.PointForPointToPolygon(point, XZpointList);
+    }
+
+    public void Focus()
+    {
+        ////Vector3 dir = transform.position - CameraSceneManager.Instance.alignCamera.transform.position;
+        ////dir = new Vector3(dir.x, 0, dir.z);
+        ////Quaternion quaDir = Quaternion.LookRotation(dir, Vector3.up);
+        ////AlignTarget alignTarget = new AlignTarget(transform, new Vector2(60, quaDir.eulerAngles.y), 10, new Range(5, 90), new Range(1, 40));
+        ////CameraSceneManager.Instance.FocusTarget(alignTarget);
+        ////CameraSceneManager.Instance.FocusTargetWithTranslate(alignTarget, null, null);
+
+        //Quaternion quaDir = Quaternion.LookRotation(-transform.forward, Vector3.up);
+        //AlignTarget currentAlignTarget = CameraSceneManager.Instance.GetCurrentAlign();
+        //Vector3 dir = new Vector3(60, quaDir.eulerAngles.y, 0);
+        //Vector3 pos = Vector3.zero;
+        //RaycastHit hit;
+
+        //if (Physics.Raycast(transform.position, dir, out hit, Mathf.Infinity, LayerMask.GetMask("MouseTranslatePlane")))
+        //{
+        //    if (hit.collider != null)
+        //    {
+        //        pos = hit.point;
+        //    }
+        //}
+
+        //CameraSceneManager.Instance.mouseTranslate.SetTranslatePosition(pos);
+        //currentAlignTarget.distance = 10f;
+        //currentAlignTarget.angles = dir;
+        ////CameraSceneManager.Instance.FocusTargetWithTranslate(currentAlignTarget, null, null);
     }
 }

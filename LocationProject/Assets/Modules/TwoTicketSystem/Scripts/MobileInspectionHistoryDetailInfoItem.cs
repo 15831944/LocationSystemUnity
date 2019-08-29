@@ -39,6 +39,9 @@ public class MobileInspectionHistoryDetailInfoItem : MonoBehaviour {
     public void ItemTog_OnClick(PatrolPointHistory item)
     {
         MobileInspectionHistoryRouteDetails.Instance.Show(item);
-        MobileInspectionHistoryDetailInfo.Instance.CloseMobileInspectionHistoyItemWindow();
+        if (item.Checks != null)
+        {
+            MobileInspectionHistoryDetailInfo.Instance.CloseMobileInspectionHistoyItemWindow();
+        }
     }
 }

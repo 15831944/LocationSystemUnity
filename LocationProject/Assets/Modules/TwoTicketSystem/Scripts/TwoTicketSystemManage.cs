@@ -18,7 +18,7 @@ public class TwoTicketSystemManage : MonoBehaviour
     public Transform item22;
     public Transform item33;
 
-    public List<Personnel> personnels;//人员信息列表
+    [System.NonSerialized] public List<Personnel> personnels;//人员信息列表
 
     public TwoTicketFollowUI followUI;//移动巡检飘浮UI
 
@@ -34,7 +34,7 @@ public class TwoTicketSystemManage : MonoBehaviour
     {
         if (personnels == null && PersonnelTreeManage.Instance)
         {
-            personnels = PersonnelTreeManage.Instance.departmentDivideTree.personnels;
+            personnels = PersonnelTreeManage.Instance.GetAllPersonnels();
         }
     }
 
@@ -75,14 +75,14 @@ public class TwoTicketSystemManage : MonoBehaviour
             DateTime start = new DateTime(2018, 9, 30, 10, 0, 0);
             DateTime end = new DateTime(2018, 9, 30, 11, 0, 0);
             List<int> topoNodeIds = RoomFactory.Instance.GetCurrentDepNodeChildNodeIds(SceneEvents.DepNode);
-            List<Position> ps = new List<Position>();
-            List<Vector3> list = new List<Vector3>();
-            List<DateTime> timelist = new List<DateTime>();
+            //List<Position> ps = new List<Position>();
+            //List<Vector3> list = new List<Vector3>();
+            //List<DateTime> timelist = new List<DateTime>();
 
             Loom.StartSingleThread(() =>
             {
-                ps = GetHistoryData(personnel.Id, topoNodeIds, start, end);
-
+                var ps = GetHistoryData(personnel.Id, topoNodeIds, start, end);
+                var posInfoList = new PositionInfoList();
                 Loom.DispatchToMainThread(() =>
                 {
                     Debug.LogError("点数：" + ps.Count);
@@ -90,16 +90,18 @@ public class TwoTicketSystemManage : MonoBehaviour
 
                     for (int i = 0; i < ps.Count; i++)
                     {
-                        Position p = ps[i];
-                        Vector3 tempVector3 = new Vector3((float)p.X, (float)p.Y, (float)p.Z);
-                        tempVector3 = LocationManager.GetRealVector(tempVector3);
-                        list.Add(tempVector3);
-                        DateTime t = LocationManager.GetTimestampToDateTime(p.Time);
-                        timelist.Add(t);
+                        var posInfo = new PositionInfo(ps[i], start);
+                        posInfoList.Add(posInfo);
                     }
+
+                    PathInfo pathInfo = new PathInfo();
+                    pathInfo.personnelT = personnel;
+                    pathInfo.color = Color.green;
+                    pathInfo.posList = posInfoList;
+
                     GameObject o = new GameObject(workTicketT.PersonInCharge + "工作票");
                     WorkTicketHistoryPath path = o.AddComponent<WorkTicketHistoryPath>();
-                    path.Init(personnel, Color.green, list, timelist, list.Count,false);
+                    path.Init(pathInfo, false);
                     workTicketHistoryPaths.Add(path);
                 });
             });
@@ -236,14 +238,14 @@ public class TwoTicketSystemManage : MonoBehaviour
             DateTime start = new DateTime(2018, 9, 30, 10, 0, 0);
             DateTime end = new DateTime(2018, 9, 30, 11, 0, 0);
             List<int> topoNodeIds = RoomFactory.Instance.GetCurrentDepNodeChildNodeIds(SceneEvents.DepNode);
-            List<Position> ps = new List<Position>();
-            List<Vector3> list = new List<Vector3>();
-            List<DateTime> timelist = new List<DateTime>();
+            //List<Position> ps = new List<Position>();
+            //List<Vector3> list = new List<Vector3>();
+            //List<DateTime> timelist = new List<DateTime>();
 
             Loom.StartSingleThread(() =>
             {
-                ps = GetHistoryData(personnel.Id, topoNodeIds, start, end);
-
+                var ps = GetHistoryData(personnel.Id, topoNodeIds, start, end);
+                var posInfoList = new PositionInfoList();
                 Loom.DispatchToMainThread(() =>
                 {
                     Debug.LogError("点数：" + ps.Count);
@@ -251,16 +253,19 @@ public class TwoTicketSystemManage : MonoBehaviour
 
                     for (int i = 0; i < ps.Count; i++)
                     {
-                        Position p = ps[i];
-                        Vector3 tempVector3 = new Vector3((float)p.X, (float)p.Y, (float)p.Z);
-                        tempVector3 = LocationManager.GetRealVector(tempVector3);
-                        list.Add(tempVector3);
-                        DateTime t = LocationManager.GetTimestampToDateTime(p.Time);
-                        timelist.Add(t);
+                        var posInfo = new PositionInfo(ps[i], start);
+                        posInfoList.Add(posInfo);
                     }
+
+                    PathInfo pathInfo = new PathInfo();
+                    pathInfo.personnelT = personnel;
+                    pathInfo.color = Color.green;
+                    pathInfo.posList = posInfoList;
+                    //pathInfo.timeLength = timeLength;
+
                     GameObject o = new GameObject(operationTicketT.Operator + "工作票");
                     OperationTicketHistoryPath path = o.AddComponent<OperationTicketHistoryPath>();
-                    path.Init(personnel, Color.green, list, timelist, list.Count, false);
+                    path.Init(pathInfo, false);
                     operationTicketHistoryPaths.Add(path);
                 });
             });

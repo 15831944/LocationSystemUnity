@@ -98,7 +98,7 @@ public class DoubleClickEventTrigger_u3d : MonoBehaviour {
 
     protected void OnClick_u()
     {
-        print("OnClick_u");
+        print("OnClick_u:"+this);
         if (onClick != null) onClick();
         if (on_Click2 != null) on_Click2(gameObject);
         
@@ -106,7 +106,7 @@ public class DoubleClickEventTrigger_u3d : MonoBehaviour {
 
     protected void OnDoubleClick_u()
     {
-        print("OnDoubleClick_u");
+        print("OnDoubleClick_u:" + this);
         if (onDoubleClick != null) onDoubleClick();
         if (on_DoubleClick2 != null) on_DoubleClick2(gameObject);
     }

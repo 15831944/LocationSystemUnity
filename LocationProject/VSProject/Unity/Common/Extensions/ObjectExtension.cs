@@ -528,6 +528,22 @@ public static class ObjectExtension
         return result;
     }
 
+    public static List<Transform> GetChildrenByLayer(this Transform transform, string layerName)
+    {
+        var layer = LayerMask.NameToLayer(layerName);
+        List<Transform> result = new List<Transform>();
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child.gameObject.layer== layer)
+            {
+                result.Add(child);
+            }
+            result.AddRange(GetChildrenByLayer(child, layerName));
+        }
+        return result;
+    }
+
     ///// <summary>
     ///// 根据标签获取子物体（多个）
     ///// </summary>
@@ -645,9 +661,17 @@ public static class ObjectExtension
         return result;
     }
 
-    public static List<T> FindComponentsInChildren<T>(this Transform transform) where T : Component
+    public static List<T> FindComponentsInChildren<T>(this Transform transform,bool isContainSelf=true) where T : Component
     {
         List<T> result = new List<T>();
+        if(isContainSelf)
+        {
+            T component0 = transform.GetComponent<T>();
+            if (component0 != null)
+            {
+                result.Add(component0);
+            }
+        }
         for (int i = 0; i < transform.childCount; i++)
         {
             Transform child = transform.GetChild(i);
@@ -656,7 +680,7 @@ public static class ObjectExtension
             {
                 result.Add(component);
             }
-            result.AddRange(FindComponentsInChildren<T>(child));
+            result.AddRange(FindComponentsInChildren<T>(child,false));
         }
         return result;
     }
@@ -710,7 +734,7 @@ public static class ObjectExtension
 
     public static T FindComponentInParent<T>(this GameObject go) where T : Component
     {
-        return go.FindComponentInParent<T>();
+        return go.transform.FindComponentInParent<T>();
     }
 
     public static T FindComponentInParent<T>(this Transform transform) where T : Component
@@ -1007,4 +1031,12 @@ public static class ObjectExtension
         }
         return rendererIsInsideBox;
     }
+
+    //public static bool SetColor(this GameObject obj,Color color)
+    //{
+    //    Renderer render = obj.GetComponent<Renderer>();
+    //    if (render == null) return false;
+    //    render.material.color = color;
+    //    return true;
+    //}
 }

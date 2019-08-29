@@ -13,6 +13,7 @@ public class HistoryPersonsSearchUISelectedItem : MonoBehaviour {
     /// 人员信息数据
     /// </summary>
     [HideInInspector]
+    [System.NonSerialized]
     public Personnel personnel;
 
     // Use this for initialization

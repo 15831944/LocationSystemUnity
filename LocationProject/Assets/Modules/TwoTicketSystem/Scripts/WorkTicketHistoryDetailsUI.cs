@@ -61,7 +61,7 @@ namespace TwoTicketSystem
         /// </summary>
         public void UpdateData()
         {
-            TxtNumber.text = "工作票详情—" +info.No;
+            TxtNumber.text = info.No;
             TxtPersonInCharge.text = info.PersonInCharge;
             TxtMember.text = "";
             TxtWorkPlace.text = info.WorkPlace;

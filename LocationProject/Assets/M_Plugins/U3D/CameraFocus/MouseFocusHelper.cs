@@ -66,7 +66,7 @@ public class MouseFocusHelper : MonoBehaviour {
                 {
                     if (IsFocus == false)
                     {
-                        defaultAlign = new AlignTarget(alignCamera.target, alignCamera.CurrentAngles,
+                        defaultAlign = new AlignTarget(alignCamera.GetTarget(), alignCamera.CurrentAngles,
                             alignCamera.CurrentDistance, alignCamera.angleRange, alignCamera.distanceRange);
                         IsFocus = true;
                     }

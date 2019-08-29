@@ -18,7 +18,7 @@
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
-    <OutputPath>..\..\..\Assets\Plugins\</OutputPath>
+    <OutputPath>..\..\..\Assets\Plugins\Lib\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -34,10 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Base.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\U3D\Common\Bin\Debug\Base.Common.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceModel" />
@@ -45,28 +41,21 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\..\SoftPath\Unity\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\Library\UnityAssemblies\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\..\Library\UnityAssemblies\UnityEngine.PhysicsModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-      <HintPath>..\..\..\Library\UnityAssemblies\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <HintPath>..\UnityEditorLib\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Consts\UnityType.cs" />
     <Compile Include="Helpers\CameraHelper.cs" />
+    <Compile Include="Helpers\ComponentHelper.cs" />
     <Compile Include="Helpers\ShaderHelper.cs" />
     <Compile Include="Helpers\TagLayerHelper.cs" />
     <Compile Include="Helpers\TransparentHelper.cs" />
     <Compile Include="Infos\GameObjectInfo.cs" />
     <Compile Include="Infos\GameObjectSizeInfo.cs" />
-    <Compile Include="Infos\PositionInfo.cs" />
     <Compile Include="Infos\TagInfo.cs" />
+    <Compile Include="Infos\TransformInfo.cs" />
     <Compile Include="Materials\Material2Material.cs" />
     <Compile Include="Materials\TransparentMaterialList.cs" />
     <Compile Include="Materials\TransparentMaterialManager.cs" />
@@ -101,6 +90,12 @@
     <Compile Include="TimeCounter.cs" />
     <Compile Include="Utils\GameObjectMaterial.cs" />
     <Compile Include="Utils\ScreenHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\U3D\Common\Base.Common.csproj">
+      <Project>{bb586869-d384-4b52-aae0-aa934194e267}</Project>
+      <Name>Base.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

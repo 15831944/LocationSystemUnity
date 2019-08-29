@@ -229,18 +229,43 @@ public class ChildTypeItem : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 设置图片
+    /// </summary>
+    /// <param name="image"></param>
+    /// <param name="modelname"></param>
+    /// <param name="isLastImage">是否这个类型最后一张图片</param>
     public void SetImage(Image image, string modelname)
     {
         AssetbundleGet.Instance.GetObj(modelname, ".png", (arg) =>
         {
-            if (arg == null&&!modelname.Contains("监控区域"))
+            if (arg == null && !modelname.Contains("监控区域"))
             {
                 //缺少图片，一般都由缺少模型导致。目前先隐藏缺少图片的物体
-                Transform item = image.transform.parent.parent;
-                if (item)
-                {
-                    item.gameObject.SetActive(false);
-                }
+                //Transform item = image.transform.parent.parent;
+                //if (item)
+                //{
+                //    item.gameObject.SetActive(false);
+                //}
+
+                //if (isLastImage&&content!=null)
+                //{
+                //    bool isAllEmpty = true;
+                //    for (int i = 0; i < content.childCount; i++)
+                //    {
+                //        Transform child = content.GetChild(i);
+                //        if (child != null && child.gameObject.activeInHierarchy)
+                //        {
+                //            isAllEmpty = false;
+                //            break;
+                //        }
+                //    }
+                //    if (isAllEmpty)
+                //    {
+                //        gameObject.SetActive(false);
+                //        Debug.LogError("Error:" + childType.childTypeName + " is empty...");
+                //    }                    
+                //}
                 Debug.LogWarning(modelname + "缺少图片");
                 return;
             }

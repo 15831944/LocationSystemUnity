@@ -6,11 +6,11 @@ public class DoorAccessModelAdd : MonoBehaviour {
     /// <summary>
     /// 门集合的名称
     /// </summary>
-    private string DoorContainerName = "Doors";
+    private static string DoorContainerName = "Doors";
     /// <summary>
     /// 卷闸门的宽度>1,超过1判定为卷闸门  受Scale影响，后续得修改
     /// </summary>
-    private float RollingDoor = 1f;
+    private static float RollingDoor = 1f;
     /// <summary>
     /// 是否初始化
     /// </summary>
@@ -34,58 +34,153 @@ public class DoorAccessModelAdd : MonoBehaviour {
     {
         if (IsInit) return;
         IsInit = true;
-        StartCoroutine(FindDoorListInChild(transform));
+        //StartCoroutine(FindDoorListInChildCoroutine(transform));
+
+        FindDoorListInChild(transform);
     }
-    IEnumerator FindDoorListInChild(Transform childTransform)
+    IEnumerator FindDoorListInChildCoroutine(Transform childTransform)
     {
         foreach (Transform child in childTransform)
         {
             if (child.name.Contains(DoorContainerName))
             {
                 //Debug.Log(child.name);
-                AddChildDoorManage(child);
+                DepDoors depDoors=AddChildDoorManage(child);
+                foreach (Transform child2 in childTransform)//主厂房的墙壁下面也有门
+                {
+                    if (child2.name.Contains("_Wall"))
+                    {
+                        AddWallDoors(depDoors,child2);
+                    }
+                }
             }
             else
             {
-                StartCoroutine(FindDoorListInChild(child));
+                StartCoroutine(FindDoorListInChildCoroutine(child));
             }
             yield return null;
         }
     }
+
+    void FindDoorListInChild(Transform childTransform)
+    {
+        foreach (Transform child in childTransform)
+        {
+            if (child.name.Contains(DoorContainerName))
+            {
+                //Debug.Log(child.name);
+                DepDoors depDoors = AddChildDoorManage(child);
+                foreach (Transform child2 in childTransform)//主厂房的墙壁下面也有门
+                {
+                    if (child2.name.Contains("_Wall"))
+                    {
+                        AddWallDoors(depDoors, child2);
+                    }
+                }
+            }
+            else
+            {
+                FindDoorListInChild(child);
+            }
+        }
+    }
+
+    public static void InitDoorControl(Transform childTransform)
+    {
+        foreach (Transform child in childTransform)
+        {
+            if (child.name.Contains(DoorContainerName))
+            {
+                DepDoors depDoors = AddChildDoorManage(child);
+
+                foreach (Transform child2 in childTransform)//主厂房的墙壁下面也有门
+                {
+                    if (child2.name.Contains("_Wall"))
+                    {
+                        AddWallDoors(depDoors, child2);
+                    }
+                }
+            }
+            else
+            {
+                InitDoorControl(child);
+            }
+        }
+    }
+
+
+    private static DoorAccessItem GetDoorAccessItem(Transform child)
+    {
+        if (!child.name.ToLower().Contains("door"))
+        {
+            return null;
+        }
+        DoorAccessItem item = null;
+        if (child.childCount == 0)
+        {
+            item = child.gameObject.AddMissingComponent<DoorAccessItem>();
+            if (IsNormalDoor(false, child))
+            {
+                GameObject leftDoor = child.gameObject;
+                item.Init(true, leftDoor, null);
+            }
+            else
+            {
+                item.InitRollingDoor();
+            }
+        }
+        else if (child.childCount == 2)
+        {
+            item = child.gameObject.AddMissingComponent<DoorAccessItem>();
+            GameObject leftDoor = child.GetChild(0).gameObject;
+            GameObject rightDoor = child.GetChild(1).gameObject;
+            item.Init(false, leftDoor, rightDoor);
+        }
+
+        var colliders = child.FindComponentsInChildren<MeshCollider>();
+        foreach (MeshCollider collider in colliders)
+        {
+            //collider.enabled = false;//防止妨碍进入
+            //GameObject.Destroy(collider);//防止妨碍进入
+            collider.convex = true;
+            collider.isTrigger = true;
+        }
+        return item;
+    }
+
     /// <summary>
     /// 添加门控制脚本
     /// </summary>
-    private void AddChildDoorManage(Transform DoorContainer)
+    private static DepDoors AddChildDoorManage(Transform DoorContainer)
     {
         DepDoors depDoors = DoorContainer.gameObject.AddMissingComponent<DepDoors>();
         DepNode node = DoorContainer.GetComponentInParent<DepNode>();
         node.InitDoor(depDoors);
         foreach (Transform child in DoorContainer)
         {
-            if (child.childCount == 0)
+            DoorAccessItem item = GetDoorAccessItem(child);
+            if (item != null)
             {
-                DoorAccessItem item = child.gameObject.AddMissingComponent<DoorAccessItem>();
-                if (IsNormalDoor(false, child))
-                {                  
-                    GameObject leftDoor = child.gameObject;
-                    item.Init(true, leftDoor, null);
-                    depDoors.DoorList.Add(item);
-                }
-                else
-                {
-                    item.InitRollingDoor();
-                    depDoors.DoorList.Add(item);
-                }
-            }
-            else if (child.childCount == 2)
-            {
-                DoorAccessItem item = child.gameObject.AddMissingComponent<DoorAccessItem>();
-                GameObject leftDoor = child.GetChild(0).gameObject;
-                GameObject rightDoor = child.GetChild(1).gameObject;
-                item.Init(false, leftDoor, rightDoor);
                 depDoors.DoorList.Add(item);
             }
         }
+        return depDoors;
+    }
+
+    /// <summary>
+    /// 添加门控制脚本
+    /// </summary>
+    private static DepDoors AddWallDoors(DepDoors depDoors, Transform DoorContainer)
+    {
+        foreach (Transform child in DoorContainer)
+        {
+            DoorAccessItem item = GetDoorAccessItem(child);
+            if (item != null)
+            {
+                depDoors.DoorList.Add(item);
+            }
+        }
+        return depDoors;
     }
     /// <summary>
     /// 是否单双门(剔除铁皮门)
@@ -93,7 +188,7 @@ public class DoorAccessModelAdd : MonoBehaviour {
     /// <param name="isDoubleDoor"></param>
     /// <param name="doorTransform"></param>
     /// <returns></returns>
-    private bool IsNormalDoor(bool isDoubleDoor, Transform doorTransform)
+    private static bool IsNormalDoor(bool isDoubleDoor, Transform doorTransform)
     {
         MeshRenderer renderT;
         if (isDoubleDoor)

@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,7 +21,7 @@ public class MobileInspectionInfoDetail : MonoBehaviour
 
         if (infoT.DeviceId == null)
         {
-            NumText.text = "";
+            NumText.text = "--";
         }
         else
         {
@@ -28,7 +29,7 @@ public class MobileInspectionInfoDetail : MonoBehaviour
         }
         if (infoT .StaffName==null)
         {
-            PersonnelText.text = "";
+			PersonnelText.text = "--";
         }
         else
         {
@@ -36,7 +37,7 @@ public class MobileInspectionInfoDetail : MonoBehaviour
         }
         if (infoT.StaffCode == null)
         {
-            PersonnelNumText.text = "";
+			PersonnelNumText.text = "--";
         }
         else
         {
@@ -44,7 +45,7 @@ public class MobileInspectionInfoDetail : MonoBehaviour
         }
         if (infoT.DevName == null)
         {
-            DevNameText.text = "";
+			DevNameText.text = "--";
         }
         else
         {

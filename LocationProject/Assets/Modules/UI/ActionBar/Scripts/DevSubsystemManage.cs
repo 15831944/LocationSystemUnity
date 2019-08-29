@@ -2,6 +2,7 @@
 using RTEditor;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Modules.Context;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,28 +36,62 @@ public class DevSubsystemManage : MonoBehaviour {
     /// <summary>
     /// 漫游时，进入的建筑
     /// </summary>
-    private List<BuildingController> triggerBuildings = new List<BuildingController>();
+    public List<BuildingController> triggerBuildings = new List<BuildingController>();
 
     /// <summary>
     /// 鼠标聚焦的设备
     /// </summary>
-    private List<DevNode> FocusDevList = new List<DevNode>();
+    public List<DevNode> FocusDevList = new List<DevNode>();
 
     /// <summary>
     /// 是否漫游状态
     /// </summary>
-    public static bool IsRoamState;
+    public static bool IsRoamState { get
+        {
+            return GlobalState.IsRoamState;
+        }
+        set
+        {
+            GlobalState.IsRoamState = value;
+        }
+    }
     /// <summary>
     /// 进入漫游时，改变的Collider
     /// </summary>
-    private List<Collider> ColliderChangeList = new List<Collider>();
+    public List<Collider> ColliderChangeList = new List<Collider>();
     void Start()
     {
         Instance = this;
         InitToggleMethod();
+        ToggleAuthoritySet();
+        SceneEvents.FullViewStateChange += OnFullViewChange;
     }
     
+    private void OnFullViewChange(bool isFullView)
+    {
+        if(isFullView)
+        {
 
+        }
+        else
+        {
+            ToggleAuthoritySet();
+        }
+    }
+    /// <summary>
+    /// 不同权限下，按钮的显示
+    /// </summary>
+    private void ToggleAuthoritySet()
+    {
+        if (CommunicationObject.Instance.IsGuest())
+        {
+            DevEditorToggle.gameObject.SetActive(false);
+        }
+        else
+        {
+            DevEditorToggle.gameObject.SetActive(true);
+        }
+    }
     #region 功能管理
     /// <summary>
     /// 退出子系统
@@ -98,13 +133,17 @@ public class DevSubsystemManage : MonoBehaviour {
     /// <param name="isOn"></param>
     private void OnRoamToggleChange(bool isOn)
     {
+        if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
+        ParkInformationManage.Instance.ClosePerAndDevAlarmWindow();
         ParkInformationManage.Instance.ShowParkInfoUI(!isOn);
         IsRoamState = isOn;//设置漫游标志位
         CameraSceneManager.Instance.alignCamera.SetMouseInputState(!isOn);
         RoamManage roamManager = RoamManage.Instance;
         roamManager.ShowRoamWindow(isOn);
         FPSMode.Instance.NoFPSUI.SetActive(!isOn);
-        AlarmPushManage.Instance.ShowAlarmPushWindow(!isOn);
+        AlarmPushManage.Instance.CloseAlarmPushWindow(!isOn);
+       // AlarmPushManage.Instance.IsShow.isOn = !isOn ;
+        ChangeDefaultAlign(isOn);
         RoomFactory.Instance.FocusNode(FactoryDepManager.Instance,()=> 
         {           
             ChangeImage(isOn, RoamToggle);
@@ -133,14 +172,37 @@ public class DevSubsystemManage : MonoBehaviour {
         });            
     }
     /// <summary>
+    /// 漫游时，更改摄像机参数
+    /// </summary>
+    /// <param name="isOn"></param>
+    private void ChangeDefaultAlign(bool isOn)
+    {
+        if (RoomFactory.Instance && RoomFactory.Instance.FactoryType == FactoryTypeEnum.BaoXin)
+        {
+            if(isOn)
+            {
+                AlignTarget defaultAlign = CameraSceneManager.Instance.GetDefaultAlign();
+                defaultAlign.distance = 100;
+                CameraSceneManager.Instance.SetDefaultAlign(defaultAlign);
+            }
+            else
+            {
+                CameraSceneManager.Instance.SetDefaultAlign();
+            }          
+        }
+    }
+
+    /// <summary>
     /// 搜索
     /// </summary>
     /// <param name="isOn"></param>
     public  void OnQueryToggleChange(bool isOn)
     {
+        if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
         ChangeImage(isOn, QueryToggle);
         Debug.Log("OnQueryToggleChange:" + isOn);
-      
+        ParkInformationManage.Instance.ClosePerAndDevAlarmWindow();
+
         if (isOn)
         {
             DeviceDataPaging.Instance.ShowdevSearchWindow();
@@ -157,18 +219,32 @@ public class DevSubsystemManage : MonoBehaviour {
     /// <param name="isOn"></param>
    public  void OnAlarmToggleChange(bool isOn)
     {
+        if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
         ChangeImage(isOn, DevAlarmToggle);
         Debug.Log("OnAlarmToggleChange:" + isOn);
-      
-        if (isOn)
+        ParkInformationManage.Instance.ClosePerAndDevAlarmWindow();
+        if (RoomFactory.Instance.FactoryType == FactoryTypeEnum.BaoXin)
         {
-            DevAlarmListManage.Instance.ShowDevAlarmWindow();
-
+            BaoXinDeviceAlarm.Instance.ShowDevAlarm(isOn);
+            if (isOn)
+            {
+                BaoXinDeviceAlarm.Instance.GetDevAlarmList();
+            }
         }
         else
         {
-            DevAlarmListManage.Instance.CloseDevAlarmWindow();
+            if (isOn)
+            {
+
+                DevAlarmListManage.Instance.ShowDevAlarmWindow();
+
+            }
+            //else
+            //{
+            //    DevAlarmListManage.Instance.CloseDevAlarmWindow();//界面自己关闭，这个会导致重复调用
+            //}
         }
+         
     }
     public bool isDevEdit;
     /// <summary>
@@ -177,12 +253,15 @@ public class DevSubsystemManage : MonoBehaviour {
     /// <param name="isOn"></param>
     private void OnDevEditToggleChange(bool isOn)
     {
+        if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
+        ParkInformationManage.Instance.ClosePerAndDevAlarmWindow();
         ParkInformationManage.Instance.ShowParkInfoUI(!isOn);
         ChangeImage(isOn, DevEditorToggle);
         Debug.Log("OnDevEditToggleChange:" + isOn);
         if (isOn)
         {
-            AlarmPushManage.Instance.ShowAlarmPushWindow(false);
+             AlarmPushManage.Instance.CloseAlarmPushWindow(false);
+          //  AlarmPushManage.Instance.IsShow.isOn = false;
             isDevEdit = isOn;
             //if (ViewState.设备编辑 == CurrentState) return;
             //CurrentState = ViewState.设备编辑;
@@ -202,7 +281,8 @@ public class DevSubsystemManage : MonoBehaviour {
         }
         else
         {
-            AlarmPushManage.Instance.ShowAlarmPushWindow(true );
+            AlarmPushManage.Instance.CloseAlarmPushWindow(true );
+            //AlarmPushManage.Instance.IsShow.isOn = true ;
             isDevEdit = isOn;
             ShowUiOnDevEditEnd();
             ActionBarManage.Instance.Show();
@@ -424,15 +504,16 @@ public class DevSubsystemManage : MonoBehaviour {
     /// <summary>
     /// 漫游时，扩大门的Collider
     /// </summary>
-    private void EnlargeDoorCollider()
+    [ContextMenu("EnlargeDoorCollider")]
+    public void EnlargeDoorCollider()
     {
-        DoorAccessItem[] doorItems = FindObjectsOfType<DoorAccessItem>();
+        var doorItems = FindObjectsOfType<DoorAccessItem>();
         foreach(var item in doorItems)
         {
             item.EnlargeCollider();
         }
         ColliderChangeList.Clear();
-        MeshCollider[] collider = FindObjectsOfType<MeshCollider>();
+        var collider = FindObjectsOfType<MeshCollider>();
         foreach(var meshT in collider)
         {
             if (!meshT.enabled)
@@ -442,10 +523,34 @@ public class DevSubsystemManage : MonoBehaviour {
             }
         }
     }
+
+    /// <summary>
+    /// 漫游时，扩大门的Collider
+    /// </summary>
+    public void EnlargeBuildingDoorCollider(GameObject building)
+    {
+        var doorItems = building.FindComponentsInChildren<DoorAccessItem>();
+        foreach (var item in doorItems)
+        {
+            item.EnlargeCollider();
+        }
+        //ColliderChangeList.Clear();
+        var collider = building.FindComponentsInChildren<MeshCollider>();
+        foreach (var meshT in collider)
+        {
+            if (!meshT.enabled)
+            {
+                meshT.enabled = true;
+                ColliderChangeList.Add(meshT);
+            }
+        }
+    }
+
     /// <summary>
     /// 退出漫游，恢复门的Collider
     /// </summary>
-    private void RecoverDoorCollider()
+    [ContextMenu("RecoverDoorCollider")]
+    public void RecoverDoorCollider()
     {
         DoorAccessItem[] doorItems = FindObjectsOfType<DoorAccessItem>();
         foreach (var item in doorItems)
@@ -457,4 +562,5 @@ public class DevSubsystemManage : MonoBehaviour {
             meshT.enabled = false;
         }
     }
+
 }

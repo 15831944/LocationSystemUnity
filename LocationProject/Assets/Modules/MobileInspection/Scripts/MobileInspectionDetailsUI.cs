@@ -13,19 +13,16 @@ public class MobileInspectionDetailsUI : MonoBehaviour
     /// </summary>
     public GameObject window;
 
-    public InspectionTrack info;//工作票信息
-
+    public InspectionTrack info;//巡检轨迹信息
     public Text TxtNumber;//编号
                           //T1
+	public Text CreateTime;//路线创建时间
     public Text TxtEstimatedStartingTime;//预计开始时间
     public Text TxtEstimatedEndingTime;//预计结束时间
 
-    public Button DetailBut;
-    public string TitleText;
-
-
-    //  public Text StateText;
-    public Text CreateTime;
+    public Button DetailBut;//巡检点信息详情按钮
+    public string TitleText;//列表标题文本
+    // public Text StateText;
     // public Text InspectionNum;//巡检编号
 
     public PatrolPoint patrolPointItems;//巡检点列表
@@ -34,8 +31,7 @@ public class MobileInspectionDetailsUI : MonoBehaviour
     //public Text TxtDispatchingOfficer;//调度负责人
 
     public GameObject itemPrefab;//单项预设
-    public VerticalLayoutGroup Grid;//列表
-
+    public VerticalLayoutGroup Grid;//巡检点列表
 
     // Use this for initialization
     void Start()
@@ -44,7 +40,10 @@ public class MobileInspectionDetailsUI : MonoBehaviour
         patrolPointList = new List<PatrolPoint>();
 
         //closeBtn.onClick.AddListener(CloseBtn_OnClick);
-       
+		DetailBut.onClick.AddListener(() =>
+		{
+			MobileInspectionInfoManage.Instance.GetInspectionPointInfoList(patrolPointList);
+		});
     }
 
     // Update is called once per frame
@@ -57,13 +56,10 @@ public class MobileInspectionDetailsUI : MonoBehaviour
     {
         patrolPointList.Clear();
         info = infoT;
-        patrolPointList.AddRange(info.Route);
-        UpdateData();
-        CreateMeasuresItems();
-        DetailBut.onClick.AddListener(() =>
-        {
-            MobileInspectionInfoManage.Instance.CreatMobileInspectionInfo(patrolPointList);
-        });
+		patrolPointList.AddRange(info.Route);
+		patrolPointList.Sort ((a, b) => a.DeviceId.CompareTo (b.DeviceId));//巡检点列表根据巡检编号DeviceCode排序
+        UpdateData();//刷新巡检轨迹详情数据
+        CreateMeasuresItems();      
         SetWindowActive(true);
     }
 
@@ -72,16 +68,15 @@ public class MobileInspectionDetailsUI : MonoBehaviour
     /// </summary>
     public void UpdateData()
     {
-        TitleText = info.Code + "--" + info.Name;
-        TxtNumber.text = info.Name + "--" + info.Code + "(" + info.State + ")";
-        CreateTime.text = info.dtCreateTime.ToString("yyyy年MM月dd日 HH:mm");
-        TxtEstimatedStartingTime.text = info.dtStartTime.ToString("yyyy年MM月dd日 HH:mm");
-        TxtEstimatedEndingTime.text = info.dtEndTime.ToString("yyyy年MM月dd日 HH:mm");
-
+        TitleText = info.Code + "--" + info.Name; //列表标题文本
+        TxtNumber.text = info.Name + "--" + info.Code + "(" + info.State + ")"; //编号文本
+        CreateTime.text = info.dtCreateTime.ToString("yyyy年MM月dd日 HH:mm"); //路线创建时间
+        TxtEstimatedStartingTime.text = info.dtStartTime.ToString("yyyy年MM月dd日 HH:mm"); //预计开始时间
+        TxtEstimatedEndingTime.text = info.dtEndTime.ToString("yyyy年MM月dd日 HH:mm"); //预计结束时间
     }
 
     /// <summary>
-    /// 创建措施列表
+	/// 创建措施(巡检点)列表
     /// </summary>
     public void CreateMeasuresItems()
     {
@@ -100,7 +95,6 @@ public class MobileInspectionDetailsUI : MonoBehaviour
 
                 if (patrolPointList[i].StaffCode != null)
                 {
-
                     ts[1].text = patrolPointList[i].StaffCode.ToString();
                 }
                 else
@@ -116,7 +110,7 @@ public class MobileInspectionDetailsUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 创建措施项
+	/// 创建措施(巡检点)项
     /// </summary>
     public GameObject CreateMeasuresItem()
     {
@@ -131,7 +125,7 @@ public class MobileInspectionDetailsUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 清空措施列表
+	/// 清空措施(巡检点)列表
     /// </summary>
     public void ClearMeasuresItems()
     {

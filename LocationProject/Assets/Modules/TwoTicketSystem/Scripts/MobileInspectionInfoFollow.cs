@@ -20,7 +20,7 @@ public class MobileInspectionInfoFollow : MonoBehaviour
     public void DateUpdate(InspectionTrack rote)
     {
         PatrolPointList.AddRange(rote.Route);
-        CreatRouteFollowUI();
+      	//CreatRouteFollowUI();
 
     }
 

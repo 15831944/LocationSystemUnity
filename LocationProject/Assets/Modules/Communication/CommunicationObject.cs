@@ -6,76 +6,230 @@ using System.ServiceModel;
 using UnityEngine;
 using System.Linq;
 using System.Threading;
+using System.ServiceModel.Channels;
+using Unity.Modules.Context;
 
-public class CommunicationObject : MonoBehaviour
+public class CommunicationObject : MonoBehaviour, IDataClient
 {
-    public static CommunicationObject Instance;
+    private static CommunicationObject _instance;
 
-    private LocationServiceClient client;
-    /// <summary>
-    /// 是否开启异步通信
-    /// </summary>
-    public bool isAsync;
+    public static CommunicationObject Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = GameObject.FindObjectOfType<CommunicationObject>();
+            }
+            return _instance;
+        }
+        set
+        {
+            _instance = value;
+        }
+    }
+
+    public static string currentIp = "";
+
     /// <summary>
     /// 服务器IP地址
     /// </summary>
-    public string ip = "192.168.1.1";//localhost
-
-    public static string currentIp = "";
+    public string ip = "127.0.0.1";//localhost
     /// <summary>
     /// 服务器端口号
     /// </summary>
     public string port = "8733";
-    /// <summary>
-    /// 连接服务器的线程
-    /// </summary>
-    private Thread connectionServerThread;
-    /// <summary>
-    /// 是否连接服务器成功
-    /// </summary>
-    public bool isConnectSucceed;
 
+    public string userName = "Admin";
 
-    /// <summary>
-    /// 位置信息刷新间隔
-    /// </summary>
-    public float TagPosRefreshInterval = 0.35f;
+    public string password = "Admin@123456";
 
-    /// <summary>
-    /// 人员树节点刷新间隔
-    /// </summary>
-    public int PersonTreeRefreshInterval = 5;
+    public string session = "";
 
+    public string authority = "";//Guest Guest@123 => guest；Admin Admin@123456 => admin
     /// <summary>
-    /// 区域统计信息刷新间隔
+    /// 是否连接服务端
     /// </summary>
-    public int AreaStatisticsRefreshInterval = 5;
+    public static bool IsConnect = true;
+    /// <summary>
+    /// 访客模式
+    /// </summary>
+    /// <returns></returns>
+    public bool IsGuest()
+    {
+        return authority == "guest";
+    }
 
     /// <summary>
-    /// 附加摄像头刷新间隔
+    /// 访客模式
     /// </summary>
-    public int NearCameraRefreshInterval = 8;
+    /// <returns></returns>
+    public bool IsAdmin()
+    {
+        return authority == "admin";
+    }
+
+    public RefreshSetting RefreshSetting = new RefreshSetting();
+
+    public CommunicationMode Mode = CommunicationMode.Thread;
+
+
+    private WebApiClient clientWebApi;
+    private WCFClientSync clientSync;
+    private WCFClientAsync clientAsync;
+    private WCFClientThread clientThread;
+
+    private LocationServiceClient serviceClient;
+
+    public LocationServiceClient GetServiceClient()
+    {
+        if (clientSync == null)
+        {
+            clientSync = new WCFClientSync(ip, port);
+        }
+        var client = clientSync.GetServiceClient();
+
+#if UNITY_EDITOR
+        //if (loginInfo == null)
+        //{
+        //    Login(ip, port, userName, password, null);
+        //}
+#endif
+
+        return client;
+    }
+
+    public ICommunicationClient GetClient()
+    {
+        ICommunicationClient client = null;
+        //LogInfo("GetClientEx", "Mode=" + Mode);
+        if (Mode == CommunicationMode.Sync)//同步
+        {
+            if (clientSync == null)
+            {
+                clientSync = new WCFClientSync(ip, port);
+            }
+            client = clientSync;
+        }
+        else if (Mode == CommunicationMode.Thread)//多线程异步
+        {
+            if (clientThread == null)
+            {
+                clientThread = new WCFClientThread(ip, port);
+            }
+            client = clientThread;
+        }
+        else if (Mode == CommunicationMode.Async)
+        {
+            if (clientAsync == null)
+            {
+                clientAsync = new WCFClientAsync(ip, port);
+            }
+            client = clientAsync;
+        }
+        else if (Mode == CommunicationMode.WebApi)
+        {
+            if (clientWebApi == null)
+            {
+                clientWebApi = gameObject.AddComponent<WebApiClient>();
+                clientWebApi.host = ip;
+                clientWebApi.port = port;
+            }
+            client = clientWebApi;
+        }
+        else
+        {
+            Log.Error("GetClient Error!!! Mode==" + Mode);
+        }
+        return client;
+    }
+
+    public WebApiClient GetWebApiClient()
+    {
+        if (clientWebApi == null)
+        {
+            clientWebApi = gameObject.AddComponent<WebApiClient>();
+            clientWebApi.host = ip;
+            clientWebApi.port = port;
+        }
+        return clientWebApi;
+    }
+
+    public void HeartBeat(string info, Action<string> callback, Action<string> errorCallback)
+    {
+        WebApiClient client = GetWebApiClient();
+        client.HeartBeat(info, callback, errorCallback);
+    }
+
+ 
 
     /// <summary>
-    /// 截图保存刷新间隔
+    /// 设置单例
     /// </summary>
-    public int ScreenShotRefreshInterval = 3;
-
-    /// <summary>
-    /// 部门树节点刷新间隔
-    /// </summary>
-    public int DepartmentTreeRefreshInterval = 60;
-
+    private void SetInstance()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            if (_instance != this)
+            {
+                Debug.LogError("CommunicateObject is exist...");
+                gameObject.RemoveComponent<CommunicationObject>();
+            }
+        }
+    }
     private void Awake()
     {
-        Instance = this;
+        AppContext.DataClient = this;
 
-        SetRefreshSetting();
-
+        //Instance = this;
+        SetInstance();
         if (currentIp != "")
         {
             ip = currentIp;
         }
+        if (AssetBundleHelper.HttpUrl == "")
+        {
+            AssetBundleHelper.HttpUrl = "http://" + ip + ":8000//StreamingAssets";
+            var path = AssetBundleHelper.GetAssetPath();
+            //Debug.LogError("path:" + path);
+        }
+        serviceClient = GetServiceClient();
+
+        //if (SystemSettingHelper.communicationSetting != null)
+        //{
+        //    if(SystemSettingHelper.communicationSetting.Mode!= CommunicationMode.Editor)
+        //    {
+        //        Mode = SystemSettingHelper.communicationSetting.Mode;
+        //    }
+        //}
+
+
+
+#if !UNITY_EDITOR
+        if (SystemSettingHelper.communicationSetting != null)
+        {
+            if (SystemSettingHelper.communicationSetting.Mode == CommunicationMode.Editor)
+            {
+                Mode = CommunicationMode.Thread;
+            }
+            else
+            {
+                Mode = SystemSettingHelper.communicationSetting.Mode;
+            }
+
+        }
+#else
+        if (Mode == CommunicationMode.Editor)
+        {
+            Mode = CommunicationMode.Thread;
+        }
+#endif
+
     }
 
 
@@ -83,212 +237,36 @@ public class CommunicationObject : MonoBehaviour
     [ContextMenu("Start")]
     public void Start()
     {
-
-        //Hello();
-        //StartConnectionServerThread();
-
         //#if !UNITY_EDITOR
-        //        ip = SystemSettingHelper.communicationSetting.Ip1;
-        //        port = SystemSettingHelper.communicationSetting.Port1;
+        //isAsync = SystemSettingHelper.systemSetting.IsAsync;
         //#endif
-        //GetTopoTree();
+        SetRefreshSetting();
     }
 
     void OnDisable()
     {
-        EndConnectionServerThread();
-        if (connectionServerClient != null)
-        {
-            connectionServerClient.Close();
-            connectionServerClient.Abort();
-        }
-        if (client != null)
-        {
-            client.Close();
-            client.Abort();
-        }
+        Stop();
     }
     private void OnDestroy()
     {
-        EndConnectionServerThread();
-        if (connectionServerClient != null)
-        {
-            connectionServerClient.Close();
-            connectionServerClient.Abort();
-        }
-        if (client != null)
-        {
-            client.Close();
-            client.Abort();
-        }
+        Stop();
     }
 
-    #region 心跳包
-
-    private int breakingTimes;//断线次数
-    private LocationServiceClient connectionServerClient;//连接服务器的客户端
-
-    /// <summary>
-    /// 连接服务器心跳包
-    /// </summary>
-    private void StartConnectionServerThread()
+    private void Stop()
     {
-        EndConnectionServerThread();
-        connectionServerThread = new Thread(ConnectionServerTesting);
-        connectionServerThread.Start();
-    }
-
-    /// <summary>
-    /// 关闭心跳包
-    /// </summary>
-    private void EndConnectionServerThread()
-    {
-        breakingTimes = 0;
-        if (connectionServerThread != null)
+        if (serviceClient != null)
         {
-            connectionServerThread.Abort();
-            connectionServerThread = null;
+            serviceClient.Close();
         }
     }
-
-    /// <summary>
-    /// 连接服务器检测
-    /// </summary>
-    private void ConnectionServerTesting()
-    {
-        //while (true)
-        //{
-        //    client = GetClient();
-        //    client.HelloCompleted -= ConnectionServerCallBack;
-        //    client.HelloCompleted += ConnectionServerCallBack;
-        //    if(client==null)return null; lock (client)//1
-        //    {
-        //        client.HelloAsync("1");//心跳包
-        //    }
-        //    Thread.Sleep(1000);
-        //}
-        while (true)
-        {
-            Debug.Log("ConnectionServerTesting!");
-            //if (connectionServerClient == null)
-            //{
-            if (connectionServerClient != null)
-            {
-                //        if (connectionServerClient.State == CommunicationState.Opened)
-                //        {
-                //            connectionServerClient.Close();
-                connectionServerClient.Abort();
-                //        }
-            }
-
-            connectionServerClient = CreateServiceClient();
-            //}
-            connectionServerClient.HelloCompleted -= ConnectionServerCallBack;
-            connectionServerClient.HelloCompleted += ConnectionServerCallBack;
-            connectionServerClient.HelloAsync("1");//心跳包
-            Thread.Sleep(1000);
-        }
-    }
-
-    private void ConnectionServerCallBack(object sender, HelloCompletedEventArgs e)
-    {
-        if (e.Error == null)
-        {
-            breakingTimes = 0;
-            string result = e.Result;
-            Debug.LogFormat("{0}", result);
-            isConnectSucceed = true;
-        }
-        else
-        {
-            //lock (connectionServerClient)
-            //{
-            //    if (connectionServerClient != null)
-            //    {
-            //        connectionServerClient.Close();
-            //    }
-            //    connectionServerClient = CreateServiceClient();
-            //}
-
-            breakingTimes += 1;
-            Debug.LogFormat("连接服务失败！");
-            isConnectSucceed = false;
-        }
-    }
-    #endregion
-
-    public LocationServiceClient CreateServiceClient()
-    {
-        string hostName = ip;
-        string portNum = port;
-        System.ServiceModel.Channels.Binding wsBinding = new BasicHttpBinding();
-        string url =
-            string.Format("http://{0}:{1}/LocationService/",
-                hostName, portNum);
-        Log.Info("Create Service Client:" + url);
-
-        LocationServiceClient serviceClient = null;
-        try
-        {
-            EndpointAddress endpointAddress = new EndpointAddress(url);
-            serviceClient = new LocationServiceClient(wsBinding, endpointAddress);
-        }
-        catch
-        {
-            Debug.LogError("CreateServiceClient报错了！");
-            return null;
-        }
-
-        return serviceClient;
-    }
-
-    public LocationServiceClient GetClient()
-    {
-        if (SystemSettingHelper.systemSetting.IsCloseCommunication)
-        {
-            Debug.LogError("systemSetting.IsCloseCommunication:" + SystemSettingHelper.systemSetting.IsCloseCommunication);
-            return null;
-        }
-
-        return GetClientOP();
-    }
-
-    private LocationServiceClient GetClientOP()
-    {
-        if (client == null)
-        {
-            if (client != null)
-            {
-                //if (client.State == CommunicationState.Opened)
-                //{
-                //    client.Close();
-                //}
-                client.Close();
-            }
-            client = CreateServiceClient();
-        }
-        return client;
-    }
-
-    //private LocationServiceClient client;
-
-    public void Hello(string msg)
-    {
-        Debug.Log("->Hello");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
-        {
-            string hello = client.Hello(msg);
-            Debug.Log("Hello:" + hello);
-        }
-    }
-
     #region 登录相关
     /// <summary>
     /// 登录回调
     /// </summary>
-    public Action<object, LoginCompletedEventArgs> LoginCompleted;
+    private Action<object, LoginCompletedEventArgs> LoginCompleted;
+
+    private LoginInfo loginInfo = null;
+
 
     /// <summary>
     /// 登录
@@ -297,56 +275,74 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="portT"></param>
     /// <param name="loginInfo"></param>
     /// <param name="LoginCompletedT"></param>
-    public void Login(string ipT, string portT, LoginInfo loginInfo, Action<object, LoginCompletedEventArgs> LoginCompletedT)
+
+    public void Login(LoginInfo info, Action<LoginInfo> callback, Action<string> errorCallback)
     {
-        EndConnectionServerThread();
-        ip = ipT;
-        currentIp = ip;//有两个CommunicationObject
-        port = portT;
-        LoginCompleted = null;
-        LoginCompleted = LoginCompletedT;
-        //Debug.Log("->GetTags");
-        if (client != null)
-        {
-            client.Abort();
-        }
-        client = CreateServiceClient();
-        if (client == null)
-        {
-            DianChangLogin.Instance.LoginFail();
-            return;
-        }
-        else
-        {
-            DianChangLogin.Instance.LoginProcess();
-        }
-        if (client == null) return;
-        lock (client)//1
-        {
-            client.LoginCompleted -= LoginCompleted_CallBack;
-            client.LoginCompleted += LoginCompleted_CallBack;//返回数据回调
-            client.LoginAsync(loginInfo);//WCF的异步调用
-        }
+        WebApiClient client = GetWebApiClient();
+        //client.Login(info, callback, errorCallback);
+
+        string url = client.GetBaseUrl() + "users/LoginPost";
+        Debug.Log(url);
+        StartCoroutine(client.PostObject(url, info, callback, errorCallback));
     }
 
-    private void LoginCompleted_CallBack(object sender, LoginCompletedEventArgs e)
+    public void Login(string ipT, string portT, string user, string pass, Action<LoginInfo> loginCompletedT)
     {
-        if (e.Error == null)
+        Action<LoginInfo> LoginCompletedT = loginCompletedT;
+        loginInfo = new LoginInfo();
+        loginInfo.UserName = user;
+        loginInfo.Password = pass;
+
+        AssetBundleHelper.HttpUrl = "http://" + ipT + ":8000//StreamingAssets";
+
+        var path = AssetBundleHelper.GetAssetPath();
+        Debug.LogError("path:" + path);
+
+        currentIp = ipT;//有两个CommunicationObject
+        ip = ipT;
+        port = portT;
+        userName = user;
+        password = pass;
+
+        serviceClient = clientSync.Login(ipT, portT, user, pass, (sender, e) =>
+         {
+             if (e.Error == null)
+             {
+                 loginInfo = e.Result;
+                 if (loginInfo != null)
+                 {
+                     session = loginInfo.Session;
+                     authority = loginInfo.Authority;
+                     Debug.LogError("Authority:" + authority);
+                 }
+             }
+             else
+             {
+                 Debug.LogError("Login Error:" + e.Error);
+             }
+
+             if (LoginCompletedT != null)
+             {
+                 LoginCompletedT(loginInfo);
+             }
+         });
+
+        if (DianChangLogin.Instance != null)
         {
-            isConnectSucceed = true;
-            //StartConnectionServerThread();//发送心跳包
+            if (serviceClient == null)
+            {
+
+                DianChangLogin.Instance.LoginFail();
+            }
+            else
+            {
+                DianChangLogin.Instance.LoginProcess();
+            }
         }
         else
         {
-            isConnectSucceed = false;
+            //Debug.LogError("DianChangLogin.Instance == null");
         }
-
-        if (LoginCompleted != null)
-        {
-            LoginCompleted(sender, e);
-        }
-
-        DebugLog("LoginCompleted_CallBack isAsync:" + isAsync);
     }
 
     /// <summary>
@@ -355,145 +351,24 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="loginInfo"></param>
     public void LoginOut(LoginInfo loginInfo)
     {
-        EndConnectionServerThread();
-        //Debug.Log("->GetTags");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
-        {
-            client.LogoutAsync(loginInfo);
-        }
+        clientSync.LoginOut(loginInfo);
     }
+    public void LoginOut(LoginInfo info, Action<LoginInfo> callback, Action<string> errorCallback)
+    {
+        WebApiClient client = GetWebApiClient();
+        client.LoginOut(info,callback,errorCallback);
+    }
+
     /// <summary>
     /// 获取版本号
     /// </summary>
     /// <returns></returns>
     public VersionInfo GetVersionInfo()
     {
-        //client = GetClient();
-        client = GetClientOP();
-        
-        if (client == null) return null;
-        lock (client)//1
-        {
-            VersionInfo info = client.GetVersionInfo();
-            return info;
-        }
+        return clientSync.GetVersionInfo();
     }
     #endregion
-    PhysicalTopology topoRoot = null;
-    private PhysicalTopology GetTopoTree()
-    {
-        Debug.Log("CommunicationObject->GetTopoTree...");
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
-        {
-            int view = 0; //0:基本数据; 1:设备信息; 2:人员信息; 3:设备信息 + 人员信息
-            if (topoRoot == null)//第二次进来就不从数据库获取了
-            { topoRoot = client.GetPhysicalTopologyTree(view); }
-            else
-            {
-                Log.Info("GetTopoTree success 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            }
-            if (topoRoot == null)
-            {
-                LogError("GetTopoTree", "topoRoot == null");
-            }
-            else
-            {
-                Log.Info("GetTopoTree success 1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            }
-            //string txt = ShowTopo(topoRoot, 0);
-            //Debug.Log(txt);
-            return topoRoot;
-        }
-    }
 
-    //用回调函数的方式异步获取拓扑树
-    public void GetTopoTreeAsync(Action<PhysicalTopology> callback)
-    {
-        if (!isAsync)
-        {
-            ThreadManager.Run(() =>
-            {
-                return GetTopoTree();
-            }, callback, "GetTopoTreeAsync");
-        }
-        else
-        {
-            client = GetClient();
-            if (client == null) return;
-            lock (client)//1
-            {
-                int view = 0; //0:基本数据; 1:设备信息; 2:人员信息; 3:设备信息 + 人员信息
-                if (topoRoot == null)//第二次进来就不从数据库获取了
-                {
-                    client.BeginGetPhysicalTopologyTree(view, (ar) =>
-                     {
-                         topoRoot = null;
-                         try
-                         {
-                             LocationServiceClient client = ar.AsyncState as LocationServiceClient;
-                             topoRoot = client.EndGetPhysicalTopologyTree(ar);
-                         }
-                         catch (Exception ex)
-                         {
-                             LogError("CommunicationObject", ex.ToString());
-                         }
-
-                         Loom.DispatchToMainThread(() =>
-                         {
-                             if (callback != null)
-                             {
-                                 callback(topoRoot);
-                             }
-                         });
-                         if (topoRoot == null)
-                         {
-                             LogError("GetTopoTree", "topoRoot == null");
-                         }
-                         else
-                         {
-                             Log.Info("GetTopoTree success 1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                         }
-                     }, client);
-                }
-                else
-                {
-                    Log.Info("GetTopoTree success 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                }
-            }
-        }
-    }
-
-    [ContextMenu("TTTTT")]
-    public void TTTTT()
-    {
-        int view = 0; //0:基本数据; 1:设备信息; 2:人员信息; 3:设备信息 + 人员信息
-        Debug.Log("TTTTT0");
-        PhysicalTopology topoRoot = client.GetPhysicalTopologyTree(view);
-        Debug.Log("TTTTT1");
-    }
-
-    private string ShowTopo(PhysicalTopology dep, int layer)
-    {
-        string whitespace = GetWhiteSpace(layer);
-        if (dep == null) return "";
-        string txt = whitespace + layer + ":" + dep.Name + "\n";
-        if (dep.Children != null)
-        {
-            //txt+=whitespace + "length:" + dep.Children.Length+"\n";
-            foreach (PhysicalTopology child in dep.Children)
-            {
-                txt += ShowTopo(child, layer + 1);
-            }
-        }
-        else
-        {
-            //txt += whitespace + "children==null\n";
-        }
-        return txt;
-    }
 
     // Update is called once per frame
     void Update()
@@ -512,372 +387,114 @@ public class CommunicationObject : MonoBehaviour
         }
     }
 
-    //public void GetUser()
-    //{
-    //    Debug.Log("->GetUser");
-    //    client = GetClient();
-    //    if(client==null)return null; lock (client)//1
-    //    {
-    //        User user = client.GetUser();
-    //        Debug.Log("Id:" + user.Id);
-    //        Debug.Log("Name:" + user.Name);
-    //    }
-    //}
+    public bool showLog = false;
 
-    //public void GetUsers()
-    //{
-    //    Debug.Log("->GetUsers");
-    //    client = GetClient();
-    //    if(client==null)return null; lock (client)//1
-    //    {
-
-    //        User[] list = client.GetUsers();
-    //        for (int i = 0; i < list.Length; i++)
-    //        {
-    //            Debug.Log("i:" + i);
-    //            Debug.Log("Id:" + list[i].Id);
-    //            Debug.Log("Name:" + list[i].Name);
-    //        }
-    //    }
-    //}
-
-    /// <summary>
-    /// 获取定位卡相信息
-    /// </summary>
-    /// <returns></returns>
-    private Tag[] GetTags()
+    public void LogInfo(object tag, object info)
     {
-        //Debug.Log("->GetTags");
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
-        {
-            Tag[] list = client.GetTags();
-            //for (int i = 0; i < list.Length; i++)
-            //{
-            //    Debug.Log("i:" + i);
-            //    Debug.Log("Id:" + list[i].Id);
-            //    Debug.Log("Name:" + list[i].Name);
-            //}
-            return list;
-        }
+        if (showLog)
+            Log.Info(tag, info);
     }
 
-    public Department GetDepartmentTree()
+    //public string RootName = "四会热电厂";
+
+    public int RootIndex = 0;//-1:全部;0:四会热电厂;1:初灵大楼;2:上海宝信
+
+    //用回调函数的方式异步获取拓扑树
+    public void GetTopoTree(Action<PhysicalTopology> callback)
     {
-        //if (isConnectSucceed == false) return null;
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        LogInfo("GetTopoTree", "Mode=" + Mode);
+        var client = GetClient();
+        client.GetTopoTree((root) =>
         {
-            Debug.Log("CommunicationObject->GetDepTree...");
-            Department dep = client.GetDepartmentTree();
-            //string txt = ShowDep(dep, 0);
-            //Debug.Log(txt);
-            return dep;
-        }
-
-    }
-
-    public AreaNode GetPersonTree()
-    {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
-        {
-            Debug.Log("CommunicationObject->GetPersonTree...");
-            int view = 2;//0:基本数据;1:基本设备信息;2:基本人员信息;3:基本设备信息+基本人员信息;4:只显示设备的节点;5:只显示人员的节点;6:只显示人员或设备的节点
-            AreaNode root = null;
-            root = client.GetPhysicalTopologyTreeNode(view);
-            return root;
-        }
-    }
-
-    List<string> funcList = new List<string>();
-    List<object> callbackList = new List<object>();
-    List<object> funcArg = new List<object>();
-    private bool isBusy = false;
-
-    public void GetData(string name, object callback, object arg = null)
-    {
-        Debug.LogError("GetData:name=" + name);
-        if (isBusy)//基本上一直是busy
-        {
-            Debug.LogError("2");
-            Debug.LogError("Add:name=" + name);
-            //lock (funcList)
+            PhysicalTopology parkNode = root;
+            if (root != null)
             {
-                funcList.Add(name);
-                callbackList.Add(callback);
-                funcArg.Add(arg);
+                if (RootIndex >= 0 && root.Children != null && root.Children.Length > RootIndex)
+                { //统一在通讯处过滤，树控件那里就不用管了，todo:后续改成传个参数个服务端，在服务端过滤
+                    parkNode = root.Children[RootIndex];
+                }
             }
-            DoNextGetData();
-        }
-        else
-        {
-            Debug.LogError("1");
-            isBusy = true;
-            DoGetData(name, callback, arg);
-        }
-
-
-        //todo:似乎不同的消息确实会相互影响，可能需要一个队列，在客户端这边控制消息异步顺序发送执行。
-    }
-
-    private void DoGetData(string name, object callback, object arg = null)
-    {
-        Debug.LogError("DoGetData:name=" + name);
-        if (name == "GetPersonTreeAsync")
-        {
-            DoGetPersonTreeAsync((data) =>
+            else
             {
-                ((Action<AreaNode>)callback)(data);
-                DoNextGetData();
-            });
-        }
-        if (name == "GetDepartmentTreeAsync")
-        {
-            DoGetDepartmentTreeAsync((data) =>
-            {
-                ((Action<Department>)callback)(data);
-                DoNextGetData();
-            });
-        }
-        if (name == "DoGetTagsAsync")
-        {
-            DoGetTagsAsync((data) =>
-            {
-                ((Action<Tag[]>)callback)(data);
-                DoNextGetData();
-            });
-        }
-        if (name == "DoGetAreaStatisticsAsync")
-        {
-            int id = (int)arg;
-            DoGetAreaStatisticsAsync(id, (data) =>
-             {
-                 ((Action<AreaStatistics>)callback)(data);
-                 DoNextGetData();
-             });
-        }
-    }
-
-    private void DoNextGetData()
-    {
-        //lock (funcList)
-        {
-            if (funcList.Count > 0)
-            {
-                string name2 = funcList[0]; funcList.RemoveAt(0);
-                object callback2 = callbackList[0]; callbackList.RemoveAt(0);
-                object arg2 = funcArg[0]; funcArg.RemoveAt(0);
-                //Debug.LogError("DoNextGetData:name=" + name);
-                DoGetData(name2, callback2, arg2);
+                Log.Error("CommunicationObject.GetTopoTree.root is null...");
             }
-        }
-    }
 
-    public void GetTagsAsync(Action<Tag[]> callback)
-    {
-        //GetData("GetTagsAsync", callback);
-        //DoGetTagsAsync(callback);
-
-        //tagsPos.Clear();
-        if (!isAsync)
-        {
-            ThreadManager.Run(GetTags, callback, "GetTags");
-        }
-        else
-        {
-            DoGetTagsAsync(callback);
-        }
-    }
-
-    public void DoGetTagsAsync(Action<Tag[]> callback)
-    {
-        Log.Info("GetTagsAsync Start >>>>>>>>>>");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
-        {
-            client.BeginGetTags((ar) =>
+            if (parkNode != null)
             {
-                Tag[] result = null;
-                try
-                {
-                    //Debug.LogError("GetTagsAsync ar.IsCompleted:" + ar.IsCompleted);
-                    LocationServiceClient client = ar.AsyncState as LocationServiceClient;
-                    result = client.EndGetTags(ar);
-                }
-                catch (Exception ex)
-                {
-                    LogError("CommunicationObject", ex.ToString());
-                    Debug.LogError("GetTagsAsync报错！：" + ar.IsCompleted);
-                }
-
-                Loom.DispatchToMainThread(() =>
-                {
-                    if (callback != null)
-                    {
-                        callback(result);
-                    }
-                });
-                if (result == null) LogError("GetTagsAsync", "result == null");
-                Log.Info("GetTagsAsync End <<<<<<<<");
-            }, client);
-        }
-    }
-
-    public void GetDepartmentTreeAsync(Action<Department> callback)
-    {
-        //GetData("GetDepartmentTreeAsync", callback);
-        //DoGetDepartmentTreeAsync(callback);
-        if (!isAsync)
-        {
-            //var topoRoot = GetDepartmentTree();
-            ////AfterGetDepTree(topoRoot, callback);
-            //callback(topoRoot);
-
-            ThreadManager.Run(GetDepartmentTree, callback, "GetDepartmentTree");
-        }
-        else
-        {
-            DoGetDepartmentTreeAsync(callback);
-        }
-    }
-
-    public void DoGetDepartmentTreeAsync(Action<Department> callback)
-    {
-        Log.Info("GetDepartmentTreeAsync Start >>>>>>>>>>");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
-        {
-            client.BeginGetDepartmentTree((ar) =>
-            {
-                Department result = null;
-                try
-                {
-                    LocationServiceClient client = ar.AsyncState as LocationServiceClient;
-                    result = client.EndGetDepartmentTree(ar);
-                }
-                catch (Exception ex)
-                {
-                    LogError("CommunicationObject", ex.ToString());
-                }
-                Loom.DispatchToMainThread(() =>
-                {
-                    if (callback != null)
-                    {
-                        callback(result);
-                    }
-                });
-                if (result == null) LogError("GetDepartmentTreeAsync", "result == null");
-                Log.Info("GetDepartmentTreeAsync End <<<<<<<<");
-            }, client);
-        }
-    }
-
-
-    public void GetPersonTreeAsync(Action<AreaNode> callback)
-    {
-        //GetData("GetPersonTreeAsync", callback);
-        DoGetPersonTreeAsync(callback);
-    }
-
-    public void DoGetPersonTreeAsync(Action<AreaNode> callback)
-    {
-        Log.Info("GetPersonTreeAsync Start >>>>>>>>>>");
-        if (!isAsync)
-        {
-            ThreadManager.Run(GetPersonTree, callback, "GetPersonTreeAsync");
-        }
-        else
-        {
-            client = GetClient();
-            if (client == null) return;
-            lock (client)//1
-            {
-                //Debug.LogError("BeginGetPersonTreeAsync........");
-                int view = 2; //0:基本数据; 1:设备信息; 2:人员信息; 3:设备信息 + 人员信息
-                client.BeginGetPhysicalTopologyTreeNode(view, (ar) =>
-                {
-                    AreaNode result = null;
-                    try
-                    {
-                        LocationServiceClient client = ar.AsyncState as LocationServiceClient;
-                        //Debug.LogError("EndGetPersonTreeAsync........");
-                        result = client.EndGetPhysicalTopologyTreeNode(ar);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogError("CommunicationObject", ex.ToString());
-                    }
-                    Loom.DispatchToMainThread(() =>
-                    {
-                        if (callback != null)
-                        {
-                            callback(result);
-                        }
-                    });
-                    if (result == null) LogError("GetPersonTreeAsync", "result == null");
-                    Log.Info("GetPersonTreeAsync End <<<<<<<<");
-                }, client);
+                SetMoniterRangePosition(parkNode);
             }
-        }
+
+            if (callback != null)
+            {
+                callback(parkNode);
+            }
+        });
     }
 
-    public void GetAreaStatisticsAsync(int Id, Action<AreaStatistics> callback)
+    public void SetMoniterRangePosition(PhysicalTopology parent)
     {
-        //GetData("GetAreaStatisticsAsync",callback, Id);
-        //DoGetAreaStatisticsAsync(Id, callback);
+        if (parent == null) return;
 
-        //Log.Error("FVIntroduce.TryGetAreaInfo");
-        if (!isAsync)
-        {
-            ThreadManager.Run(() =>
+        if (parent.Children != null)
+            foreach (PhysicalTopology child in parent.Children)
             {
-                return GetAreaStatistics(Id);
-            }, callback, "GetAreaStatisticsAsync");
-        }
-        else
-        {
-            DoGetAreaStatisticsAsync(Id, callback);
-        }
-    }
-
-    public void DoGetAreaStatisticsAsync(int Id, Action<AreaStatistics> callback)
-    {
-        Log.Info("GetAreaStatisticsAsync Start >>>>>>>>>>");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
-        {
-            //Debug.LogError("BeginGetAreaStatistics........");
-            client.BeginGetAreaStatistics(Id, (ar) =>
-            {
-                AreaStatistics result = null;
-                try
+                if (parent.Type == AreaTypes.楼层)
                 {
-                    LocationServiceClient client = ar.AsyncState as LocationServiceClient;
-                    //Debug.LogError("EndGetAreaStatistics........");
-                    result = client.EndGetAreaStatistics(ar);
-                }
-                catch (Exception ex)
-                {
-                    LogError("CommunicationObject", ex.ToString());
-                }
-                Loom.DispatchToMainThread(() =>
-                {
-                    if (callback != null)
+                    if (child.Type == AreaTypes.范围) //宝信项目偏移修改
                     {
-                        callback(result);
+                        child.Transfrom.X -= parent.InitBound.MinX;
+                        child.Transfrom.Z -= parent.InitBound.MinY;
                     }
-                });
-                if (result == null) LogError("GetAreaStatisticsAsync", "result == null");
-                Log.Info("GetAreaStatisticsAsync End <<<<<<<<<<");
-            }, client);
+                }
+                else
+                {
+                    SetMoniterRangePosition(child);
+                }
+            }
+
+    }
+
+    public void GetTags(Action<Tag[]> callback)
+    {
+        //LogInfo("GetTags", "Mode=" + Mode);
+        var client = GetClient();
+        client.GetTags(callback);
+    }
+
+
+    public void GetDepartmentTree(Action<Department> callback)
+    {
+        LogInfo("GetDepartmentTree", "Mode=" + Mode);
+        var client = GetClient();
+        client.GetDepartmentTree(callback);
+    }
+
+    public void GetPersonTree(Action<AreaNode> callback)
+    {
+        LogInfo("GetPersonTree", "Mode=" + Mode);
+        var client = GetClient();
+        client.GetPersonTree((root) =>
+        {
+            if (RootIndex >= 0 && root.Children != null && root.Children.Length > RootIndex)//统一在通讯处过滤，树控件那里就不用管了，todo:后续改成传个参数个服务端，在服务端过滤
+            {
+                root = root.Children[RootIndex];
+            }
+            if (callback != null)
+            {
+                callback(root);
+            }
+        });
+    }
+
+    public void GetAreaStatistics(int id, Action<AreaStatistics> callback)
+    {
+        LogInfo("GetAreaStatisticsAsync", "Mode=" + Mode);
+        if (id == 0)
+        {
+            Debug.LogWarning("GetAreaStatistics id == 0");
         }
+        var client = GetClient();
+        client.GetAreaStatistics(id, callback);
     }
 
     private void LogError(string tag, string msg)
@@ -886,84 +503,16 @@ public class CommunicationObject : MonoBehaviour
         DebugLog(txt);
     }
 
-    public void GetRealPositonsAsync(Action<List<TagPosition>> callback)
-    {
-        Log.Info("GetRealPositonsAsync Start <<<<<<<<<<");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
-        {
-            client.BeginGetRealPositons((ar) =>
-            {
-                List<TagPosition> result = new List<TagPosition>();
-                try
-                {
-                    //Debug.LogError("GetRealPositonsAsync ar.IsCompleted:" + ar.IsCompleted);
-                    LocationServiceClient client = ar.AsyncState as LocationServiceClient;
-                    var result2 = client.EndGetRealPositons(ar);
-                    result.AddRange(result2);
-                }
-                catch (Exception ex)
-                {
-                    LogError("CommunicationObject", ex.ToString());
-                    Debug.LogError("GetRealPositonsAsync报错！：" + ar.IsCompleted); ;
-                }
-
-                Loom.DispatchToMainThread(() =>
-                {
-                    if (callback != null)
-                    {
-                        callback(result.ToList());
-                    }
-                });
-                if (result == null) LogError("GetRealPositonsAsync", "result == null");
-                Log.Info("GetRealPositonsAsync End <<<<<<<<<<");
-            }, client);
-        }
-    }
-
     /// <summary>
-    /// 获取人员列表
+    /// 获取区域坐标信息
     /// </summary>
-    public void GetAreaBoundsByPidAsync(int areaId,Action<AreaPoints[]> callback)
+    public void GetPointsByPid(int areaId, Action<AreaPoints[]> callback)
     {
-        string pid = areaId + "";
-        client = GetClient();
-        if (!isAsync)
-        {
-            ThreadManager.Run(() =>
-            {
-                return client.GetPointsByPid(areaId + "");
-            }, callback, "GetAreaStatisticsAsync");
-        }
-        else
-        {
-            Log.Info("GetAreaBoundsByPidAsync Start <<<<<<<<<<");
-            client.BeginGetPointsByPid(pid, (ar) =>
-            {
-                AreaPoints[] result = null;
-                try
-                {
-                    LocationServiceClient client = ar.AsyncState as LocationServiceClient;
-                    //Debug.LogError("EndGetAreaStatistics........");
-                    result = client.EndGetPointsByPid(ar);
-                }
-                catch (Exception ex)
-                {
-                    LogError("CommunicationObject", ex.ToString());
-                }
-                Loom.DispatchToMainThread(() =>
-                {
-                    if (callback != null)
-                    {
-                        callback(result);
-                    }
-                });
-                if (result == null) LogError("GetAreaStatisticsAsync", "result == null");
-                Log.Info("GetAreaStatisticsAsync End <<<<<<<<<<");
-            }, client);
-        }
+        LogInfo("GetAreaBoundsByPidAsync", "Mode=" + Mode);
+        var client = GetClient();
+        client.GetPointsByPid(areaId, callback);
     }
+
 
     /// <summary>
     /// 获取人员列表
@@ -973,17 +522,327 @@ public class CommunicationObject : MonoBehaviour
         //Department topoRoot = GetDepTree();
         //return GetPersonnels(topoRoot);
 
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
             Debug.Log("CommunicationObject->GetPersonnels...");
-            return client.GetPersonList();
+            return serviceClient.GetPersonList(false);
+        }
+    }
+    /// <summary>
+    /// 删除人员
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public bool DeletePerson(int id)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.DeletePerson(id);
+        }
+    }
+    /// <summary>
+    /// 得到部门信息列表
+    /// </summary>
+    /// <returns></returns>
+    public IList<Department> GetDepartmentList()
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            IList<Department> results = serviceClient.GetDepartmentList();
+            return results;
+        }
+    }
+    public IList<Tag> GetTags()
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            IList<Tag> results = serviceClient.GetTags();
+            return results;
+        }
+    }
+    /// <summary>
+    /// 删除标签
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public bool DeleteTag(int id)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.DeleteTag(id);
+        }
+    }
+    /// <summary>
+    /// 得到人员
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public Personnel GetPerson(int id)
+    {
+
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            Personnel per = serviceClient.GetPerson(id);
+            return per;
+        }
+    }
+    /// <summary>
+    /// 编辑人员信息
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public bool EditPerson(Personnel p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+
+            return serviceClient.EditPerson(p);
+        }
+    }
+    /// <summary>
+    /// 添加人员信息
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public int AddPerson(Personnel p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return 0;
+        lock (serviceClient)//1
+        {
+
+            return serviceClient.AddPerson(p);
+        }
+    }
+    /// <summary>
+    /// 得到岗位名称
+    /// </summary>
+    /// <returns></returns>
+    public List<Post> GetJobsList()
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            Post[] arr = serviceClient.GetPostList();
+            List<Post> list = new List<Post>();
+            if (arr != null)
+            {
+                list.AddRange(arr);
+            }
+            return list;
+        }
+    }
+    /// <summary>
+    /// 编辑岗位信息
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public bool EditPost(Post p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.EditPost(p);
+        }
+    }
+    /// <summary>
+    /// 编辑部门信息
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public bool EditDepartment(Department p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.EditDepartment(p);
+        }
+    }
+    /// <summary>
+    /// 添加部门信息
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public int AddDepartment(Department p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return 0;
+        lock (serviceClient)//1
+        {
+            return serviceClient.AddDepartment(p);
+        }
+    }
+    /// <summary>
+    /// 添加岗位
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public int AddPost(Post p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return 0;
+        lock (serviceClient)//1
+        {
+            return serviceClient.AddPost(p);
+        }
+    }
+    /// <summary>
+    /// 删除部门
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public bool DeleteDepartment(int id)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.DeleteDepartment(id);
+        }
+    }
+    /// <summary>
+    /// 删除岗位
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public bool DeletePost(int id)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.DeletePost(id);
         }
     }
 
     /// <summary>
-    /// 获取人员列表
+    /// 编辑人员角色定位
     /// </summary>
+    /// <param name="tag"></param>
+    /// <returns></returns>
+    public bool EditTag(Tag tag)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.EditTag(tag);
+        }
+    }
+    public bool EditCardRole(CardRole p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.EditCardRole(p);
+        }
+    }
+    public int AddCardRole(CardRole p)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return 0;
+        lock (serviceClient)//1
+        {
+            return serviceClient.AddCardRole(p);
+        }
+    }
+    public bool DeleteCardRole(int id)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.DeleteCardRole(id);
+        }
+    }
+    public bool SetCardRoleAccessAreas(int roleId, List<int> areaIds)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            int[] list = areaIds.ToArray();
+            return serviceClient.SetCardRoleAccessAreas(roleId, list);
+        }
+    }
+    /// <summary>
+    /// 添加人员角色定位
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <returns></returns>
+    public int AddTag(Tag tag)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return 0;
+        lock (serviceClient)//1
+        {
+
+            return serviceClient.AddTag(tag);
+        }
+    }
+    /// <summary>
+    /// 获取人员角色
+    /// </summary>
+    /// <returns></returns>
+    public List<CardRole> GetCardRoleList()
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
+        {
+            CardRole[] arr = serviceClient.GetCardRoleList();
+            List<CardRole> list = new List<CardRole>();
+            if (arr != null)
+            {
+                list.AddRange(arr);
+            }
+            return list;
+        }
+    }
+    public List<int> GetCardRoleAccessAreas(int role)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            int[] arr = serviceClient.GetCardRoleAccessAreas(role);
+            List<int> list = new List<int>();
+            if (arr != null)
+            {
+                list.AddRange(arr);
+            }
+            return list;
+        }
+    }
+    /// <summary>
+    /// 得到人员的详细信息
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public Department GetDepartment(int id)
+    {
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            Department depart = serviceClient.GetDepartment(id);
+            return depart;
+        }
+    }
     public static List<Personnel> GetPersonnels(Department topoRoot)
     {
         List<Personnel> personnelsT = new List<Personnel>();
@@ -993,6 +852,10 @@ public class CommunicationObject : MonoBehaviour
         {
             if (child.LeafNodes != null)
             {
+                foreach (Personnel p in child.LeafNodes)
+                {
+                    p.Parent = child;
+                }
                 personnelsT.AddRange(child.LeafNodes);
             }
             personnelsT.AddRange(GetPersonnels(child));
@@ -1000,51 +863,21 @@ public class CommunicationObject : MonoBehaviour
         return personnelsT;
     }
 
-    private string GetWhiteSpace(int count)
-    {
-        string space = "";
-        for (int i = 0; i < count; i++)
-        {
-            space += "  ";
-        }
-        return space;
-    }
-
-    private string ShowDep(Department dep, int layer)
-    {
-        string whitespace = GetWhiteSpace(layer);
-        string txt = whitespace + layer + ":" + dep.Name + "\n";
-        if (dep.Children != null)
-        {
-            //txt+=whitespace + "length:" + dep.Children.Length+"\n";
-            foreach (Department child in dep.Children)
-            {
-                txt += ShowDep(child, layer + 1);
-            }
-        }
-        else
-        {
-            //txt += whitespace + "children==null\n";
-        }
-        return txt;
-    }
     /// <summary>
     /// 获取定位卡位置信息
     /// </summary>
     /// <returns></returns>
     public List<TagPosition> GetRealPositons()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            //Log.Info("GetTagsPosition Start");
-            TagPosition[] arr = client.GetRealPositons();
+            TagPosition[] arr = serviceClient.GetRealPositons();
             List<TagPosition> list = new List<TagPosition>();
             if (arr != null)
             {
                 list.AddRange(arr);
             }
-            //Log.Info("GetTagsPosition End");
             return list;
         }
     }
@@ -1056,10 +889,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Position> GetHistoryPositons()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            Position[] arr = client.GetHistoryPositons();
+            Position[] arr = serviceClient.GetHistoryPositons();
             List<Position> list = new List<Position>();
             if (arr != null)
             {
@@ -1075,10 +908,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Position> GetHistoryPositonsByTime(string tagcode, DateTime start, DateTime end)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            Position[] arr = client.GetHistoryPositonsByTime(tagcode, start, end);
+            Position[] arr = serviceClient.GetHistoryPositonsByTime(tagcode, start, end);
             List<Position> list = new List<Position>();
             if (arr != null)
             {
@@ -1101,13 +934,14 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Position> GetHistoryPositonsByPersonnelID(int personnelID, DateTime start, DateTime end)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            Position[] arr = client.GetHistoryPositonsByPersonnelID(personnelID, start, end);
+            Position[] arr = serviceClient.GetHistoryPositonsByPersonnelID(personnelID, start, end);
             List<Position> list = new List<Position>();
             if (arr != null)
             {
+                Log.Info("CommunicationObject,GetHistoryPositonsByPersonnelID", string.Format("{0},{1},{2},count={3}", personnelID, start, end, list.Count));
                 list.AddRange(arr);
             }
 
@@ -1127,10 +961,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Position> GetHistoryPositonsByPidAndTopoNodeIds(int personnelID, List<int> topoNodeIdsT, DateTime start, DateTime end)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            Position[] arr = client.GetHistoryPositonsByPidAndTopoNodeIds(personnelID, topoNodeIdsT.ToArray(), start, end);
+            Position[] arr = serviceClient.GetHistoryPositonsByPidAndTopoNodeIds(personnelID, topoNodeIdsT.ToArray(), start, end);
             List<Position> list = new List<Position>();
             if (arr != null)
             {
@@ -1152,9 +986,9 @@ public class CommunicationObject : MonoBehaviour
     /// </summary>
     public void GetStrsTest()
     {
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
             DateTime datetimeStart = DateTime.Now;
 
@@ -1184,9 +1018,9 @@ public class CommunicationObject : MonoBehaviour
     {
         try
         {
-            client = GetClient();
-            if (client == null) return false;
-            lock (client)//1//不用线程使用同一个client发送消息会相互干扰
+            serviceClient = GetServiceClient();
+            if (serviceClient == null) return false;
+            lock (serviceClient)//1//不用线程使用同一个client发送消息会相互干扰
             {
                 //Debug.Log(string.Format("---------》》》》》》》{0}---------", position.Tag));
                 Debug.Log(string.Format("[AddU3DPosition] Tag:{0}", position.Tag));
@@ -1203,21 +1037,6 @@ public class CommunicationObject : MonoBehaviour
             Debug.LogError(ex.ToString());
             return false;
         }
-
-        //try
-        //{
-        //    //Debug.Log(string.Format("---------》》》》》》》{0}---------", position.Tag));
-        //    Debug.Log(string.Format("[AddU3DPosition] Tag:{0}", position.Tag));
-        //    LocationServiceClient c = CreateServiceClient();
-        //    c.AddU3DPosition(position);
-        //    //Debug.Log(string.Format("---------《《《《《《《《{0}---------", position.Tag));
-        //    return true;
-        //}
-        //catch (Exception ex)
-        //{
-        //    Debug.LogError(ex.ToString());
-        //    return false;
-        //}
     }
 
     /// <summary>
@@ -1227,13 +1046,13 @@ public class CommunicationObject : MonoBehaviour
     {
         try
         {
-            client = GetClient();
-            if (client == null) return false;
-            lock (client)//1//不用线程使用同一个client发送消息会相互干扰
+            serviceClient = GetServiceClient();
+            if (serviceClient == null) return false;
+            lock (serviceClient)//1//不用线程使用同一个client发送消息会相互干扰
             {
                 //Debug.Log(string.Format("---------》》》》》》》{0}---------", position.Tag));
                 //Debug.Log(string.Format("[AddU3DPosition] Tag:{0}", position.Tag));
-                client.AddU3DPositions(pList.ToArray());
+                serviceClient.AddU3DPositions(pList.ToArray());
                 //Debug.Log(string.Format("---------《《《《《《《《{0}---------", position.Tag));
             }
             return true;
@@ -1244,21 +1063,6 @@ public class CommunicationObject : MonoBehaviour
             Debug.LogError(ex.ToString());
             return false;
         }
-
-        //try
-        //{
-        //    //Debug.Log(string.Format("---------》》》》》》》{0}---------", position.Tag));
-        //    Debug.Log(string.Format("[AddU3DPosition] Tag:{0}", position.Tag));
-        //    LocationServiceClient c = CreateServiceClient();
-        //    c.AddU3DPosition(position);
-        //    //Debug.Log(string.Format("---------《《《《《《《《{0}---------", position.Tag));
-        //    return true;
-        //}
-        //catch (Exception ex)
-        //{
-        //    Debug.LogError(ex.ToString());
-        //    return false;
-        //}
     }
 
     /// <summary>
@@ -1270,10 +1074,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<U3DPosition> GetHistoryU3DPositonsByTime(string tagcode, DateTime start, DateTime end)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            U3DPosition[] arr = client.GetHistoryU3DPositonsByTime(tagcode, start, end);
+            U3DPosition[] arr = serviceClient.GetHistoryU3DPositonsByTime(tagcode, start, end);
             List<U3DPosition> list = new List<U3DPosition>();
             if (arr != null)
             {
@@ -1294,10 +1098,10 @@ public class CommunicationObject : MonoBehaviour
     /// </summary>
     public List<ObjectAddList_Type> GetModelAddList()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            ObjectAddList_Type[] TypeList = client.GetObjectAddList();
+            ObjectAddList_Type[] TypeList = serviceClient.GetObjectAddList();
             if (TypeList == null)
             {
                 LogError("GetModelAddList", "TypeList == null");
@@ -1312,11 +1116,11 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="dev"></param>
     public void DeleteDevInfo(DevInfo dev)
     {
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
-            bool value = client.DeleteDevInfo(dev);
+            bool value = serviceClient.DeleteDevInfo(dev);
             Debug.Log("DeleteDevInfo result:" + value);
         }
     }
@@ -1325,12 +1129,12 @@ public class CommunicationObject : MonoBehaviour
     /// </summary>
     public void AddDevInfo(ref DevInfo dev)
     {
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
             //DevInfo value = client.AddDevInfo(dev);
-            dev = client.AddDevInfo(dev);
+            dev = serviceClient.AddDevInfo(dev);
         }
     }
     /// <summary>
@@ -1339,11 +1143,11 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="devInfos"></param>
     public List<DevInfo> AddDevInfo(List<DevInfo> devInfos)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
             DevInfo[] devs = devInfos.ToArray();
-            devInfos = client.AddDevInfoByList(devs).ToList();
+            devInfos = serviceClient.AddDevInfoByList(devs).ToList();
             Debug.Log("AddDevInfoByList result:" + devInfos.Count);
             return devInfos;
         }
@@ -1354,11 +1158,11 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="Info"></param>
     public void ModifyDevInfo(DevInfo Info)
     {
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
-            bool value = client.ModifyDevInfo(Info);
+            bool value = serviceClient.ModifyDevInfo(Info);
             Debug.Log("ModifyDevInfo result:" + value);
         }
     }
@@ -1368,11 +1172,11 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="PosInfo"></param>
     public void ModifyDevPos(DevPos PosInfo)
     {
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
-            bool value = client.ModifyPosInfo(PosInfo);
+            bool value = serviceClient.ModifyPosInfo(PosInfo);
             //Debug.Log("ModifyDevPos result:" + value);
         }
     }
@@ -1382,11 +1186,11 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="posList"></param>
     public void ModifyDevPosByList(List<DevPos> posList)
     {
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
-            bool value = client.ModifyPosByList(posList.ToArray());
+            bool value = serviceClient.ModifyPosByList(posList.ToArray());
             Debug.Log("ModifyDevPos result:" + value);
         }
     }
@@ -1396,11 +1200,11 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="devPos"></param>
     public void AddDevPosInfo(DevPos devPos)
     {
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
-            bool value = client.AddDevPosInfo(devPos);
+            bool value = serviceClient.AddDevPosInfo(devPos);
             Debug.Log("AddDevPos result:" + value);
         }
     }
@@ -1410,10 +1214,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<DevInfo> GetAllDevInfos()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            DevInfo[] infoList = client.GetAllDevInfos();
+            DevInfo[] infoList = serviceClient.GetAllDevInfos();
             if (infoList == null) return new List<DevInfo>();
             return infoList.ToList();
         }
@@ -1424,10 +1228,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<DevInfo> GetDevInfos(int[] typeList)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            DevInfo[] infoList = client.GetDevInfos(typeList);
+            DevInfo[] infoList = serviceClient.GetDevInfos(typeList);
             if (infoList == null) return new List<DevInfo>();
             return infoList.ToList();
         }
@@ -1438,10 +1242,24 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="devId"></param>
     public DevInfo GetDevByDevId(string devId)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            DevInfo devInfo = client.GetDevByID(devId);
+            DevInfo devInfo = serviceClient.GetDevByGUID(devId);//通过设备Id,获取设备(字符串Id,GUID那部分)
+            return devInfo;
+        }
+    }
+
+    /// <summary>
+    /// 通过设备Id,获取设备信息
+    /// </summary>
+    /// <param name="devId"></param>
+    public DevInfo GetDevByGameObjecName(string objName)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
+        {
+            DevInfo devInfo = serviceClient.GetDevByGameName(objName);//通过设备Id,获取设备(字符串Id,GUID那部分)
             return devInfo;
         }
     }
@@ -1452,10 +1270,10 @@ public class CommunicationObject : MonoBehaviour
     /// <param name="devId"></param>
     public DevInfo GetDevByid(int id)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            DevInfo devInfo = client.GetDevByiId(id);
+            DevInfo devInfo = serviceClient.GetDevById(id);//通过设备Id,获取设备(数字Id,主键)
             return devInfo;
         }
     }
@@ -1466,10 +1284,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<DevInfo> FindDevInfos(string key)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            DevInfo[] infoList = client.FindDevInfos(key);
+            DevInfo[] infoList = serviceClient.FindDevInfos(key);
             if (infoList == null) return new List<DevInfo>();
             return infoList.ToList();
         }
@@ -1480,25 +1298,33 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<DevPos> GetAllPosInfo()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            DevPos[] infoList = client.GetDevPositions();
+            DevPos[] infoList = serviceClient.GetDevPositions();
             if (infoList == null) return null;
             return infoList.ToList();
         }
     }
     public List<DevInfo> GetDevInfoByParent(List<int> idList)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        try
         {
-            DevInfo[] infoList = client.GetDevInfoByParent(idList.ToArray());
-            if (infoList == null)
+            serviceClient = GetServiceClient();
+            if (serviceClient == null) return null; lock (serviceClient)//1
             {
-                return new List<DevInfo>();
+                DevInfo[] infoList = serviceClient.GetDevInfoByParent(idList.ToArray());
+                if (infoList == null)
+                {
+                    return new List<DevInfo>();
+                }
+                return infoList.ToList();
             }
-            return infoList.ToList();
+        }
+        catch (Exception e)
+        {
+            Log.Error("CommunicationObject.GetDevInfoByParent:" + e.ToString());
+            return null;
         }
     }
 
@@ -1508,10 +1334,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public IList<PhysicalTopology> GetParkMonitorRange()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            IList<PhysicalTopology> results = client.GetParkMonitorRange();
+            IList<PhysicalTopology> results = serviceClient.GetParkMonitorRange();
             return results;
         }
     }
@@ -1522,10 +1348,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public IList<PhysicalTopology> GetFloorMonitorRange()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            IList<PhysicalTopology> results = client.GetFloorMonitorRange();
+            IList<PhysicalTopology> results = serviceClient.GetFloorMonitorRange();
             return results;
         }
     }
@@ -1536,10 +1362,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public IList<PhysicalTopology> GetFloorMonitorRangeById(int id)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            IList<PhysicalTopology> results = client.GetFloorMonitorRangeById(id);
+            IList<PhysicalTopology> results = serviceClient.GetFloorMonitorRangeById(id);
             return results;
         }
     }
@@ -1550,24 +1376,37 @@ public class CommunicationObject : MonoBehaviour
     public bool EditMonitorRange(PhysicalTopology pt)
     {
 
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.EditMonitorRange(pt);
+            return serviceClient.EditMonitorRange(pt);
         }
     }
 
     /// <summary>
-    /// 根据节点添加子监控范围
+    /// 根据节点添加区域范围
     /// </summary>
-    public bool AddMonitorRange(PhysicalTopology pt)
+    public PhysicalTopology AddMonitorRange(PhysicalTopology pt)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.AddMonitorRange(pt);
+            return serviceClient.AddMonitorRange(pt);
+        }
+    }
+
+    /// <summary>
+    /// 根据节点删除监控范围
+    /// </summary>
+    public bool DeleteMonitorRange(PhysicalTopology pt)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
+        {
+            return serviceClient.DeleteMonitorRange(pt);
         }
     }
 
@@ -1577,10 +1416,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public ConfigArg GetConfigArgByKey(string key)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            return client.GetConfigArgByKey(key);
+            return serviceClient.GetConfigArgByKey(key);
         }
     }
 
@@ -1590,11 +1429,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool GetConfigArgByKey(ConfigArg config)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.EditConfigArg(config);
+            return serviceClient.EditConfigArg(config);
         }
     }
 
@@ -1604,10 +1443,10 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public TransferOfAxesConfig GetTransferOfAxesConfig()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            return client.GetTransferOfAxesConfig();
+            return serviceClient.GetTransferOfAxesConfig();
         }
     }
 
@@ -1618,13 +1457,14 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool SetTransferOfAxesConfig(TransferOfAxesConfig config)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.SetTransferOfAxesConfig(config);
+            return serviceClient.SetTransferOfAxesConfig(config);
         }
     }
+
     /// <summary>
     /// 人员搜索（CaiCai）
     /// </summary>
@@ -1632,53 +1472,176 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Personnel> FindPersonnelData(string key)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            Personnel[] infoList = client.FindPersonList(key);
+            Personnel[] infoList = serviceClient.FindPersonList(key);
             if (infoList == null) return new List<Personnel>();
             return infoList.ToList();
         }
     }
+
+    /// <summary>
+    /// 人员历史轨迹基准
+    /// </summary>
+    /// <param name="nFlag"></param>
+    /// <param name="strName"></param>
+    /// <param name="strName2"></param>
+    /// <returns></returns>
+    public List<PositionList> GetHistoryPositonStatistics(int nFlag, string strName, string strName2, string strName3)
+    {
+        Log.Info("GetHistoryPositonStatistics :", string.Format("flag:{0},name1:{1},name2:{2}", nFlag, strName, strName2));
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
+        {
+            PositionList[] infoList = serviceClient.GetHistoryPositonStatistics(nFlag, strName, strName2, strName3);
+            if (infoList == null) return new List<PositionList>();
+            return infoList.ToList();
+        }
+    }
+
+    /// <summary>
+    /// 人员历史轨迹基准
+    /// </summary>
+    /// <param name="nFlag"></param>
+    /// <param name="strName"></param>
+    /// <param name="strName2"></param>
+    /// <returns></returns>
+    public void GetHistoryPositonStatistics(int nFlag, string strName, string strName2, string strName3,Action<List<PositionList>> callback)
+    {
+        Log.Info("GetHistoryPositonStatistics Async:", string.Format("flag:{0},name1:{1},name2:{2}",nFlag,strName,strName2));
+        serviceClient = GetServiceClient();
+        ThreadManager.Run(() =>
+        {
+            DateTime start = DateTime.Now;
+            List<PositionList> result = null;
+            if (serviceClient != null)
+            {
+                lock (serviceClient)//1
+                {
+                    var list = serviceClient.GetHistoryPositonStatistics(nFlag, strName, strName2,strName3);
+                    if (list != null)
+                        result = list.ToList();
+                    else
+                    {
+                        Log.Error("GetHistoryPositonStatistics", "list==null");
+                    }
+                }
+            }
+            Log.Info("GetHistoryPositonStatistics:",(DateTime.Now - start).TotalMilliseconds + "ms");
+            return result;
+        }, callback, "GetHistoryPositonStatistics");
+    }
+
+    public void GetHistoryPositonData(int nFlag, string strName, string strName2, string strName3, Action<List<Pos>> callback)
+    {
+        Log.Info("GetHistoryPositonData Async:", string.Format("flag:{0},name1:{1},name2:{2}", nFlag, strName, strName2));
+        serviceClient = GetServiceClient();
+        ThreadManager.Run(() =>
+        {
+            DateTime start = DateTime.Now;
+            List<Pos> result = null;
+            if (serviceClient != null)
+            {
+                lock (serviceClient)//1
+                {
+                    var infoList = serviceClient.GetHistoryPositonData(nFlag, strName, strName2, strName3);
+                    if (infoList != null)
+                        result = infoList.ToList();
+                }
+            }
+            Log.Info("GetHistoryPositonData:", (DateTime.Now - start).TotalMilliseconds + "ms");
+            return result;
+        }, callback, "GetHistoryPositonData");
+    }
+
+    public void GetSwitchAreas(Action<PhysicalTopology[]> callback)
+    {
+        Log.Info("GetSwitchAreas Async:");
+        serviceClient = GetServiceClient();
+        ThreadManager.Run(() =>
+        {
+            DateTime start = DateTime.Now;
+            PhysicalTopology[] result = null;
+            if (serviceClient != null)
+            {
+                lock (serviceClient)//1
+                {
+                    result=serviceClient.GetSwitchAreas();
+                }
+            }
+            Log.Info("GetSwitchAreas:", (DateTime.Now - start).TotalMilliseconds + "ms");
+            return result;
+        }, callback, "GetSwitchAreas");
+    }
+
+
     public Post[] GetPostList()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            return client.GetPostList();
-        }
-    }
-
-    public LocationAlarm[] GetLocationAlarms(AlarmSearchArg arg)
-    {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
-        {
-            return client.GetLocationAlarms(arg);
-        }
-    }
-
-    public DeviceAlarm[] GetDeviceAlarms(AlarmSearchArg arg)
-    {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
-        {
-            return client.GetDeviceAlarms(arg);
+            return serviceClient.GetPostList();
         }
     }
     /// <summary>
-    /// 园区信息统计
+    /// 获取单个信息
     /// </summary>
-    /// <param name="Id"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
-    public AreaStatistics GetAreaStatistics(int Id)
+    public CameraAlarmInfo GetCameraAlarm(int id)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.GetAreaStatistics(Id);
+            return serviceClient.GetCameraAlarm(id);
         }
+    }
+    /// <summary>
+    /// 宝信摄像头告警数据
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    public List<CameraAlarmInfo> GetCameraAlarms(string ip, bool merge)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
+        {
+            CameraAlarmInfo[] list= serviceClient.GetCameraAlarms(ip, merge);
+            return list.ToList();
+        }
+    }
+    public List<CameraAlarmInfo> GetAllCameraAlarms(bool merge)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
+        {
+            CameraAlarmInfo[] list = serviceClient.GetAllCameraAlarms(merge);
+            return list.ToList();
+        }
+    }
+    public LocationAlarm[] GetLocationAlarms(AlarmSearchArg arg)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
+        {
+            var lst = serviceClient.GetLocationAlarms(arg);
+            return ToNotNullList(lst);
+        }
+    }
 
+    public DeviceAlarmInformation GetDeviceAlarms(AlarmSearchArg arg)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
+        {
+            DeviceAlarmInformation devAlarm= serviceClient.GetDeviceAlarms(arg);
+            return devAlarm;
+        }
     }
 
     /// <summary>
@@ -1688,12 +1651,23 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public NearbyPerson[] GetNearbyPerson_Currency(int Id, float distance)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            return client.GetNearbyPerson_Currency(Id, distance);
+            var lst = serviceClient.GetNearbyPerson_Currency(Id, distance);
+            return ToNotNullList(lst);
         }
     }
+
+    private T[] ToNotNullList<T>(T[] array)//unity的wcf不能传空的数组，但是null又容易出错，这里转换一下
+    {
+        //if (array == null)
+        //{
+        //    array = new T[0];//但是发现空数组传出去也可能有问题
+        //}
+        return array;
+    }
+
     /// <summary>
     /// 人员找附近摄像头
     /// </summary>
@@ -1703,10 +1677,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public NearbyDev[] GetNearbyDev_Currency(int id, float distance, int nFlag)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
-            return client.GetNearbyDev_Currency(id, distance, nFlag);
+            var lst = serviceClient.GetNearbyDev_Currency(id, distance, nFlag);
+            return ToNotNullList(lst);
         }
     }
     /// <summary>
@@ -1716,11 +1691,12 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public EntranceGuardActionInfo[] GetEntranceActionInfoByPerson24Hours(int id)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
 
-            return client.GetEntranceActionInfoByPerson24Hours(id);
+            var lst = serviceClient.GetEntranceActionInfoByPerson24Hours(id);
+            return ToNotNullList(lst);
         }
     }
     /// <summary>
@@ -1730,11 +1706,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool AddDoorAccess(List<Dev_DoorAccess> doorAccessList)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.AddDoorAccessByList(doorAccessList.ToArray());
+            return serviceClient.AddDoorAccessByList(doorAccessList.ToArray());
         }
     }
     /// <summary>
@@ -1742,13 +1718,13 @@ public class CommunicationObject : MonoBehaviour
     /// </summary>
     /// <param name="doorAccess"></param>
     /// <returns></returns>
-    public bool AddDoorAccess(Dev_DoorAccess doorAccess)
+    public Dev_DoorAccess AddDoorAccess(Dev_DoorAccess doorAccess)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.AddDoorAccess(doorAccess);
+            return serviceClient.AddDoorAccess(doorAccess);
         }
     }
     /// <summary>
@@ -1758,11 +1734,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool DeleteDoorAccess(List<Dev_DoorAccess> doorAccessList)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.DeleteDoorAccess(doorAccessList.ToArray());
+            return serviceClient.DeleteDoorAccess(doorAccessList.ToArray());
         }
     }
     /// <summary>
@@ -1772,11 +1748,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool ModifyDoorAccess(List<Dev_DoorAccess> doorAccessList)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.ModifyDoorAccess(doorAccessList.ToArray());
+            return serviceClient.ModifyDoorAccess(doorAccessList.ToArray());
         }
     }
     /// <summary>
@@ -1786,16 +1762,25 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Dev_DoorAccess> GetDoorAccessInfoByParent(List<int> pidList)
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        try
         {
-            List<Dev_DoorAccess> doorList;
-            Dev_DoorAccess[] doors = client.GetDoorAccessInfoByParent(pidList.ToArray());
-            if (doors == null) doorList = new List<Dev_DoorAccess>();
-            else doorList = doors.ToList();
-            return doorList;
+            serviceClient = GetServiceClient();
+            if (serviceClient == null) return null; lock (serviceClient)//1
+            {
+                List<Dev_DoorAccess> doorList;
+                Dev_DoorAccess[] doors = serviceClient.GetDoorAccessInfoByParent(pidList.ToArray());
+                if (doors == null) doorList = new List<Dev_DoorAccess>();
+                else doorList = doors.ToList();
+                return doorList;
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Error("CommunicationObject.GetDoorAccessInfoByParent:" + e.ToString());
+            return null;
         }
     }
+
     #region 摄像头信息
     /// <summary>
     /// 增加摄像头设备
@@ -1804,11 +1789,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool AddCameraInfo(List<Dev_CameraInfo> cameraInfoList)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.AddCameraInfoByList(cameraInfoList.ToArray());
+            return serviceClient.AddCameraInfoByList(cameraInfoList.ToArray());
         }
     }
     /// <summary>
@@ -1818,11 +1803,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public Dev_CameraInfo AddCameraInfo(Dev_CameraInfo cameraInfo)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.AddCameraInfo(cameraInfo);
+            return serviceClient.AddCameraInfo(cameraInfo);
         }
     }
     /// <summary>
@@ -1832,11 +1817,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool DeleteCameraInfo(List<Dev_CameraInfo> cameraInfoList)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.DeleteCameraInfo(cameraInfoList.ToArray());
+            return serviceClient.DeleteCameraInfo(cameraInfoList.ToArray());
         }
     }
     /// <summary>
@@ -1844,13 +1829,13 @@ public class CommunicationObject : MonoBehaviour
     /// </summary>
     /// <param name="doorAccessList"></param>
     /// <returns></returns>
-    public bool ModifyCameraInfo(Dev_CameraInfo cameraInfo)
+    public Dev_CameraInfo ModifyCameraInfo(Dev_CameraInfo cameraInfo)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null ;
+        lock (serviceClient)//1
         {
-            return client.ModifyCameraInfo(cameraInfo);
+            return serviceClient.ModifyCameraInfo(cameraInfo);
         }
     }
     /// <summary>
@@ -1860,12 +1845,12 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Dev_CameraInfo> GetCameraInfoByParent(List<int> pidList)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
             List<Dev_CameraInfo> cameraInfoList;
-            Dev_CameraInfo[] cameraInfos = client.GetCameraInfoByParent(pidList.ToArray());
+            Dev_CameraInfo[] cameraInfos = serviceClient.GetCameraInfoByParent(pidList.ToArray());
             if (cameraInfos == null) cameraInfoList = new List<Dev_CameraInfo>();
             else cameraInfoList = cameraInfos.ToList();
             return cameraInfoList;
@@ -1877,11 +1862,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Dev_CameraInfo> GetAllCameraInfo()
     {
-        client = GetClient();
-        if (client == null) return null; lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null; lock (serviceClient)//1
         {
             List<Dev_CameraInfo> cameraInfoList;
-            Dev_CameraInfo[] cameraInfos = client.GetAllCameraInfo();
+            Dev_CameraInfo[] cameraInfos = serviceClient.GetAllCameraInfo();
             if (cameraInfos == null) cameraInfoList = new List<Dev_CameraInfo>();
             else cameraInfoList = cameraInfos.ToList();
             return cameraInfoList;
@@ -1894,13 +1879,79 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public Dev_CameraInfo GetCameraInfoByDevInfo(DevInfo dev)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            Dev_CameraInfo cameraInfo = client.GetCameraInfoByDevInfo(dev);
+            Dev_CameraInfo cameraInfo = serviceClient.GetCameraInfoByDevInfo(dev);
             return cameraInfo;
         }
+    }
+ 
+    /// <summary>
+    /// 通过设备Ip，获取对应摄像头信息
+    /// </summary>
+    /// <param name="dev"></param>
+    /// <returns></returns>
+    public Dev_CameraInfo GetCameraInfoByIp(string devIp)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
+        {
+            Dev_CameraInfo cameraInfo = serviceClient.GetCameraInfoByIp(devIp);
+            return cameraInfo;
+        }
+    }
+    /// <summary>
+    /// 通过rtsp地址，获取对应摄像头信息
+    /// </summary>
+    /// <param name="dev"></param>
+    /// <returns></returns>
+    public int? GetCameraDevIdByURL(string rtstUrl)
+    {
+        Dev_CameraInfo info = GetCameraInfoByURL(rtstUrl);
+        if (info != null)
+        {
+            return info.DevInfoId;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    /// <summary>
+    /// 通过rtsp地址，获取摄像头数据
+    /// </summary>
+    /// <param name="rtstUrl"></param>
+    /// <param name="getDevInfo">是否增加设备信息</param>
+    /// <returns></returns>
+    public Dev_CameraInfo GetCameraInfoByURL(string rtstUrl,bool getDevInfo=false)
+    {
+        //"rtsp://admin:admin@ 192.168.1.27:554/ch1/main/h264",
+        if (string.IsNullOrEmpty(rtstUrl)) return null;
+        string[] ips = rtstUrl.Split('@');
+        if (ips == null || ips.Length < 2) return null;
+        //有两种情况：1. ：后接端口号   2.  /后接端口号
+        string[] ipTemp;
+        if (ips[1].Contains(":"))
+        {
+            ipTemp = ips[1].Split(':');
+            if (ipTemp == null || ipTemp.Length < 2) return null;
+        }
+        else
+        {
+            ipTemp = ips[1].Split('/');
+            if (ipTemp == null || ipTemp.Length < 2) return null;
+        }
+        string ipFinal = ipTemp[0];
+        if (string.IsNullOrEmpty(ipFinal)) return null;
+        Dev_CameraInfo info = GetCameraInfoByIp(ipFinal);
+        if(info!=null)
+        {
+            info.DevInfo = GetDevByid(info.DevInfoId);
+        }
+        return info;
     }
     #endregion
     #region 基站编辑
@@ -1910,74 +1961,74 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<Archor> GetArchors()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
 
-            List<Archor> archors = client.GetArchors().ToList();
+            List<Archor> archors = serviceClient.GetArchors().ToList();
             return archors;
         }
     }
 
     public Archor GetArchor(string archorId)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
 
-            Archor archor = client.GetArchor(archorId);
+            Archor archor = serviceClient.GetArchor(archorId);
             return archor;
         }
     }
 
     public Archor GetArchorByDevId(int devId)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
 
-            Archor archor = client.GetArchorByDevId(devId);
+            Archor archor = serviceClient.GetArchorByDevId(devId);
             return archor;
         }
     }
     public bool AddArchor(Archor archor)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.AddArchor(archor);
+            return serviceClient.AddArchor(archor);
         }
     }
     public bool EditArchor(Archor archor, int parentId)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            bool value = client.EditArchor(archor, parentId);
+            bool value = serviceClient.EditArchor(archor, parentId);
             return value;
         }
     }
     public bool DeleteArchor(int devId)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            return client.DeleteArchor(devId);
+            return serviceClient.DeleteArchor(devId);
         }
     }
     public bool EditBusAnchor(Archor busArchor, int parentId)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            bool value = client.EditArchor(busArchor, parentId);
+            bool value = serviceClient.EditArchor(busArchor, parentId);
             return value;
         }
     }
@@ -1991,11 +2042,11 @@ public class CommunicationObject : MonoBehaviour
 
     public List<OperationTicket> GetOperationTicketList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.GetOperationTicketList().ToList();
+            return serviceClient.GetOperationTicketList().ToList();
         }
         //var operationTickets = db.OperationTickets.ToList();
         //return operationTickets.ToWcfModelList();
@@ -2007,11 +2058,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<WorkTicket> GetWorkTicketList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.GetWorkTicketList().ToList();
+            return serviceClient.GetWorkTicketList().ToList();
         }
     }
 
@@ -2020,11 +2071,11 @@ public class CommunicationObject : MonoBehaviour
     /// </summary>
     public List<MobileInspectionDev> GetMobileInspectionDevList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.GetMobileInspectionDevList().ToList();
+            return serviceClient.GetMobileInspectionDevList().ToList();
         };
     }
 
@@ -2034,11 +2085,36 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<MobileInspection> GetMobileInspectionList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.GetMobileInspectionList().ToList();
+            return serviceClient.GetMobileInspectionList().ToList();
+        };
+    }
+
+    public InspectionTrack GetInspectionTrackById(InspectionTrack track)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            return serviceClient.GetInspectionTrackById(track);
+        }
+    }
+    /// <summary>
+    /// 获取巡检轨迹列表(新)
+    /// </summary>
+    /// <returns></returns>
+    public List<InspectionTrack> GetInspectionTrackList()
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            DateTime dt = DateTime.Now;
+            DateTime dt2 = DateTime.Now;
+			return serviceClient.Getinspectionlist(dt, dt2, false).ToList();
         };
     }
 
@@ -2048,11 +2124,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<PersonnelMobileInspection> GetPersonnelMobileInspectionList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            PersonnelMobileInspection[] ps = client.GetPersonnelMobileInspectionList();
+            PersonnelMobileInspection[] ps = serviceClient.GetPersonnelMobileInspectionList();
             if (ps == null)
             {
                 List<PersonnelMobileInspection> pList = new List<PersonnelMobileInspection>();
@@ -2071,11 +2147,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<OperationTicketHistory> GetOperationTicketHistoryList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.GetOperationTicketHistoryList().ToList();
+            return serviceClient.GetOperationTicketHistoryList().ToList();
         };
     }
 
@@ -2085,21 +2161,21 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<WorkTicketHistory> GetWorkTicketHistoryList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            return client.GetWorkTicketHistoryList().ToList();
+            return serviceClient.GetWorkTicketHistoryList().ToList();
         };
     }
 
     public List<InspectionTrackHistory> Getinspectionhistorylist(DateTime dtBeginTime, DateTime dtEndTime, bool bFlag)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            InspectionTrackHistory[] ps = client.Getinspectionhistorylist(dtBeginTime, dtEndTime, bFlag);
+            InspectionTrackHistory[] ps = serviceClient.Getinspectionhistorylist(dtBeginTime, dtEndTime, bFlag);
             if (ps == null)
             {
                 List<InspectionTrackHistory> pList = new List<InspectionTrackHistory>();
@@ -2118,11 +2194,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public List<PersonnelMobileInspectionHistory> GetPersonnelMobileInspectionHistoryList()
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            PersonnelMobileInspectionHistory[] ps = client.GetPersonnelMobileInspectionHistoryList();
+            PersonnelMobileInspectionHistory[] ps = serviceClient.GetPersonnelMobileInspectionHistoryList();
             if (ps == null)
             {
                 List<PersonnelMobileInspectionHistory> pList = new List<PersonnelMobileInspectionHistory>();
@@ -2146,11 +2222,11 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public bool EditPictureInfo(Picture picture)
     {
-        client = GetClient();
-        if (client == null) return false;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return false;
+        lock (serviceClient)//1
         {
-            bool value = client.EditPictureInfo(picture);
+            bool value = serviceClient.EditPictureInfo(picture);
             return value;
         }
     }
@@ -2161,25 +2237,76 @@ public class CommunicationObject : MonoBehaviour
     /// <returns></returns>
     public Picture GetPictureInfo(string pictureName)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            Picture value = client.GetPictureInfo(pictureName);
+            Picture value = serviceClient.GetPictureInfo(pictureName);
             return value;
         }
     }
     #endregion
     #region 设备KKS监控
 
-    public Dev_Monitor GetMonitorInfoByKKS(string kksCode, bool isContainChild)
+    /// <summary>
+    /// 获取设备监控信息
+    /// </summary>
+    /// <param name="kksCode"></param>
+    /// <returns></returns>
+    public Dev_Monitor GetDevMonitor(string kksCode)
     {
-        client = GetClient();
-        if (client == null) return null;
-        lock (client)//1
+        Dev_Monitor monitorInfo = GetMonitorInfoByKKS(kksCode, false);
+        return monitorInfo;
+    }
+
+    /// <summary>
+    /// 获取设备监控信息
+    /// </summary>
+    /// <param name="kksCode"></param>
+    /// <returns></returns>
+    public void GetDevMonitor(string kksCode, Action<Dev_Monitor> callback)
+    {
+        GetMonitorInfoByKKS(kksCode, false,callback);
+    }
+
+
+    /// <summary>
+    /// 通过KKS获取监控数据
+    /// </summary>
+    /// <param name="kksCode"></param>
+    /// <param name="displayAllNode">是否显示所有节点（包括没数据的节点）</param>
+    /// <returns></returns>
+    public Dev_Monitor GetMonitorInfoByKKS(string kksCode, bool displayAllNode)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
         {
-            Dev_Monitor value = client.GetDevMonitorInfoByKKS(kksCode, isContainChild);
+            Dev_Monitor value = serviceClient.GetDevMonitorInfoByKKS(kksCode, displayAllNode);
             return value;
+        }
+    }
+
+    /// <summary>
+    /// 通过KKS获取监控数据
+    /// </summary>
+    /// <param name="kksCode"></param>
+    /// <param name="displayAllNode">是否显示所有节点（包括没数据的节点）</param>
+    /// <returns></returns>
+    public void GetMonitorInfoByKKS(string kksCode, bool displayAllNode,Action<Dev_Monitor> callback)
+    {
+        Dev_Monitor result = null;
+        serviceClient = GetServiceClient();
+        if (serviceClient != null)
+        {
+            lock (serviceClient)//1
+            {
+                result = serviceClient.GetDevMonitorInfoByKKS(kksCode, displayAllNode);
+            }
+        }
+        if (callback != null)
+        {
+            callback(result);
         }
     }
 
@@ -2188,13 +2315,16 @@ public class CommunicationObject : MonoBehaviour
     public void GetUnitySetting()
     {
         Debug.Log("->GetUnitySetting");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return;
+        lock (serviceClient)//1
         {
-            var setting = client.GetUnitySetting();//从服务端获取配置信息
-            var refreshSetting = setting.RefreshSetting;
-            SetRefreshSetting(refreshSetting);
+            var setting = serviceClient.GetUnitySetting();//从服务端获取配置信息
+            if (setting.IsUseService)//用服务端的配置覆盖本地客户端的配置，默认情况下是false,特殊情况，可以通过服务端统一修改客户端配置参数。
+            {
+                var refreshSetting = setting.RefreshSetting;
+                SetRefreshSetting(refreshSetting);
+            }
         }
     }
 
@@ -2216,12 +2346,12 @@ public class CommunicationObject : MonoBehaviour
         {
             Debug.LogError("refreshSetting==null"); return;
         }
-        TagPosRefreshInterval = refreshSetting.TagPos;
-        PersonTreeRefreshInterval = refreshSetting.PersonTree;
-        AreaStatisticsRefreshInterval = refreshSetting.AreaStatistics;
-        NearCameraRefreshInterval = refreshSetting.NearCamera;
-        ScreenShotRefreshInterval = refreshSetting.ScreenShot;
-        DepartmentTreeRefreshInterval = refreshSetting.DepartmentTree;
+        RefreshSetting.TagPos = refreshSetting.TagPos;
+        RefreshSetting.PersonTree = refreshSetting.PersonTree;
+        RefreshSetting.AreaStatistics = refreshSetting.AreaStatistics;
+        RefreshSetting.NearCamera = refreshSetting.NearCamera;
+        RefreshSetting.ScreenShot = refreshSetting.ScreenShot;
+        RefreshSetting.DepartmentTree = refreshSetting.DepartmentTree;
     }
 
     private void SetRefreshSetting(Location.WCFServiceReferences.LocationServices.RefreshSetting refreshSetting)
@@ -2230,22 +2360,60 @@ public class CommunicationObject : MonoBehaviour
         {
             Debug.LogError("refreshSetting==null"); return;
         }
-        TagPosRefreshInterval = refreshSetting.TagPos;
-        PersonTreeRefreshInterval = refreshSetting.PersonTree;
-        AreaStatisticsRefreshInterval = refreshSetting.AreaStatistics;
-        NearCameraRefreshInterval = refreshSetting.NearCamera;
-        ScreenShotRefreshInterval = refreshSetting.ScreenShot;
-        DepartmentTreeRefreshInterval = refreshSetting.DepartmentTree;
+        RefreshSetting.TagPos = refreshSetting.TagPos;
+        RefreshSetting.PersonTree = refreshSetting.PersonTree;
+        RefreshSetting.AreaStatistics = refreshSetting.AreaStatistics;
+        RefreshSetting.NearCamera = refreshSetting.NearCamera;
+        RefreshSetting.ScreenShot = refreshSetting.ScreenShot;
+        RefreshSetting.DepartmentTree = refreshSetting.DepartmentTree;
     }
 
     public void DebugLog(string msg)
     {
-        Debug.Log("->DebugLog");
-        client = GetClient();
-        if (client == null) return;
-        lock (client)//1
+        clientSync.DebugLog(msg);
+    }
+
+    public void GetTag(int id, Action<Tag> callback)
+    {
+        var client = GetClient();
+        client.GetTag(id, callback);
+    }
+    /// <summary>
+    /// 厂区首页图片名称
+    /// </summary>
+    /// <returns></returns>
+    public List<string> HomePagePicture()
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
         {
-            client.DebugMessage(msg);
+            string[] picture = serviceClient.GetHomePageNameList();
+            if (picture == null)
+            {
+                return new List<string>();
+            }
+            return picture.ToList();
         }
     }
+    /// <summary>
+    /// 厂区首页图片信息
+    /// </summary>
+    /// <param name="strPictureName"></param>
+    /// <returns></returns>
+    public byte[] HomePagePictureInfo(string strPictureName)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            return serviceClient.GetHomePageByName(strPictureName);
+        }
+
+    }
 }
+
+//public enum CommunicationMode
+//{
+//    None, Sync, Async, Thread, WebApi, Editor
+//}

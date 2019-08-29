@@ -69,7 +69,7 @@ public class ScreenShotOrg : MonoBehaviour {
         }      
         else
         {
-            InvokeRepeating("OnScreenShotStart", 0, CommunicationObject.Instance.ScreenShotRefreshInterval);
+            InvokeRepeating("OnScreenShotStart", 0, CommunicationObject.Instance.RefreshSetting.ScreenShot);
         }
     }
 

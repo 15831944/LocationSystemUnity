@@ -10,45 +10,21 @@ public class CameraMonitorFollowUI : MonoBehaviour
     /// </summary>
     public static CameraMonitorFollowUI CurrentMonitor;
 
-    //public Sprite NormalSprite;
-    //public Sprite HoverSprite;
-
-    //public Sprite AlarmNormalSprite;
-    //public Sprite AlarmHoverSprite;
-
-    //public Sprite NormalBg;
-    //public Sprite AlarmBg;
-
-    /// <summary>
-    /// 视频监控按钮
-    /// </summary>
-    public Button VideoMonitorButton;
     /// <summary>
     /// 打开界面按钮
     /// </summary>
     public Toggle BgToggle;
-
-    /// <summary>
-    /// 弹窗
-    /// </summary>
-    public GameObject InfoBg;
-    /// <summary>
-    /// 标题文本
-    /// </summary>
-    public Text TitleText;
-    /// <summary>
-    /// 信息文本
-    /// </summary>
-    public Text InfoText;
     /// <summary>
     /// 摄像头信息
     /// </summary>
-    private DevNode CameraDev;
-
-	// Use this for initialization
-	void Start ()
+  //  private DevNode CameraDev;
+    public CameraNormalFollowUI NormalFollowUI;
+    public CameraAlarmFollowUI AlarmFollowUI;
+    public VideoFollowItem videoFollowUI;//普通漂浮视频
+    // Use this for initialization
+    void Start ()
 	{
-	    VideoMonitorButton.onClick.AddListener(ShowMonitor);
+	    //VideoMonitorButton.onClick.AddListener(ShowMonitor);
         BgToggle.onValueChanged.AddListener(ShowBg);
 	}
     /// <summary>
@@ -56,6 +32,7 @@ public class CameraMonitorFollowUI : MonoBehaviour
     /// </summary>
     private void ShowBg(bool isOn)
     {
+        SetLayerUp(isOn);
         if (isOn) Show();
         else Hide();
     }
@@ -64,50 +41,126 @@ public class CameraMonitorFollowUI : MonoBehaviour
     /// </summary>
     public void Show()
     {
-        if (CurrentMonitor != null&&CurrentMonitor!=this) CurrentMonitor.BgToggle.isOn=false;
-        CurrentMonitor = this;
-        CameraDev.HighlightOn();
-        InfoBg.SetActive(true);
+        if (FollowTargetManage.Instance) FollowTargetManage.Instance.SaveDepOpenCameraUI(this);
+        if (RoomFactory.Instance.FactoryType == FactoryTypeEnum.BaoXin)
+        {
+            AlarmFollowUI.StaetOpenWindowShowInfo(this.gameObject  );
+        }
+        else if(videoFollowUI!=null)
+        {
+            if (CurrentMonitor != null && CurrentMonitor != this) CurrentMonitor.BgToggle.isOn = false;
+            CurrentMonitor = this;
+            videoFollowUI.Show();
+        }
+        else
+        {
+            if (CurrentMonitor != null && CurrentMonitor != this) CurrentMonitor.BgToggle.isOn = false;
+            CurrentMonitor = this;
+            NormalFollowUI.ShowNormalCameraFollowUI();
+        }
+       
+        //ShowInfo();
+        //CameraDev.HighlightOn();
+        //InfoBg.SetActive(true);
     }
     /// <summary>
     /// 关闭背景
     /// </summary>
     public void Hide()
     {
-        CurrentMonitor = null;
-        InfoBg.SetActive(false);
+        if (FollowTargetManage.Instance) FollowTargetManage.Instance.RemoveOpenCameraUI(this);
+        if (RoomFactory.Instance.FactoryType == FactoryTypeEnum.BaoXin)
+        {
+            AlarmFollowUI.ShowFollowUI(false );
+            AlarmFollowUI. RecoverFollowParentPos();
+        }
+        else if(videoFollowUI!=null)
+        {
+            CurrentMonitor = null;
+            videoFollowUI.Close();
+        }
+        else
+        {
+            CurrentMonitor = null;        
+            NormalFollowUI.CloseCurrentWindow();
+        }
+     
     }
+    /// <summary>
+    /// 设置界面是否显示在最上层
+    /// </summary>
+    /// <param name="isUp"></param>
+    private void SetLayerUp(bool isUp)
+    {
+        UGUIFollowTarget followTarget = transform.GetComponent<UGUIFollowTarget>();
+        if (followTarget) followTarget.SetIsUp(isUp);
+    }
+
     /// <summary>
     /// 设置信息
     /// </summary>
     /// <param name="devInfo"></param>
     public void SetInfo(DevNode devNode)
     {
-        CameraDev = devNode;
-        DevInfo devInfo = CameraDev.Info;
-        TitleText.text = devInfo.Name;
-        string info="";
-        if (devInfo.ParentId != null)
+        if (RoomFactory.Instance.FactoryType == FactoryTypeEnum.BaoXin)
         {
-            DepNode node = RoomFactory.Instance.GetDepNodeById((int)devInfo.ParentId);
-            if (node != null) info = node.NodeName + "/";
+            AlarmFollowUI .SetInfo(devNode, BgToggle); 
         }
-        info += devInfo.KKSCode;
-        InfoText.text = info;
-    }
-    /// <summary>
-    /// 显示监控信息
-    /// </summary>
-    private void ShowMonitor()
-    {
-        if (CameraDev != null)
+        else if(videoFollowUI!=null)
         {
-            CameraVideoManage.Instance.ShowVideo(CameraDev.Info.KKSCode);
+            videoFollowUI.SetInfo(devNode,BgToggle);
         }
         else
         {
-            //Todo:提示错误信息
-            Debug.LogError("VideoMonitor devInfo is null...");
+            NormalFollowUI.SetInfo(devNode);
         }
+        //CameraDev = devNode;        
     }
+    ///// <summary>
+    ///// 显示摄像头信息
+    ///// </summary>
+    //private void ShowInfo()
+    //{
+    //    if(CameraDev==null)
+    //    {
+    //        UGUIMessageBox.Show("Camera.Devinfo is null...");
+    //        return;
+    //    }
+    //    DevInfo devInfo = CameraDev.Info;
+    //    TitleText.text = devInfo.Name;
+    //    string info = "";
+    //    if (devInfo.ParentId != null)
+    //    {
+    //        DepNode node = RoomFactory.Instance.GetDepNodeById((int)devInfo.ParentId);
+    //        if (node != null) info = node.NodeName + "/";
+    //    }
+    //    CameraDevController cameraInfo = CameraDev as CameraDevController;
+    //    Dev_CameraInfo camInfo = cameraInfo.GetCameraInfo(CameraDev.Info);
+    //    if(cameraInfo!=null)info += camInfo.Ip;
+    //    InfoText.text = info;
+    //}
+    ///// <summary>
+    ///// 显示监控信息
+    ///// </summary>
+    //private void ShowMonitor()
+    //{
+    //    //RoomFactory.Instance.FactoryType == FactoryTypeEnum.BaoXin
+    //    if (CameraDev != null&&CameraDev is CameraDevController)
+    //    {
+    //        if (RoomFactory.Instance.FactoryType == FactoryTypeEnum.BaoXin)
+    //        {
+    //            if (CameraVideoManage.Instance) CameraAlarmManage.Instance.ShowCurrentCameraDev(CameraDev as CameraDevController); 
+    //        }
+    //        else
+    //        {
+    //            if (CameraVideoManage.Instance) CameraVideoManage.Instance.Show(CameraDev as CameraDevController);
+    //        }
+            
+    //    }
+    //    else
+    //    {
+    //        //Todo:提示错误信息
+    //        Debug.LogError("VideoMonitor devInfo is null...");
+    //    }
+    //}
 }

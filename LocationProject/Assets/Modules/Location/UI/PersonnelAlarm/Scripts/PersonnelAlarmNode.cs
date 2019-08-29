@@ -46,26 +46,16 @@ public class PersonnelAlarmNode : MonoBehaviour
     {
         if (ison)
         {
-            if (PersonInfoUI.personnel != null)
+            if (PersonInfoUI.personnel != null)//选中拓扑树上的人员
             {
-                //PersonInfoUI.SetContentGridActive(true);
-                //LocationManager.Instance.FocusPersonAndShowInfo(PersonInfoUI.personnel.Id);
-                PersonnelTreeManage.Instance.departmentDivideTree.Tree.SelectNodeByData(PersonInfoUI.personnel.TagId);
-                //PersonNode nodeT = PersonnelTreeManage.Instance.PersonnelToPersonNode(PersonInfoUI.personnel);
-                PersonnelTreeManage.Instance.areaDivideTree.Tree.SelectNodeByType(PersonInfoUI.personnel.TagId);//PersonNode.Id==Personnel.Id
+                //PersonnelTreeManage.Instance.departmentDivideTree.Tree.SelectNodeByData(PersonInfoUI.personnel.TagId);
+                //PersonnelTreeManage.Instance.areaDivideTree.Tree.SelectNodeByType(PersonInfoUI.personnel.TagId);
+                PersonnelTreeManage.Instance.SelectPerson(PersonInfoUI.personnel);
             }
-            // AlarmTweener.PlayForward();
-            //window.SetActive(true);
-            //   PersonnelToggle.isOn = true;
-            //StartOutManage.Instance.SetUpperStoryButtonActive(false);
         }
         else
         {
             PersonInfoUI.SetContentGridActive(false);
-           // AlarmTweener.PlayBackwards();
-            //window.SetActive(false);
-          //  PersonnelToggle.isOn = false;
-            //StartOutManage.Instance.SetUpperStoryButtonActive(true);
         }
     }
 

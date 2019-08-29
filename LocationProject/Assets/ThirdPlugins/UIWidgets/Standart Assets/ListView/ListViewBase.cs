@@ -555,15 +555,16 @@ namespace UIWidgets
 				return ;
 			}
 
-			if (!Multiple)
-			{
-				if ((selectedIndex!=-1) && (selectedIndex!=index))
-				{
-					Deselect(selectedIndex);
-				}
+            if (!Multiple)
+            {
+                if (selectedIndex == index) return;//2019_05_09_cww:拓扑树多选效果是重复选择导致的，点击->select->执行想要的代码->代码里面select了（ChangeTreeView的FindSelectNode）
 
-				selectedIndicies.Clear();
-			}
+                if ((selectedIndex != -1) && (selectedIndex != index))
+                {
+                    Deselect(selectedIndex);//不选择以前的节点
+                }
+                selectedIndicies.Clear();
+            }
 
 			selectedIndicies.Add(index);
 			selectedIndex = index;

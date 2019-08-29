@@ -16,7 +16,7 @@ public class PersonnelAlarmType : MonoBehaviour
         tempNames = new List<string>();
         AddName();
         SetDropdownData(tempNames);
-        PerTypedropdownItem.onValueChanged.AddListener(PersonnelAlarmList.Instance.GetScreenPersonnelAlarmItems);
+       // PerTypedropdownItem.onValueChanged.AddListener(PersonnelAlarmList.Instance.GetScreenPersonnelAlarmItems);
 
     }
 

@@ -23,6 +23,7 @@ public class HistoryPersonUIItem : MonoBehaviour
     public Sprite deleteSprite;//删除图片
 
     [HideInInspector]
+    [System.NonSerialized]
     public Personnel personnel;// 人员信息数据
 
     // Use this for initialization
@@ -59,7 +60,8 @@ public class HistoryPersonUIItem : MonoBehaviour
         personnel = personnelT;
         color = colorT;
         txtName.text = personnel.Name;
-        txtDepartmemnt.text = personnel.Parent.Name;
+        //txtDepartmemnt.text = personnel.Parent.Name;
+        txtDepartmemnt.text = personnel.Pst;
         LocationUIManage.Instance.SetPhoto(photo, personnel.Sex);
     }
 
@@ -69,19 +71,22 @@ public class HistoryPersonUIItem : MonoBehaviour
     public void Delete()
     {
         print("删除");
-        if (MultHistoryPlayUI.Instance.isPlay)
+        bool isPlayt=LocationHistoryUITool.GetIsPlaying();
+        if (isPlayt)
         {
             UGUIMessageBox.Show("是否终止当前人员历史轨迹演示，并删除该人员？", "是", "否", () =>
             {
-                //如果在播放就让它终止
-                ExecuteEvents.Execute<IPointerClickHandler>(MultHistoryPlayUI.Instance.StopBtn.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
-                MultHistoryPlayUI.Instance.RemovePerson(personnel);
+                ////如果在播放就让它终止
+                //ExecuteEvents.Execute<IPointerClickHandler>(MultHistoryPlayUI.Instance.StopBtn.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+                //MultHistoryPlayUI.Instance.RemovePerson(personnel);
+                LocationHistoryUITool.StopPlay(personnel);
             }, null, null);
         }
         else
         {
-            MultHistoryPlayUI.Instance.RemovePerson(personnel);
-            ExecuteEvents.Execute<IPointerClickHandler>(MultHistoryPlayUI.Instance.StopBtn.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+            //MultHistoryPlayUI.Instance.RemovePerson(personnel);
+            //ExecuteEvents.Execute<IPointerClickHandler>(MultHistoryPlayUI.Instance.StopBtn.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+            LocationHistoryUITool.StopPlay(personnel);
         }
 
     }

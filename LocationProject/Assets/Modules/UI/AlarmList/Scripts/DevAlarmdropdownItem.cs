@@ -16,7 +16,7 @@ public class DevAlarmdropdownItem : MonoBehaviour
         tempNames = new List<string>();
         AddName();
         SetDropdownData(tempNames);
-        devAlarmLeveldropdown.onValueChanged.AddListener(DevAlarmListManage.Instance.GetScreenDevAlarmItems);
+        devAlarmLeveldropdown.onValueChanged.AddListener(DevAlarmListManage.Instance.GetScreenDevAlarmLevel);
     }
     Dropdown.OptionData tempData;
     /// <summary>
@@ -45,11 +45,13 @@ public class DevAlarmdropdownItem : MonoBehaviour
         string n2 = "高级告警";
         string n3 = "中级告警";
         string n4 = "低级告警";
+        string n5 = "告警等级未定";
 
         tempNames.Add(n1);
         tempNames.Add(n2);
         tempNames.Add(n3);
         tempNames.Add(n4);
+        tempNames.Add(n5);
 
     }
 }

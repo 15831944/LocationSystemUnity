@@ -21,38 +21,59 @@ public enum ViewState
 }
 public class ActionBarManage : MonoBehaviour
 {
-
-    public static ActionBarManage Instance;
+    static ActionBarManage _instance;
+    public static ActionBarManage Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = GameObject.FindObjectOfType<ActionBarManage>();
+            }
+            return _instance;
+        }
+        set
+        {
+            _instance = value;
+        }
+    }
     /// <summary>
     /// 设备定位
     /// </summary>
     public Toggle DevToggle;
-    
+
     /// <summary>
     /// 人员定位按钮
     /// </summary>
     public Toggle PersonnelToggle;
-   
+
     /// <summary>
     /// 两票系统按钮
     /// </summary>
     public Toggle TwoVotesToggle;
-    
+
     /// <summary>
     /// 移动巡检
     /// </summary>
     public Toggle MobilePatrolToggle;
-     
-  
-    public GameObject   AlamText;
+
+
+    public GameObject AlamText;
     /// <summary>
     /// 窗体
     /// </summary>
     public GameObject Window;
 
-    void Start()
+    private void Awake()
     {
         Instance = this;
+        currentState = ViewState.人员定位;
+    }
+
+    void Start()
+    {
+        //Instance = this;
+        //currentState = ViewState.人员定位;
         InitToggleMethod();
         SceneEvents.FullViewStateChange += Instance_OnViewChange; ;
     }
@@ -60,7 +81,7 @@ public class ActionBarManage : MonoBehaviour
     {
         SceneEvents.FullViewStateChange -= Instance_OnViewChange; ;
     }
-   
+
     #region 控制栏方法部分
     /// <summary>
     /// 显示控制栏
@@ -148,6 +169,7 @@ public class ActionBarManage : MonoBehaviour
                 MobilePatrolToggle.isOn = false;
                 break;
         }
+        if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
         currentState = ViewState.None;
     }
 
@@ -164,7 +186,8 @@ public class ActionBarManage : MonoBehaviour
             CurrentState = ViewState.设备定位;
             TopoTreeManager.Instance.ShowWindow();
             PersonnelTreeManage.Instance.CloseWindow();
-            HideAndClearLocation();
+            //HideAndClearLocation();
+            HideAndHideLocation();
         }
         else
         {
@@ -189,29 +212,42 @@ public class ActionBarManage : MonoBehaviour
         SetVideoMonitorFollow(isOn);
         if (isOn)
         {
-            if (ViewState.人员定位 == CurrentState) return;
+            //if (ViewState.人员定位 == CurrentState) return;
             CurrentState = ViewState.人员定位;
             Debug.Log("开启人员定位！");
             ShowLocation();
+            //MonitorRangeManager.Instance.ShowRanges(FactoryDepManager.currentDep);
             if (CameraGizmoFactory.Instance) CameraGizmoFactory.Instance.Show();
+
         }
         else
         {
             Debug.Log("关闭人员定位！");
             HideAndClearLocation();
+            //HideAndHideLocation();
 
-            PersonSubsystemManage.Instance.ExitDevSubSystem();
-            HistoryPlayUI.Instance.Hide();
+            if (PersonSubsystemManage.Instance)
+            {
+                PersonSubsystemManage.Instance.ExitDevSubSystem();
+            }
+            if (HistoryPlayUI.Instance)
+            {
+                HistoryPlayUI.Instance.Hide();
+            }
             //if (SceneEvents.DepNode.depType != DepType.Factory)
             //{
             //    StartOutManage.Instance.SetUpperStoryButtonActive(true);
-            //}           
-            SmallMapController.Instance.Hide();
+            //}    
+            if (MonitorRangeManager.Instance)
+            {
+                MonitorRangeManager.Instance.HideAllRanges();
+            }
+            if (SmallMapController.Instance) SmallMapController.Instance.Hide();
             if (CameraGizmoFactory.Instance) CameraGizmoFactory.Instance.Close();
         }
-        if(PersonSubsystemManage.Instance)
-        PersonSubsystemManage.Instance.PersonSubsystemUI(isOn);
-        FunctionSwitchBarManage.Instance.SetAlarmAreaToggleActive(isOn);
+        if (PersonSubsystemManage.Instance)
+            PersonSubsystemManage.Instance.PersonSubsystemUI(isOn);
+        //FunctionSwitchBarManage.Instance.SetAlarmAreaToggleActive(isOn);
     }
 
     public WorkTicketHistoryDetailsUI workTicketHistoryDetailsUI;
@@ -237,7 +273,7 @@ public class ActionBarManage : MonoBehaviour
         }
         else
         {
-            AlamText.SetActive(false );
+            AlamText.SetActive(false);
             //if (TwoTicketSystemUI.Instance)
             //{
             //    TwoTicketSystemUI.Instance.Hide();
@@ -248,7 +284,8 @@ public class ActionBarManage : MonoBehaviour
             // TwoTicketSystemManage.Instance.HideDemo();
         }
         TwoTicketSystemSubBar.Instance.SetShoworHide(isOn);
-        FactoryDepManager.Instance.SetAllColliderIgnoreRaycast(isOn);
+        //FactoryDepManager.Instance.SetAllColliderIgnoreRaycast(isOn);
+        FactoryDepManager.Instance.SetAllColliderIgnoreRaycastOP(isOn); 
     }
 
     public void OnMobileInspectionToggleChange(bool isOn)
@@ -276,7 +313,7 @@ public class ActionBarManage : MonoBehaviour
         {
             AlamText.SetActive(false);
             MobileInspectionInfoFollow.Instance.Hide();
-         //   MobileInspectionManage.Instance.HideDemo();
+            //   MobileInspectionManage.Instance.HideDemo();
             //if (MobileInspectionUI.Instance)
             //{
             //    MobileInspectionUI.Instance.SetWindowActive(false);
@@ -287,7 +324,7 @@ public class ActionBarManage : MonoBehaviour
             }
         }
 
-            //MobileInspectionUI.Instance.SetWindowActive(isOn);
+        //MobileInspectionUI.Instance.SetWindowActive(isOn);
 
         MobileInspectionSubBar.Instance.SetShoworHide(isOn);
         FactoryDepManager.Instance.SetAllColliderIgnoreRaycast(isOn);
@@ -298,9 +335,26 @@ public class ActionBarManage : MonoBehaviour
     public void ShowLocation()
     {
         LocationManager.Instance.ShowLocation();
-        //MonitorRangeManager.Instance.ShowRanges();
+        MonitorRangeManager.Instance.ShowRanges(FactoryDepManager.currentDep);
         LocationUIManage.Instance.Show();
         PersonnelTreeManage.Instance.ShowWindow();
+        SmallMapController.Instance.Show();
+    }
+
+
+    /// <summary>
+    /// 关闭并清除人员定位
+    /// </summary>
+    public void HideAndHideLocation()
+    {
+        LocationManager.Instance.RecoverBeforeFocusAlign();
+        LocationManager.Instance.HideCharacter();
+        //MonitorRangeManager.Instance.ClearRanges();
+        LocationUIManage.Instance.Hide();
+        //LocationHistoryManager.Instance.ClearHistoryPaths();
+        //LocationManager.Instance.ClearCharacter();
+        PersonnelTreeManage.Instance.CloseWindow();
+        //HistoryPlayUI.Instance.SetWindowActive(false);
         SmallMapController.Instance.Show();
     }
 
@@ -315,7 +369,7 @@ public class ActionBarManage : MonoBehaviour
         LocationUIManage.Instance.Hide();
         //LocationHistoryManager.Instance.ClearHistoryPaths();
         //LocationManager.Instance.ClearCharacter();
-        PersonnelTreeManage.Instance.CloseWindow();
+       // PersonnelTreeManage.Instance.CloseWindow();  //todo
         //HistoryPlayUI.Instance.SetWindowActive(false);
         SmallMapController.Instance.Show();
     }
@@ -326,7 +380,7 @@ public class ActionBarManage : MonoBehaviour
     private void SetVideoMonitorFollow(bool isShow)
     {
         FollowTargetManage followManage = FollowTargetManage.Instance;
-        if (followManage==null) return;
+        if (followManage == null) return;
         if (isShow)
         {
             followManage.ShowCameraUI();

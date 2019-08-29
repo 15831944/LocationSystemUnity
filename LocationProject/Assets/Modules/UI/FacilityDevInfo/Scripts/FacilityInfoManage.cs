@@ -114,7 +114,7 @@ public class FacilityInfoManage : MonoBehaviour
             return;
         }
         kksCode = "J0GCQ41";
-        Dev_Monitor monitorInfo = GetDevMonitor(kksCode);
+        Dev_Monitor monitorInfo = CommunicationObject.Instance.GetDevMonitor(kksCode);
         if(monitorInfo==null)
         {
             UGUIMessageBox.Show("设备监控数据为空...");
@@ -139,24 +139,6 @@ public class FacilityInfoManage : MonoBehaviour
         //{
         //    SubSystemItem.CurrentSelectItem.DeselectItem();
         //}
-    }
-    /// <summary>
-    /// 获取设备监控信息
-    /// </summary>
-    /// <param name="kksCode"></param>
-    /// <returns></returns>
-    private Dev_Monitor GetDevMonitor(string kksCode)
-    {
-        CommunicationObject service = CommunicationObject.Instance;
-        if(service)
-        {
-            Dev_Monitor monitorInfo = service.GetMonitorInfoByKKS(kksCode,true);
-            return monitorInfo;
-        }
-        else
-        {
-            return null;
-        }
     }
     /// <summary>
     /// 显示子系统信息

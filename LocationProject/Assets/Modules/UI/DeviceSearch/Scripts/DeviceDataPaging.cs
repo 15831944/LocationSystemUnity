@@ -75,8 +75,11 @@ public class DeviceDataPaging : MonoBehaviour {
     /// <summary>
     /// 分页后数据存放
     /// </summary>
+    [System.NonSerialized]
     List<DevInfo> NewPagingData = new List<DevInfo>();
+    [System.NonSerialized]
     public List<DevInfo> devSearch;
+    [System.NonSerialized]
     public List<DevInfo> SeachDevName;
     public Sprite DoubleImage;
     public Sprite OddImage;
@@ -95,6 +98,7 @@ public class DeviceDataPaging : MonoBehaviour {
         closeButton.onClick.AddListener(ClosedevSearchWindow);
         deviceNameDropdown.devNameDropdown.onValueChanged.AddListener(ScreenDeviceType);
         deviceTypeDropdown.DevTypeDropdown.onValueChanged.AddListener(ScreenDeviceType);
+        InputDev.onValueChanged.AddListener(InputDevName_Click);
         //pageNumText.text = "1";
         //StartPageNum = 0;
     }
@@ -120,6 +124,7 @@ public class DeviceDataPaging : MonoBehaviour {
           
             Loom.DispatchToMainThread(() =>
             {
+                SeachDevName = new List<DevInfo>();
                 SeachDevName.AddRange(devSearch);
                //  SeachDevName = devSearch;
                 pageNumText.text = "1";
@@ -140,14 +145,22 @@ public class DeviceDataPaging : MonoBehaviour {
     /// <param name="DevData"></param>
     public void TotaiLine(List<DevInfo> devNum)
     {
-        if (devNum.Count % pageSize == 0)
+        if (devNum==null || devNum.Count == 0)
         {
-            pageTotalText.text = (devNum.Count / pageSize).ToString();
-        }
-        else
+            pageTotalText.text = "1";
+        }else
         {
-            pageTotalText.text = Convert.ToString(Math.Ceiling((double)devNum.Count / (double)pageSize));
+            if (devNum.Count % pageSize == 0)
+            {
+                pageTotalText.text = (devNum.Count / pageSize).ToString();
+            }
+            else
+            {
+                pageTotalText.text = Convert.ToString(Math.Ceiling((double)devNum.Count / (double)pageSize));
+            }
         }
+
+   
     }
     /// <summary>
     /// 获取设备数据
@@ -241,7 +254,7 @@ public class DeviceDataPaging : MonoBehaviour {
         but.onClick.RemoveAllListeners();
         but.onClick.AddListener(() =>
         {
-            DevBut_Click(devID, depID);
+            DevBut_Click(devID, depID,devName);
 
         });
         if (i % 2 == 0)
@@ -299,31 +312,37 @@ public class DeviceDataPaging : MonoBehaviour {
         }else
         {
             currentPage = int.Parse(pageNumText.text);
-        }
-        
-     
-        int  maxPage = (int )Math.Ceiling((double)SeachDevName.Count / (double)pageSize);
-
-        if (currentPage >maxPage)
+        }  
+        if (SeachDevName .Count == 0)
         {
-            currentPage = maxPage;
-            pageNumText.text = currentPage.ToString();
-        }
-        if (currentPage <= 0)
+            pageTotalText.text = "1";
+            StartPageNum = currentPage - 1;
+            PageNum = currentPage;
+            return;
+        } else
         {
-            currentPage = 1;
-            pageNumText.text = currentPage.ToString ();
+            int maxPage = (int)Math.Ceiling((double)SeachDevName.Count / (double)pageSize);
+            if (currentPage > maxPage)
+            {
+                currentPage = maxPage;
+                pageNumText.text = currentPage.ToString();
+            }
+            if (currentPage <= 0)
+            {
+                currentPage = 1;
+                pageNumText.text = currentPage.ToString();
+            }
+            StartPageNum = currentPage - 1;
+            PageNum = currentPage;
+            GetPageDevData(SeachDevName);
         }
-        StartPageNum = currentPage - 1;
-        PageNum = currentPage;
-        GetPageDevData(SeachDevName);
+       
     }
     /// <summary>
     /// 输入搜索名字
     /// </summary>
     public void InputDevName()
-    {
-      
+    {    
         StartPageNum = 0;
         PageNum = 1;
         pageNumText.text = "1";
@@ -334,16 +353,23 @@ public class DeviceDataPaging : MonoBehaviour {
         {
             string devName = devSearch[i].Name.ToLower();
             string devIP = devSearch[i].IP.ToLower();
-            if (devName.ToLower().Contains (key )|| devIP.ToLower().Contains (key ))
+            if (string .IsNullOrEmpty(key))
             {
                 if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
                 {
                     SeachDevName.Add(devSearch[i]);
                 }
-                    
-              
+            }else
+            {
+                if (devName.ToLower().Contains(key) || devIP.ToLower().Contains(key))
+                {
+                    if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
+                    {
+                        SeachDevName.Add(devSearch[i]);
+                    }
+                }
             }
-           
+                  
         }
         if (SeachDevName.Count == 0)
         {
@@ -359,16 +385,158 @@ public class DeviceDataPaging : MonoBehaviour {
         }
       
     }
-   
+    /// <summary>
+    /// 输入搜索名字
+    /// </summary>
+    public void InputDevName_Click(string valu)
+    {
+        StartPageNum = 0;
+        PageNum = 1;
+        pageNumText.text = "1";
+        SeachDevName.Clear();
+        SaveSelection();
+        string key = valu.ToLower();
+        for (int i = 0; i < devSearch.Count; i++)
+        {
+            string devName = devSearch[i].Name.ToLower();
+            string devIP = devSearch[i].IP.ToLower();
+            if (string.IsNullOrEmpty(key))
+            {
+                if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
+                {
+                    SeachDevName.Add(devSearch[i]);
+                }
+            }
+            else
+            {
+                if (devName.ToLower().Contains(key) || devIP.ToLower().Contains(key))
+                {
+                    if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
+                    {
+                        SeachDevName.Add(devSearch[i]);
+                    }
+                }
+            }
+        }
+        if (SeachDevName.Count == 0)
+        {
+            pageNumText.text = "1";
+            pageTotalText.text = "1";
+            promptText.gameObject.SetActive(true);
+        }
+        else
+        {
+            promptText.gameObject.SetActive(false);
+            TotaiLine(SeachDevName);
+            GetPageDevData(SeachDevName);
+        }
+
+    }
+    public void DeviceType_Click(int  valu)
+    {
+        StartPageNum = 0;
+        PageNum = 1;
+        pageNumText.text = "1";
+        SeachDevName.Clear();
+        SaveSelection();
+        string key = InputDev .text .ToString ().ToLower();
+        for (int i = 0; i < devSearch.Count; i++)
+        {
+            string devName = devSearch[i].Name.ToLower();
+            string devIP = devSearch[i].IP.ToLower();
+            if (string.IsNullOrEmpty(key))
+            {
+                if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
+                {
+                    SeachDevName.Add(devSearch[i]);
+                }
+            }
+            else
+            {
+                if (devName.ToLower().Contains(key) || devIP.ToLower().Contains(key))
+                {
+                    if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
+                    {
+                        SeachDevName.Add(devSearch[i]);
+                    }
+                }
+            }
+        }
+        if (SeachDevName.Count == 0)
+        {
+            pageNumText.text = "1";
+            pageTotalText.text = "1";
+            promptText.gameObject.SetActive(true);
+        }
+        else
+        {
+            promptText.gameObject.SetActive(false);
+            TotaiLine(SeachDevName);
+            GetPageDevData(SeachDevName);
+        }
+
+    }
+    public void DeviceNamee_Click(int valu)
+    {
+        StartPageNum = 0;
+        PageNum = 1;
+        pageNumText.text = "1";
+        SeachDevName.Clear();
+        SaveSelection();
+        string key = InputDev.text.ToString().ToLower();
+        for (int i = 0; i < devSearch.Count; i++)
+        {
+            string devName = devSearch[i].Name.ToLower();
+            string devIP = devSearch[i].IP.ToLower();
+            if (string.IsNullOrEmpty(key))
+            {
+                if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
+                {
+                    SeachDevName.Add(devSearch[i]);
+                }
+            }
+            else
+            {
+                if (devName.ToLower().Contains(key) || devIP.ToLower().Contains(key))
+                {
+                    if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
+                    {
+                        SeachDevName.Add(devSearch[i]);
+                    }
+                }
+            }
+        }
+        if (SeachDevName.Count == 0)
+        {
+            pageNumText.text = "1";
+            pageTotalText.text = "1";
+            promptText.gameObject.SetActive(true);
+        }
+        else
+        {
+            promptText.gameObject.SetActive(false);
+            TotaiLine(SeachDevName);
+            GetPageDevData(SeachDevName);
+        }
+
+    }
     /// <summary>
     /// 点击定位设备
     /// </summary>
     /// <param name="devId"></param>
-    public void DevBut_Click(string devId,int DepID)
+    public void DevBut_Click(string devId,int DepID,string devName)
     {
        
         DevSubsystemManage.Instance.QueryToggle.isOn = false;
-        RoomFactory.Instance.FocusDev(devId,DepID);   
+        RoomFactory.Instance.FocusDev(devId,DepID,result=> 
+        {
+            if (!result)
+            {
+                string msgTitle = "找不到对应区域和设备!";
+                if (!string.IsNullOrEmpty(devName)) msgTitle = string.Format("{0} : {1}", devName, msgTitle);
+                UGUIMessageBox.Show(msgTitle);
+            }
+        });   
       //  DeviceSearchTween.instance.ShowMinWindow(true);
         devSearchUI.SetActive(false);
         //  SearchDevInfo.Instance.SaveSelection();
@@ -377,8 +545,10 @@ public class DeviceDataPaging : MonoBehaviour {
         deviceNameDropdown.devNameDropdown.transform.GetComponent<Dropdown>().value = 0;
         deviceTypeDropdown.DevTypeDropdown.captionText.text = deviceTypeDropdown.devTyprList[0].ToString();
         deviceTypeDropdown.DevTypeDropdown.transform.GetComponent<Dropdown>().value = 0;
-        AlarmPushManage.Instance.ShowAlarmPushWindow(false);
+        //AlarmPushManage.Instance.IsShow.isOn = false;
+         AlarmPushManage.Instance.CloseAlarmPushWindow(false);
         // DevSubsystemManage.Instance.QueryToggle.isOn = false;
+        //AlarmPushManage.Instance.IsShow.isOn = false;
     }
     /// <summary>
     /// 没有筛选时的切页列表
@@ -401,6 +571,12 @@ public class DeviceDataPaging : MonoBehaviour {
     /// </summary>
     public void ShowdevSearchWindow()
     {
+        //RectTransform rect = this.GetComponent<RectTransform>();
+        //if (rect != null)
+        //{
+        //    rect.localPosition = Vector3.zero;
+        //}
+       
         devSearchUI.SetActive(true);
       
     }
@@ -416,7 +592,11 @@ public class DeviceDataPaging : MonoBehaviour {
         devSearchUI.SetActive(false);
         DevSubsystemManage.Instance.ChangeImage(false, DevSubsystemManage.Instance.QueryToggle);
         DevSubsystemManage.Instance.QueryToggle.isOn = false;
-        SeachDevName.Clear();
+        if (SeachDevName!=null)
+        {
+            SeachDevName.Clear();
+        }
+       
        // SearchDevInfo.Instance.SaveSelection();
        //  SearchDevInfo.Instance.ExitSearchUI();
        // DeviceSearchTween.instance.ShowMinWindow(false);
@@ -438,11 +618,13 @@ public class DeviceDataPaging : MonoBehaviour {
     public string GetDevSeachType()
     {
         int level = DeviceTypeDropdown.Instance.DevTypeDropdown.value;
-        if (level == 1) return "基站";
+        if (level == 0) return "设备类型";
+        else if (level == 1) return "基站";
         else if (level == 2) return "摄像头";
+        else if (level == 3) return "门禁";
         else
         {
-            return "门禁";
+            return "生产设备";
         }
 
     }
@@ -489,6 +671,7 @@ public class DeviceDataPaging : MonoBehaviour {
     /// <returns></returns>
     public bool DeviceName(DevInfo name)
     {
+        pageNumText.text = "1";
         int level = DeviceNameDropdown.Instance.devNameDropdown.value;
         if (level == 0) return true;
         else
@@ -505,6 +688,7 @@ public class DeviceDataPaging : MonoBehaviour {
     }
     public void ScreenDeviceType(int level)
     {
+        pageNumText.text = "1";
         SaveSelection();
         SeachDevName.Clear();
         for (int i=0;i < devSearch.Count;i++)

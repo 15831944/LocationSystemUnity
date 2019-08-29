@@ -50,4 +50,33 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="U3DPosition" nillable="true" type="tns:U3DPosition" />
+  <xs:complexType name="ArrayOfPositionList">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PositionList" nillable="true" type="tns:PositionList" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfPositionList" nillable="true" type="tns:ArrayOfPositionList" />
+  <xs:complexType name="PositionList">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Count" type="xs:int" />
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PositionList" nillable="true" type="tns:PositionList" />
+  <xs:complexType name="ArrayOfPos">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Pos" nillable="true" type="tns:Pos" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfPos" nillable="true" type="tns:ArrayOfPos" />
+  <xs:complexType name="Pos">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Code" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Time" type="xs:long" />
+      <xs:element minOccurs="0" name="X" type="xs:float" />
+      <xs:element minOccurs="0" name="Y" type="xs:float" />
+      <xs:element minOccurs="0" name="Z" type="xs:float" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Pos" nillable="true" type="tns:Pos" />
 </xs:schema>

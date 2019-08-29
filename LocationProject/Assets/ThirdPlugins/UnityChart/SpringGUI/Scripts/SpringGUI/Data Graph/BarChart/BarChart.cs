@@ -44,17 +44,22 @@ namespace SpringGUI
         {
             if (!enable)
                 return;
-            GameObject horizontalText = transform.Find("HorizontalUnitTemplate").gameObject;
-            GameObject verticalText = transform.Find("VerticalUnitTemplate").gameObject;
-            horizontalText.SetActive(false);
-            verticalText.SetActive(false);
-            (barChartFactory as BarChartFactory).UnitEnable(verticalText,horizontalText,GetPixelAdjustedRect(),this.transform,BaseSetting ,BarChartSetting , barChartData);
+           
+                GameObject horizontalText = transform.Find("HorizontalUnitTemplate").gameObject;
+                GameObject verticalText = transform.Find("VerticalUnitTemplate").gameObject;
+                horizontalText.SetActive(false);
+                verticalText.SetActive(false);
+                (barChartFactory as BarChartFactory).UnitEnable(verticalText, horizontalText, GetPixelAdjustedRect(), this.transform, BaseSetting, BarChartSetting, barChartData);
+               
+   
         }
 
         // inject data for simple bar graph
         public void Inject( IList<float> data )  
         {
+           
             var bars = dataProxy.Convert2BD(data);
+             barChartData.RemoveAll();
             barChartData.AddBars(bars);
         }
 
@@ -62,6 +67,7 @@ namespace SpringGUI
         public void Inject( IList<float>[] datas )
         {
             var bars = dataProxy.Convert2BD(datas);
+            barChartData.RemoveAll();
             barChartData.AddBars(bars);
         }
 
@@ -69,6 +75,7 @@ namespace SpringGUI
         public void Inject<T>( IList<T> data )
         {
             IList<Bars> bars = dataProxy.Convert2BD(data);
+            barChartData.RemoveAll();
             barChartData.AddBars(bars);
         }
 
@@ -76,6 +83,7 @@ namespace SpringGUI
         public void Inject<T>( IList<T>[] datas )
         {
             IList<Bars> bars = dataProxy.Convert2BD(datas);
+            barChartData.RemoveAll();
             barChartData.AddBars(bars);
         }
     }

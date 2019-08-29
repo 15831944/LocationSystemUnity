@@ -11,7 +11,7 @@ using MonitorRange;
 public class TopoTreeManager : MonoBehaviour
 {
     public static TopoTreeManager Instance;
-    public string RootName;
+    //public string RootName;
     /// <summary>
     /// 滑动条
     /// </summary>
@@ -97,7 +97,7 @@ public class TopoTreeManager : MonoBehaviour
     /// <summary>
     /// 刷新树控件
     /// </summary>
-    private void ResizeTree()
+    public void ResizeTree()
     {
         if (Tree != null)
         {
@@ -114,40 +114,8 @@ public class TopoTreeManager : MonoBehaviour
     /// </summary>
     public void GetTopoTree()
     {
-        //Loom.StartSingleThread(() =>
-        //{
-        //    PhysicalTopology topoRoot = CommunicationObject.Instance.GetTopoTree();
-        //    Loom.DispatchToMainThread(() =>
-        //    {
-        //        StructureTree(topoRoot);
-        //        Tree.Start();
-        //        Tree.Nodes = nodes;
-        //        SetListeners();
-        //        scrollRect.horizontal = true;
-
-        //    });
-        //});
-        Debug.Log("TopoTreeManager->GetTopoTree");
-        //PhysicalTopology topoRoot=null;
-        //ThreadManager.Run(()=> 
-        //{
-        //    topoRoot = CommunicationObject.Instance.GetTopoTree();
-        //},()=>
-        //{
-        //    if(topoRoot==null)
-        //    {
-        //        Debug.LogError("TopoTree value is null...");
-        //        return;
-        //    }
-        //    StructureTree(topoRoot);
-        //    Tree.Start();
-        //    Tree.Nodes = nodes;
-        //    SetListeners();
-        //    scrollRect.horizontal = true;
-
-        //},"");
-
-        CommunicationObject.Instance.GetTopoTreeAsync((topoRoot) =>
+        Log.Info("TopoTreeManager->GetTopoTree");
+        CommunicationObject.Instance.GetTopoTree((topoRoot) =>
         {
             if (topoRoot != null)
             {
@@ -157,6 +125,7 @@ public class TopoTreeManager : MonoBehaviour
                 SetListeners();
                 scrollRect.horizontal = true;
             }
+            Log.Info("TopoTreeManager->GetTopoTree complete.");
         });
     }
 
@@ -173,11 +142,6 @@ public class TopoTreeManager : MonoBehaviour
         PhysicalTopology topoNode = node.Item.Tag as PhysicalTopology;
         if (topoNode != null)
         {
-            //if(RoomFactory.Instance)
-            //{
-            //    RoomFactory.Instance.FocusNode(topoNode);
-            //}
-
             SceneEvents.OnTopoNodeChanged(topoNode);
         }
     }
@@ -203,28 +167,7 @@ public class TopoTreeManager : MonoBehaviour
         }
         AreaList.Clear();
         nodes = new ObservableList<TreeNode<TreeViewItem>>();
-
-        //TreeNode<TreeViewItem> rootNode = AddRootNode(root.Name, root);
-        //AddNodes(root,rootNode);
-        //rootNode.IsExpanded = true;
-
-        if (string.IsNullOrEmpty(RootName))
-        {
-            //不显示根几点，显示根节点下的第一级节点
-            ShowFirstLayerNodes(root);
-        }
-        else
-        {
-            PhysicalTopology rootNode = root.Children.ToList().Find(i => i.Name == RootName);
-            if (rootNode != null)
-            {
-                ShowFirstLayerNodes(rootNode);//显示某一个一级节点下的内容
-            }
-            else
-            {
-                ShowFirstLayerNodes(root);
-            }
-        }
+        ShowFirstLayerNodes(root);
     }
 
     private void ShowFirstLayerNodes(PhysicalTopology root)
@@ -235,9 +178,14 @@ public class TopoTreeManager : MonoBehaviour
             var rootNode = CreateTopoNode(child);
             nodes.Add(rootNode);
             AddNodes(child, rootNode);
-            //rootNode.IsExpanded = true;
+            if (IsExpandAll)
+            {
+                rootNode.IsExpanded = true;
+            }
         }
     }
+
+    public bool IsExpandAll = false;
 
     /// <summary>
     /// 添加根节点
@@ -331,6 +279,10 @@ public class TopoTreeManager : MonoBehaviour
                 var node = CreateTopoNode(child);
                 treeNode.Nodes.Add(node);
                 AddNodes(child, node);
+                if (IsExpandAll)
+                {
+                    node.IsExpanded = true;
+                }
             }
         }
 

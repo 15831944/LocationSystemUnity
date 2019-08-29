@@ -285,11 +285,13 @@ namespace Cinemachine
             return displacement;
         }
 
+        public QueryTriggerInteraction TriggerInteraction = QueryTriggerInteraction.Collide;
+
         private bool RaycastIgnoreTag(Ray ray, out RaycastHit hitInfo, float rayLength)
         {
             while (Physics.Raycast(
-                ray, out hitInfo, rayLength, m_CollideAgainst.value, 
-                QueryTriggerInteraction.Ignore))
+                ray, out hitInfo, rayLength, m_CollideAgainst.value,
+                TriggerInteraction))
             {
                 if (m_IgnoreTag.Length == 0 || !hitInfo.collider.CompareTag(m_IgnoreTag))
                     return true;

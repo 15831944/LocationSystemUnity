@@ -502,4 +502,22 @@ namespace DataObjects.Utils
             return true;
         }
     }
+
+    public static class NewTypeCodes
+    {
+        /// <summary>
+        /// 基站设备TypeCode
+        /// </summary>
+        public static int Archor = 20180821;
+
+        /// <summary>
+        /// 测点
+        /// </summary>
+        public static int TrackPoint = 100001;
+
+        /// <summary>
+        /// 摄像头
+        /// </summary>
+        public static int Camera = 3000201;
+    }
 }

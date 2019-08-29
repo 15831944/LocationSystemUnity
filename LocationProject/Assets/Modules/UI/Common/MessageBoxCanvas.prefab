@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 224634977423444566}
   - component: {fileID: 222250643210139638}
   - component: {fileID: 114810021980679590}
+  - component: {fileID: 114876569047323136}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -223,6 +224,7 @@ GameObject:
   - component: {fileID: 114624362287578486}
   - component: {fileID: 114392628984893576}
   - component: {fileID: 114483585922365902}
+  - component: {fileID: 114443737710411388}
   m_Layer: 0
   m_Name: Bottom
   m_TagString: Untagged
@@ -257,6 +259,7 @@ GameObject:
   - component: {fileID: 224689729439875106}
   - component: {fileID: 222339355188677046}
   - component: {fileID: 114953940881541434}
+  - component: {fileID: 114868233848396442}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -750,6 +753,19 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114443737710411388
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1735828408487656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
 --- !u!114 &114483585922365902
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1302,6 +1318,19 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114868233848396442
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1793154195986028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
 --- !u!114 &114874300310573806
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1314,6 +1343,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 2
+  m_VerticalFit: 2
+--- !u!114 &114876569047323136
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1428728591546834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 0
   m_VerticalFit: 2
 --- !u!114 &114934939372139460
 MonoBehaviour:

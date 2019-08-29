@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class NearPersonnelCameraManage : MonoBehaviour
 {
     public static NearPersonnelCameraManage Instance;
-    public List<NearbyDev> NearPerCamList;
+    [System.NonSerialized] public List<NearbyDev> NearPerCamList;
     /// <summary>
     /// 行的模板
     /// </summary>
@@ -28,9 +28,16 @@ public class NearPersonnelCameraManage : MonoBehaviour
 
 
     public Scrollbar vertical;
-    public PersonInfoUI personInfoUI;
+
 
     public bool isRefresh = false;
+    int Id;
+    float Distance;
+    int NFlag;
+    string AreaName;
+    string PerName;
+    LocationObject LocationObj;
+    int CurrentId;
     void Start()
     {
         Instance = this;
@@ -40,16 +47,45 @@ public class NearPersonnelCameraManage : MonoBehaviour
     }
 
 
-
-    public void GetNearPerCamData(int id, float distance, int nFlag)
+    public void StartRefershNearPersonnelCameraData()
     {
+       
+        Debug.LogError("进入");
+        if (!IsInvoking("RefershNearPersonnelCameraData"))
+        {
+            Debug.LogError("开始");
+           
+            InvokeRepeating("RefershNearPersonnelCameraData", 0, CommunicationObject.Instance.RefreshSetting.NearCamera);
+
+        }
+       
+    }
+    public void RefershNearPersonnelCameraData()
+    {
+        ReshDataAndSelectItem();
+        Instance.SaveSelection();
         if (isRefresh) return;
         isRefresh = true;
-        var nearPersonnelData = CommunicationObject.Instance.GetNearbyDev_Currency(id, distance, nFlag);
+        var nearPersonnelData = CommunicationObject.Instance.GetNearbyDev_Currency(Id , Distance , NFlag );
+       
+        if (string .IsNullOrEmpty (AreaName))
+        {
+            CurrentArea.text = "厂区内";
+        }
+        else
+        {
+            CurrentArea.text = AreaName.ToString();
+        }
+        if (!string.IsNullOrEmpty(PerName))
+        {
+            Personnel.text = PerName.ToString();
+        }
+   
         if (nearPersonnelData == null)
         {
             CamNum.text = "0";
             isRefresh = false;
+           
             return;
         }
         if (nearPersonnelData != null)
@@ -68,6 +104,69 @@ public class NearPersonnelCameraManage : MonoBehaviour
         }
 
         isRefresh = false;
+        ReshCompleteAndSelectItem();
+        Vector3 PerRotion = new Vector3(LocationObj.transform.eulerAngles.x, LocationObj.transform.eulerAngles.z, LocationObj.transform.eulerAngles.y);
+        PersonnelRotation.GetComponent<RectTransform>().localEulerAngles = PerRotion;
+
+      
+        CurrentId = Id;
+        Debug.LogError("caixulu");
+    }
+    public void CloseRefershNearPersonnelCameraData()
+    {
+        if (IsInvoking("RefershNearPersonnelCameraData"))
+        {
+            CancelInvoke("RefershNearPersonnelCameraData");
+        }
+    }
+    public void GetNearPerCamData(int id, float distance, int nFlag, string areaName, LocationObject locationObj,string perName)
+    {
+         Id =id ;
+         Distance=distance ;
+         NFlag=nFlag ;
+        AreaName = areaName;
+        PerName = perName;
+        LocationObj =locationObj ;
+        StartRefershNearPersonnelCameraData();
+
+
+    }
+    string RecordId;
+    public void ReshDataAndSelectItem()
+    {
+        if (grid.transform.childCount == 0) return;
+        for (int i =0;i < grid.transform .childCount;i++)
+        {
+            Toggle selectTog = grid.transform.GetChild(i).GetComponent<Toggle>();
+            if (selectTog.isOn ==true)
+            {
+                RecordId = grid.transform.GetChild(i).GetChild(1).GetChild(1).GetComponent<Text>().text;
+            }
+        }
+    }
+    public void ReshCompleteAndSelectItem()
+    {
+        if (grid.transform.childCount == 0) return;
+        for (int i = 0; i < grid.transform.childCount; i++)
+        {
+            Toggle selectTog = grid.transform.GetChild(i).GetComponent<Toggle>();
+             string   CurrentRecordId= grid.transform.GetChild(i).GetChild(1).GetChild(1).GetComponent<Text>().text;
+             string CurrentName = grid.transform.GetChild(i).GetChild(1).GetChild(0).GetComponent<Text>().text;
+            if (RecordId == CurrentRecordId)
+            {
+                selectTog.isOn = true;
+               for (int m=0;m < CameraGrid.transform .childCount;m++)
+                {
+                    string SelectName= grid.transform.GetChild (i ).GetChild(1).GetChild (0).GetComponent<Text>().text;
+                    Toggle selectNameTog = CameraGrid.transform.GetChild(i).GetChild(1).GetComponent<Toggle>();
+                    if (CurrentName== SelectName)
+                    {
+                        selectNameTog.isOn = true;
+                    }
+                }
+            } 
+           
+        }
     }
     public void SetNearPersonnelCamData(List<NearbyDev> devList)
     {
@@ -124,9 +223,10 @@ public class NearPersonnelCameraManage : MonoBehaviour
     }
     public void CloseNearPersonnelCameraWindow()
     {
-        personInfoUI.CloseRefershNearPersonnelCameraData();
+        CloseRefershNearPersonnelCameraData();
         NearPersonnelCameraWindow.SetActive(false);
         SaveSelection();
+        RecordId = "";
     }
     /// <summary>
     /// 删除生成的预设

@@ -14,12 +14,22 @@ public class NearPersonnelCameraInfo : MonoBehaviour {
     int num;
     int m;
     public NearPerCameraRotation nearPerCameraRotation;
+    public Button showCameraButton;//显示摄像头按钮
+    private NearbyDev cameraDev;
     void Start () {
         camTog.onValueChanged.AddListener(Click_Toggle);
-
+        if (showCameraButton == null) showCameraButton = transform.GetComponentInChildren<Button>(false);//防止忘了拖设备
+        if (showCameraButton != null) showCameraButton.onClick.AddListener(OnCameraButtonClick);
+    }
+    private void OnCameraButtonClick()
+    {
+        if (cameraDev == null) return;
+        DevInfo info = CommunicationObject.Instance.GetDevByid(cameraDev.id);
+        if(info!=null) CameraVideoManage.Instance.Show(info);
     }
     public void showNearPersonnelCamInfo(NearbyDev devList ,int total,int i)
     {
+        cameraDev = devList;
         num = total;
         m = i + 1;
         if (devList.TypeName==null)
@@ -28,7 +38,7 @@ public class NearPersonnelCameraInfo : MonoBehaviour {
         }
        else
         {
-            cameraName.text = devList.TypeName.ToString();
+            cameraName.text = devList.Name.ToString();
         }
            
             cameraId.text  = devList.id.ToString();
@@ -61,7 +71,4 @@ public class NearPersonnelCameraInfo : MonoBehaviour {
         NearPersonnelCameraManage.Instance.vertical.value = 1-n;
 
     }
-    void Update () {
-		
-	}
 }

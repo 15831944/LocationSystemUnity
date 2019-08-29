@@ -14,9 +14,13 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     public Button closeBtn;//关闭   
 
     public Button saveBtn;//保存按钮
+    public Button saveAndCloseBtn;//保存按钮
 
+    [System.NonSerialized]
     public List<Personnel> personnels;//人员信息列表
+    [System.NonSerialized]
     public List<Personnel> currentSelectPersonnels;//当前选中的人员信息列表
+    [System.NonSerialized]
     public List<Personnel> currentSelectPersonnelsBeforeShow;//在打开之前选中的人员信息列表
 
     private bool isEdited;//是否修改过
@@ -30,6 +34,8 @@ public class HistoryPersonsSearchUI : MonoBehaviour
         searchInput.onValueChanged.AddListener(SearchInput_OnValueChanged);
         searchBtn.onClick.AddListener(SearchBtn_OnClick);
         saveBtn.onClick.AddListener(SaveBtn_OnClick);
+        saveAndCloseBtn.onClick.AddListener(SaveAndCloseBtn_OnClick);
+
 
         previousPageBtn.onClick.AddListener(PreviousPageBtn_OnClick);
         nextPageBtn.onClick.AddListener(NextPageBtn_OnClick);
@@ -55,7 +61,7 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     {
         currentSelectPersonnels = personnelT;
         currentSelectPersonnelsBeforeShow = new List<Personnel>(personnelT);
-        personnels = PersonnelTreeManage.Instance.departmentDivideTree.personnels;
+        personnels = PersonnelTreeManage.Instance.GetAllPersonnels();
         SetWindow(true);
         Search();
         ShowSelectItems();
@@ -111,9 +117,19 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     {
         Debug.Log("SaveBtn_OnClick!");
         List<Personnel> currentSelectPersonnelsT = new List<Personnel>(currentSelectPersonnels);
-        MultHistoryPlayUI.Instance.ShowPersons(currentSelectPersonnelsT);
+        LocationHistoryUITool.ShowPersons(currentSelectPersonnelsT);
         currentSelectPersonnelsBeforeShow = new List<Personnel>(currentSelectPersonnels);
+        MultHistoryPlayUINew.Instance.Stop();
         isEdited = false;
+    }
+
+    /// <summary>
+    /// 保存并关闭按钮
+    /// </summary>
+    public void SaveAndCloseBtn_OnClick()
+    {
+        SaveBtn_OnClick();
+        Hide();
     }
 
     /// <summary>
@@ -224,6 +240,7 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     private int currentPageNum;//当前所在页,0开始
     private int pageCount;//总页数
     private int showCount = 9;//每页显示人员的个数
+    [System.NonSerialized]
     public List<Personnel> searchPersonnels;//当前搜索出来的人员
 
     /// <summary>
@@ -232,7 +249,7 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     public void Search()
     {
         currentPageNum = 0;
-        personnels = PersonnelTreeManage.Instance.departmentDivideTree.personnels;
+        personnels = PersonnelTreeManage.Instance.GetAllPersonnels();
         if (searchInput.text == "")
         {
             searchPersonnels = personnels;
@@ -376,72 +393,42 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     /// </summary>
     public bool Contains(Personnel p)
     {
-        if (ContainsName(p)) return true;
-        if (ContainsWorkNum(p)) return true;
-        if (ContainsDepartment(p)) return true;
-        if (ContainsPost(p)) return true;
-        return false;
-    }
+        try
+        {
+            var searchKey = searchInput.text.ToLower();
 
-    /// <summary>
-    /// 筛选根据名称
-    /// </summary>
-    public bool ContainsName(Personnel p)
-    {
-        if (p.Name.ToLower().Contains(searchInput.text.ToLower()))
+            if (!string.IsNullOrEmpty(p.Name) && p.Name.ToLower().Contains(searchKey))// 筛选根据名称
+            {
+                return true;
+            }
+            else if (!string.IsNullOrEmpty(p.WorkNumber) && p.WorkNumber.ToLower().Contains(searchKey))// 筛选根据工号
+            {
+                return true;
+            }
+            else if (p.Parent!=null&&p.Parent.Name.ToLower().Contains(searchKey))// 筛选根据部门
+            {
+                return true;
+            }
+            else if (!string.IsNullOrEmpty(p.Pst)&&p.Pst.ToLower().Contains(searchKey))// 筛选根据岗位
+            {
+                return true;
+            }
+            else if (p.Tag != null && p.Tag.Code.ToLower().Contains(searchKey))// 筛选定位卡筛选
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        catch (System.Exception ex)
         {
+            Debug.LogError("HistoryPersonsSearchUI:" + ex);
             return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 筛选根据工号
-    /// </summary>
-    public bool ContainsWorkNum(Personnel p)
-    {
-        if (p.WorkNumber.ToString().ToLower().Contains(searchInput.text.ToLower()))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 筛选根据部门
-    /// </summary>
-    public bool ContainsDepartment(Personnel p)
-    {
-        if (p.Parent.Name.ToLower().Contains(searchInput.text.ToLower()))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
         }
     }
 
-    /// <summary>
-    /// 筛选根据岗位
-    /// </summary>
-    public bool ContainsPost(Personnel p)
-    {
-        if (p.Pst.ToLower().Contains(searchInput.text.ToLower()))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
 
     /// <summary>
     /// 添加选中人员的项
@@ -574,7 +561,8 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     /// </summary>
     public void SetPersonsLimitRelevant()
     {
-        if (currentSelectPersonnels.Count < MultHistoryPlayUI.Instance.limitPersonNum)
+        bool islimitPersonNum= currentSelectPersonnels.Count < LocationHistoryUITool.GetLimitPersonNum();
+        if (islimitPersonNum)
         {
             //SetSearchUIItemInteractable(true);
             SetSearchUIItemLimitAlam(false);
@@ -614,7 +602,8 @@ public class HistoryPersonsSearchUI : MonoBehaviour
     /// </summary>
     public bool IsAchisevePersonsLimitNum()
     {
-        if (currentSelectPersonnels.Count < MultHistoryPlayUI.Instance.limitPersonNum)
+        bool islimitPersonNum = currentSelectPersonnels.Count < LocationHistoryUITool.GetLimitPersonNum();
+        if (islimitPersonNum)
         {
             return false;
         }

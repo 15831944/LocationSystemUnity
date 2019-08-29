@@ -17,9 +17,11 @@ public class FactoryViewController : MonoBehaviour
         if (isFullView)
         {
             Hide();
+            //ActionBarManage.Instance.CurrentState = ViewState.None;
         }
         else
         {
+            ActionBarManage.Instance.CurrentState = ViewState.人员定位;
             Show();
             SwitchToFactory();
         }

@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityStandardAssets.Characters.FirstPerson;
 using UnityStandardAssets.CrossPlatformInput;
+using Jacovone.AssetBundleMagic;
 
 public class RoamManage : MonoBehaviour
 {
@@ -24,13 +25,24 @@ public class RoamManage : MonoBehaviour
     public GameObject Light;
     public GameObject PromptBox;//没有飞行模式的提示框
     private bool isIndoor;//判断是否在室内
+   
+
     // Use this for initialization
     void Start()
     {
         Instance = this;
-
+        BindingCursorLockState();
 
     }
+
+    private void BindingCursorLockState( )
+    {
+        if(FPSController!=null)
+        {
+            FPSController.BindingCursorAction(ChangeCursorState);
+        }
+    }
+
     public void On_fly()
     {
         is_Fly = false;
@@ -60,21 +72,26 @@ public class RoamManage : MonoBehaviour
 
     public void flight_Click()
     {
-        
+        if(LoadingIndicatorScript.Instance!=null)
+            LoadingIndicatorScript.Instance.IsBuildingAndIsDev();
+        if (!FPSController.IsCursorLock) return;
         if (FPSController.gameObject.activeInHierarchy)
         {
             if (!PromptWindow.transform.GetChild(6).gameObject.activeInHierarchy)// Debug.Log("飞行模式下，没有选择入口");
             {
                 if (Input.GetKeyDown(KeyCode.R))//进入到返回入口
                 {
+                   
                     FPSController.gameObject.SetActive(false);
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
                     EntranceManage.instance.ShowWindow(true);
                     FPSMode.Instance.HideCameras(false);
                     FPSMode.Instance.NoFPSUI.SetActive(false);
-                    FPSController.ChangeGravityValue(0f);
-                    FPSController.ChangeWalkSpeed(25f);
+                    FPSController.ChangeGravityValue(1f);
+                    FPSController.ChangeWalkSpeed(1.6f);
+                    FPSMode.Instance.SetRoamFollowUI(false);
+                    if(RoamDevInfoUI.Instance)RoamDevInfoUI.Instance.Close();
                     ExitRoam();
                 }
             }
@@ -83,21 +100,25 @@ public class RoamManage : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Space))//跳跃
             {
+               
                 FPSController.ChangeGravityValue(1f);
                 FPSController.IsSpaceState = true;
                 is_Fly = true;
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
                 Invoke("On_fly", 1f);
+                if (Input.GetKeyDown(KeyCode.LeftShift))
+                {
 
+                    FPSController.ChangeWalkSpeed(5f);
+                }
+                else
+                {
+                    FPSController.ChangeWalkSpeed(1.6f);
+                    Debug.LogError("cailulu+1.6");
+                }
 
             }
-            if (Input .GetKeyDown(KeyCode.LeftShift))
-            {
-                FPSController.ChangeWalkSpeed(5f);
-            }else
-            {
-                FPSController.ChangeWalkSpeed(1.6f);
-            }
+            
         }
 
         if (FPSobj.gameObject.activeInHierarchy)
@@ -106,7 +127,8 @@ public class RoamManage : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.F))//进入飞行模式
             {
-                if (isIndoor)
+                
+                if (isIndoor&& !PromptWindow.transform.GetChild(3).gameObject.activeInHierarchy)
                 {
                     ShowPromptBox();
                     Invoke("ClosePromptBox", 3f);
@@ -115,11 +137,9 @@ public class RoamManage : MonoBehaviour
                 {
                     if (is_Fly)
                     {
-
                     }
                     else
                     {
-
                         if (isStart)
                         {
                             is_Fly = true;
@@ -131,7 +151,7 @@ public class RoamManage : MonoBehaviour
                                 is_Fly = false;
                             });
                             EntranceFlight();
-                            flight.GetComponent<Text>().text = "退出飞行模式";
+                            flight.GetComponent<Text>().text = "退出飞行";
                             isStart = false;
                         }
                         else
@@ -139,15 +159,17 @@ public class RoamManage : MonoBehaviour
                           //  is_Fly = true;
                             ////FPSobj.GetComponent<Transform>().DOLocalMoveY(1f, 1.2f).SetEase(Ease.InOutQuint).OnComplete(() =>
                             ////{
-                            FPSController.ChangeWalkSpeed(1.6f);
+                           // FPSController.ChangeWalkSpeed(1.6f);
+                            Debug.LogError("cailulu+1.6");
                             FPSController.IsSpaceState = true;
                               //  is_Fly = false;
                          //   });
                             EntranceRoam();
-                            flight.GetComponent<Text>().text = "进入飞行模式";
+                            flight.GetComponent<Text>().text = "进入飞行";
                             FPSController.ChangeGravityValue(30f);
-                           
-                           isStart = true;
+                            FPSController.ChangeWalkSpeed(1.6F);
+                           // FPSController.ChangeWalkSpeed(1.6f);
+                            isStart = true;
                             is_Fly = false ;
 
 
@@ -161,6 +183,7 @@ public class RoamManage : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Q))//飞行模式上升
             {
+                
                 if (FPSobj.transform.GetComponent<Transform>().localPosition.y < 160f)
                 {
                     FPSobj.GetComponent<Transform>().localPosition += Vector3.up * 2;
@@ -201,6 +224,7 @@ public class RoamManage : MonoBehaviour
         PromptWindow.transform.GetChild(6).gameObject.SetActive(true);
         PromptWindow.transform.GetChild(4).gameObject.SetActive(false );
         PromptWindow.transform.GetChild(7).gameObject.SetActive(true);
+        PromptWindow.transform.GetChild(8).gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -217,7 +241,9 @@ public class RoamManage : MonoBehaviour
         PromptWindow.transform.GetChild(5).gameObject.SetActive(true );
         PromptWindow.transform.GetChild(6).gameObject.SetActive(false);
         PromptWindow.transform.GetChild(7).gameObject.SetActive(false);
-        PromptWindow.transform.GetChild(3).GetChild(0).GetComponent<Text>().text = "进入飞行模式";
+        PromptWindow.transform.GetChild(8).gameObject.SetActive(true);
+        PromptWindow.transform.GetChild(3).GetChild(0).GetComponent<Text>().text = "进入飞行";
+        OnCursonStateChange(true);
     }
     /// <summary>
     /// 退出漫游时操作栏的改变
@@ -232,8 +258,11 @@ public class RoamManage : MonoBehaviour
         PromptWindow.transform.GetChild(4).gameObject.SetActive(false);
         PromptWindow.transform.GetChild(6).gameObject.SetActive(false);
         PromptWindow.transform.GetChild(7).gameObject.SetActive(false);
-
+        PromptWindow.transform.GetChild(8).gameObject.SetActive(false);
     }
+
+   
+
     /// <summary>
     /// 进入室内操作栏改变
     /// </summary>
@@ -247,6 +276,54 @@ public class RoamManage : MonoBehaviour
         PromptWindow.transform.GetChild(4).gameObject.SetActive(true);
         PromptWindow.transform.GetChild(6).gameObject.SetActive(false);
         PromptWindow.transform.GetChild(7).gameObject.SetActive(false);
+        PromptWindow.transform.GetChild(8).gameObject.SetActive(true);
+    }
+
+    private List<bool> promptWindowStateList = new List<bool>();
+    /// <summary>
+    /// 锁定/解锁鼠标时，提示栏的状态
+    /// </summary>
+    /// <param name="isLock"></param>
+    public void ChangeCursorState(bool isLock)
+    {
+        Debug.LogError("RoamMange.ChangeCursorState:"+isLock);
+        Transform promtWindowT = PromptWindow.transform;
+        if (!isLock)
+        {
+            promptWindowStateList.Clear();
+            for (int i=0;i< promtWindowT.childCount;i++)
+            {
+                Transform child = promtWindowT.GetChild(i);
+                if(child!=null)promptWindowStateList.Add(child.gameObject.activeSelf);
+            }
+        }
+        if (promptWindowStateList.Count < 9) return;
+        promtWindowT.GetChild(0).gameObject.SetActive(isLock?promptWindowStateList[0]:false);
+        promtWindowT.GetChild(1).gameObject.SetActive(isLock ? promptWindowStateList[1] : false);
+        promtWindowT.GetChild(2).gameObject.SetActive(isLock ? promptWindowStateList[2] : false);
+        promtWindowT.GetChild(3).gameObject.SetActive(isLock ? promptWindowStateList[3] : false);
+        promtWindowT.GetChild(4).gameObject.SetActive(isLock ? promptWindowStateList[4] : false);
+        promtWindowT.GetChild(5).gameObject.SetActive(true);//ESC       
+        promtWindowT.GetChild(6).gameObject.SetActive(isLock ? promptWindowStateList[6] : false);
+        promtWindowT.GetChild(7).gameObject.SetActive(isLock ? promptWindowStateList[7] : false);
+        promtWindowT.GetChild(8).gameObject.SetActive(true);
+        OnCursonStateChange(isLock);
+    }
+    /// <summary>
+    /// 鼠标锁定、解锁
+    /// </summary>
+    /// <param name="isLock"></param>
+    private void OnCursonStateChange(bool isLock)
+    {
+        if (FPSMode.Instance && FPSMode.Instance.CenterImage != null) FPSMode.Instance.CenterImage.gameObject.SetActive(isLock);
+        if (isLock)
+        {            
+            PromptWindow.transform.GetChild(8).GetComponentInChildren<Text>().text = "解锁鼠标";
+        }
+        else
+        {
+            PromptWindow.transform.GetChild(8).GetComponentInChildren<Text>().text = "锁定鼠标";
+        }
     }
     /// <summary>
     /// 设置漫游室内灯光
@@ -283,19 +360,18 @@ public class RoamManage : MonoBehaviour
     /// <param name="b"></param>
     public void EntranceIndoor(bool b)
     {
-        isIndoor = b;
         if (b)
         {
-            //SetLight(true);
+            isIndoor = true;
             EntranceIndoorRoam();
         }
         else
         {
             if(DevSubsystemManage.Instance.IsFPSInBuilding())
             {
-                //Debug.LogError("FPS still in building...");
                 return;
             }
+            isIndoor = false;
             EntranceRoam();
         }
     }

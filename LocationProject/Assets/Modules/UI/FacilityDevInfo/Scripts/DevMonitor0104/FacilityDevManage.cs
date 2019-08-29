@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,21 +32,43 @@ public class FacilityDevManage : MonoBehaviour {
     /// 子系统数据（树结构）
     /// </summary>
     public DevSubSystemTree SubSytemTree;
+
+    private Transform NormalParent;//非漫游状态的父物体
+
     // Use this for initialization
     void Start () {
         Instance = this;
+        NormalParent = transform.parent;
         CloseButton.onClick.AddListener(Hide);
     }
-    private void Update()
+    /// <summary>
+    /// 恢复父物体
+    /// </summary>
+    public void RecoverParent()
     {
-        //if(Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    DevInfo dev = new DevInfo();
-        //    dev.KKSCode = "1233";
-        //    dev.Name = "生产设备";
-        //    Show(dev);
-        //}
+        if (NormalParent == null) return;
+        gameObject.transform.parent = NormalParent;
     }
+    /// <summary>
+    /// 设置新的父物体
+    /// </summary>
+    /// <param name="newParent"></param>
+    public void SetNewParent(Transform newParent)
+    {
+        gameObject.transform.parent = newParent;
+    }
+    //private void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.Space))
+    //    {
+    //        DevInfo dev = new DevInfo();
+    //        dev.KKSCode = "1233";
+    //        dev.Name = "生产设备";
+    //        Show(dev);
+    //    }
+    //}
+
+    private DateTime recordTime;
     /// <summary>
     /// 显示界面
     /// </summary>
@@ -58,8 +81,17 @@ public class FacilityDevManage : MonoBehaviour {
             UGUIMessageBox.Show("KKS编码为空，请录入设备KKS编码!");
             return;
         }
-        kksCode = "J0GCQ41";
-        Dev_Monitor monitorInfo = GetDevMonitor(kksCode);
+        //kksCode = "J0GCQ41";
+        recordTime = DateTime.Now;
+        Dev_Monitor monitorInfo = null;
+#if UNITY_EDITOR
+        monitorInfo = InitTestMonitor();
+        Debug.LogError("Unity.Editor.启用测试数据");
+#else
+        monitorInfo = CommunicationObject.Instance.GetDevMonitor(kksCode);
+#endif
+        Debug.LogErrorFormat("GetDevMonitor,costTime:{0} s",(DateTime.Now-recordTime).TotalSeconds);
+        recordTime = DateTime.Now;
         if (monitorInfo == null)
         {
             UGUIMessageBox.Show("设备监控数据为空...");
@@ -69,6 +101,8 @@ public class FacilityDevManage : MonoBehaviour {
         TitleText.text = string.Format("{0}监控信息", devInfo.Name);
         MainInfo.InitMainDevInfo(monitorInfo.MonitorNodeList); //1.设备本身监控信息
         DevSubSystem.InitDevSubSystem(monitorInfo.ChildrenList);
+        Debug.LogErrorFormat("InitDevSubSystem,costTime:{0} s", (DateTime.Now - recordTime).TotalSeconds);
+        recordTime = DateTime.Now;
     }
     /// <summary>
     /// 关闭界面
@@ -76,25 +110,6 @@ public class FacilityDevManage : MonoBehaviour {
     public void Hide()
     {
         Bg.SetActive(false);
-    }
-    /// <summary>
-    /// 获取设备监控信息
-    /// </summary>
-    /// <param name="kksCode"></param>
-    /// <returns></returns>
-    private Dev_Monitor GetDevMonitor(string kksCode)
-    {
-        CommunicationObject service = CommunicationObject.Instance;
-        if (service)
-        {
-            Dev_Monitor monitorInfo = service.GetMonitorInfoByKKS(kksCode, true);
-            if (monitorInfo == null) return InitTestMonitor();
-            return monitorInfo;
-        }
-        else
-        {
-            return null;
-        }
     }
     private Dev_Monitor InitTestMonitor()
     {
@@ -159,12 +174,12 @@ public class FacilityDevManage : MonoBehaviour {
         List<DevMonitorNode> nodeList = new List<DevMonitorNode>();
         DevMonitorNode node1 = new DevMonitorNode();
         node1.Describe = describe+"线圈温度1";
-        node1.Value = Random.Range(25.1f,35f).ToString("f2");
+        node1.Value = UnityEngine.Random.Range(25.1f,35f).ToString("f2");
         node1.Unit = "°C";
 
         DevMonitorNode node2 = new DevMonitorNode();
         node2.Describe = describe + "线圈温度2";
-        node2.Value = Random.Range(25.1f, 35f).ToString("f2");
+        node2.Value = UnityEngine.Random.Range(25.1f, 35f).ToString("f2");
         node2.Unit = "°C";
 
         nodeList.Add(node1);

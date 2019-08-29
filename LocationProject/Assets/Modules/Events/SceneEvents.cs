@@ -50,7 +50,7 @@ public static class SceneEvents
     /// <summary>
     /// 大楼楼层展开完毕触发事件
     /// </summary>
-    public static event Action BuildingOpenCompleteAction;
+    public static event Action<BuildingController> BuildingOpenCompleteAction;
     /// <summary>
     /// 大楼楼层开始合拢触发事件
     /// </summary>
@@ -99,7 +99,53 @@ public static class SceneEvents
             DepNodeChanged(argOld, argNew);
         }
         DepNode = argNew;
+
+        SetUnLoad(argOld, argNew);//根据焦点切换设置大楼卸载
+
     }
+
+    /// <summary>
+    /// 根据焦点切换设置大楼卸载
+    /// </summary>
+    /// <param name="argOld"></param>
+    /// <param name="argNew"></param>
+    private static void SetUnLoad(DepNode argOld, DepNode argNew)
+    {
+        //if (argOld is BuildingController && (argNew is FactoryDepManager || argNew is BuildingController))
+        //{
+        //    argOld.Unload();
+        //}
+        if (argNew is FactoryDepManager)//焦点调到厂区
+        {
+            BuildingController building = argOld.GetParentNode<BuildingController>();//获取原来焦点所在大楼
+            if (building != null)
+            {
+                building.Unload();
+            }
+            else
+            {
+                Debug.LogError("SceneEvents.OnDepNodeChanged 返回厂区 building ==null:" + argOld);
+            }
+        }
+        else if (argNew is BuildingController)//对焦到另一个大楼
+        {
+            BuildingController building = argOld.GetParentNode<BuildingController>();
+
+            if (building != null)
+            {
+                if (building.NodeID != argNew.NodeID)
+                {
+                    building.Unload();//必须是另外一个大楼
+                }
+                
+            }
+            else
+            {
+                Debug.LogError("SceneEvents.OnDepNodeChanged 返回厂区 building ==null:" + argOld);
+            }
+        }
+    }
+
     /// <summary>
     /// 区域节点发生变化
     /// </summary>
@@ -126,11 +172,11 @@ public static class SceneEvents
     /// <summary>
     /// 大楼楼层展开完毕触发
     /// </summary>
-    public static void OnBuildingOpenCompleteAction()
+    public static void OnBuildingOpenCompleteAction(BuildingController building)
     {
         if (BuildingOpenCompleteAction != null)
         {
-            BuildingOpenCompleteAction();
+            BuildingOpenCompleteAction(building);
         }
     }
 
@@ -190,6 +236,31 @@ public static class SceneEvents
         if(FullViewStateChange != null)
         {
             FullViewStateChange(isFullView);
+        }
+    }
+    #endregion
+    #region 通信连接
+    public enum ServerConnectState
+    {
+        /// <summary>
+        /// 断线
+        /// </summary>
+        disConnect,
+        /// <summary>
+        /// 重连
+        /// </summary>
+        reConnect
+    }
+    /// <summary>
+    /// 通信中断/重连
+    /// </summary>
+    public static event Action<ServerConnectState> ConnectStateChange;
+
+    public static void OnConnectStateChange(ServerConnectState state)
+    {
+        if(ConnectStateChange != null)
+        {
+            ConnectStateChange(state);
         }
     }
     #endregion

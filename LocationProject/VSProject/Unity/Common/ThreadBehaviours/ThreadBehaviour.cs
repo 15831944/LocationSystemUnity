@@ -52,7 +52,7 @@ public class ThreadBehaviour : ThreadBehaviourBase
                 {
                     if (!string.IsNullOrEmpty(threadName))
                     {
-                        Log.Info("ThreadBehaviour", string.Format("[{0}]Run MainAction:{1}", DateTime.Now.ToLongTimeString(), threadName));
+                        //Log.Info("ThreadBehaviour", string.Format("[{0}]Run MainAction:{1}", DateTime.Now.ToLongTimeString(), threadName));
                     }
                     mainAction();
                 }
@@ -71,7 +71,7 @@ public class ThreadBehaviour : ThreadBehaviourBase
         {
             if (!string.IsNullOrEmpty(threadName))
             {
-                Log.Info("ThreadBehaviour", string.Format("[{0}]Run UIAction:{1}", DateTime.Now.ToLongTimeString(), threadName));
+                //Log.Info("ThreadBehaviour", string.Format("[{0}]Run UIAction:{1}", DateTime.Now.ToLongTimeString(), threadName));
             }
             uiAction();
             uiAction = null;

@@ -32,6 +32,9 @@ public class ParkInfoTypeTween : MonoBehaviour
     public GameObject Window;
     public Sequence objInfoCloseSequence;
     public Sequence objInfoAppearSequence;
+    public Toggle   devType;
+    public Toggle  perType;
+   
 
     // Use this for initialization
     void Start()
@@ -61,7 +64,7 @@ public class ParkInfoTypeTween : MonoBehaviour
         ArrowDot.GetComponent<Image>().color = Color.white;
         if (ParkInformationManage.Instance.ArrowTog.isOn == true)
         {
-            ArrowTog.GetComponent<Image>().color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 51 / 255f);
+           // ArrowTog.GetComponent<Image>().color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 51 / 255f);
             ArrowUp.SetActive(true);
             ArrowUp.GetComponent<Image>().color = Color.white;
             ArrowDown.SetActive(false);
@@ -91,10 +94,15 @@ public class ParkInfoTypeTween : MonoBehaviour
     public void Play()
     {
         objInfoCloseSequence.Restart();
+        perType.interactable = false;
+        devType.interactable = false;
     }
     public void PlayBack()
     {
         objInfoAppearSequence.Restart();
+
+        perType.interactable = true ;
+        devType.interactable = true ;
     }
     public void SetObjCloseAndDisappearTween()
     {
@@ -139,7 +147,7 @@ public class ParkInfoTypeTween : MonoBehaviour
         float image4Y = image4.transform.GetComponent<RectTransform>().localPosition.y + 490;
         Tween image4Tween = image4.transform.GetComponent<RectTransform>().DOLocalMoveY(image4Y, 0.4f);
 
-        Vector2 sizeDelta = Window.transform.GetComponent<RectTransform>().sizeDelta;        
+        Vector2 sizeDelta = Window.transform.GetComponent<RectTransform>().sizeDelta;       
         Tween WindowHighTween = Window.transform.GetComponent<RectTransform>().DOSizeDelta(new Vector2(sizeDelta.x,100),0.46f).SetEase(Ease.OutBack).OnComplete(() =>
         {
             ArrowTogRotate.Rewind();
@@ -263,4 +271,5 @@ public class ParkInfoTypeTween : MonoBehaviour
         objInfoAppearSequence.Join(PersonAppear);
 
     }
+   
 }

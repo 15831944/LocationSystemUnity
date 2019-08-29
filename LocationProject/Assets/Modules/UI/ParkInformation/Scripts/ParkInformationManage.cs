@@ -8,10 +8,20 @@ public class ParkInformationManage : MonoBehaviour
 {
     public static ParkInformationManage Instance;
     public GameObject ParkInfoUI;//园区信息统计界面
+    [System.NonSerialized]
     public AlarmSearchArg perAlarmData;
+    [System.NonSerialized]
     public List<LocationAlarm> PerAlarmList;
+    [System.NonSerialized]
     List<LocationAlarm> AlarmItem;
+    [System.NonSerialized]
     public List<LocationAlarm> ParkAlarmInfoList;
+    [System.NonSerialized]
+    public List<DeviceAlarm> DeviceAlarmList;
+    [System.NonSerialized]
+    public List<DeviceAlarm> ParkDeviceAlarmList;
+    //[System.NonSerialized]
+    //List<DeviceAlarm> DevAlarmItem;
 
     public Toggle ArrowTog;
     public int CurrentNode;
@@ -36,20 +46,46 @@ public class ParkInformationManage : MonoBehaviour
     /// </summary>
     public Text DevAlarmText;
     public Toggle PersonToggle;
+    public Toggle DevToggle;
+    [System.NonSerialized]
+    private AlarmSearchArg searchArg;
     bool isRefresh;
-    Color ArrowDotColor = new Color(255 / 255f, 255 / 255f, 255 / 255f, 102 / 255f);
+    [System.NonSerialized]
+    DepNode CurrentSelectNode;
+    //Color ArrowDotColor = new Color(255 / 255f, 255 / 255f, 255 / 255f, 102 / 255f);
     //public AreaStatistics AreaInfo;
     void Start()
     {
 
         Instance = this;
+
         SceneEvents.OnDepCreateComplete += OnRoomCreateComplete;
         SceneEvents.FullViewStateChange += OnFullViewStateChange;
+        SceneEvents.DepNodeChanged += SceneEvents_DepNodeChanged;
+
         ArrowTog.onValueChanged.AddListener(OnArrowTogChange);
         PersonToggle.onValueChanged.AddListener(PersonnelAlarm_Click);
-
+        DevToggle.onValueChanged.AddListener(DevAlarm_Click);
 
     }
+
+    void OnDestroy()
+    {
+        SceneEvents.OnDepCreateComplete -= OnRoomCreateComplete;
+        SceneEvents.FullViewStateChange -= OnFullViewStateChange;
+        SceneEvents.DepNodeChanged -= SceneEvents_DepNodeChanged;
+    }
+
+    private void SceneEvents_DepNodeChanged(DepNode arg1, DepNode arg2)
+    {
+        if (arg2 != null)
+        {
+            CurrentSelectNode = arg2;
+            CurrentNode = arg2.NodeID;
+            GetParkDataInfo(CurrentNode);//切换场景节点时更新统计数据
+        }
+    }
+
     public void OnFullViewStateChange(bool b)
     {
         if (b)
@@ -61,6 +97,7 @@ public class ParkInformationManage : MonoBehaviour
 
             DepNode dep = FactoryDepManager.Instance;
             //ParkInfoUI.SetActive(true);
+
             TitleText.text = dep.NodeName.ToString();
             RefreshParkInfo(dep.NodeID);
 
@@ -80,6 +117,7 @@ public class ParkInformationManage : MonoBehaviour
         {
             if (PersonSubsystemManage.Instance.IsOnBenchmarking == false && PersonSubsystemManage.Instance.IsOnEditArea == false && DevSubsystemManage.Instance.isDevEdit == false && PersonSubsystemManage.Instance.IsHistorical == false)
             {
+
                 TitleText.text = dep.NodeName.ToString();
                 //GetParkDataInfo(dep.NodeID);
                 RefreshParkInfo(dep.NodeID);
@@ -97,67 +135,67 @@ public class ParkInformationManage : MonoBehaviour
     public void RefreshParkInfo(int dep)
     {
         CurrentNode = dep;
-       // LoadData();
-        if (!IsInvoking("StartRefreshData"))
-        {
-            //注释：用于崩溃测试；
-            InvokeRepeating("StartRefreshData", 0, CommunicationObject.Instance.AreaStatisticsRefreshInterval);//todo:定时获取
-        }
-        //    GetParkDataInfo(CurrentNode);
+        return;
+        //// LoadData();
+        // if (!IsInvoking("StartRefreshData")&& ParkInfoUI.activeSelf)
+        // {
+        //     //注释：用于崩溃测试；
+        //     InvokeRepeating("StartRefreshData", 0, CommunicationObject.Instance.RefreshSetting.AreaStatistics);//todo:定时获取
+        //     Debug.LogError("刷新统计信息");
+        // }
+        // //    GetParkDataInfo(CurrentNode);
     }
     public void StartRefreshData()
     {
         GetParkDataInfo(CurrentNode);
-        Debug.Log("园区统计刷新");
+        //Debug.Log("园区统计刷新");
     }
-
+    /// <summary>
+    /// 当前园区人数
+    /// </summary>
+    private int currentPerson = -1;
+    /// <summary>
+    /// 设置厂区在线人员数
+    /// </summary>
+    /// <param name="num"></param>
+    public void SetFactoryLocatedPerson(int num)
+    {
+        if (currentPerson == num) return;
+        currentPerson = num;
+        if (PersonnelNumText != null) PersonnelNumText.text = num.ToString();
+    }
     public void GetParkDataInfo(int dep)
     {
-       
+
         if (isRefresh)
         {
-            Log.Alarm("GetParkDataInfo", "isRefresh:" + isRefresh);
+            //Log.Alarm("GetParkDataInfo", "isRefresh:" + isRefresh);
             return;
         }
         isRefresh = true;
-        ParkInfoUI.SetActive(true);
-        Log.Info("ParkInfomationManage.GetParkDataInfo");
-        //if (!CommunicationObject.Instance.isAsync)
-        //{
-        //    ThreadManager.Run(() =>
-        //    {
-        //        return CommunicationObject.Instance.GetAreaStatistics(dep);
-        //    }, (data) =>
-        //    {
-        //        ShowParkDataInfo(data);
-        //        isRefresh = false;
-        //    }, "GetParkDataInfo");
-        //}
-        //else
-        //{
-        //    CommunicationObject.Instance.GetAreaStatisticsAsync(dep, (data) =>
-        //    {
-        //        ShowParkDataInfo(data);
-        //        isRefresh = false;
-        //    });
-        //}
+        //    ParkInfoUI.SetActive(true);
 
-        CommunicationObject.Instance.GetAreaStatisticsAsync(dep, (data) =>
+        CommunicationObject.Instance.GetAreaStatistics(dep, (data) =>
         {
             ShowParkDataInfo(data);
+
             isRefresh = false;
         });
     }
 
     private void ShowParkDataInfo(AreaStatistics data)
     {
+        TitleText.text = CurrentSelectNode.NodeName.ToString();
         if (data == null)
         {
             Log.Error("ParkInfomationManage.ShowParkDataInfo", "data==null"); return;
         }
-        PersonnelNumText.text = data.PersonNum.ToString();
+        //if(LocationManager.Instance&&!LocationManager.Instance.IsShowLocation)
+        //{
+        //    PersonnelNumText.text = data.PersonNum.ToString();
+        //}
         DevNumText.text = data.DevNum.ToString();
-        PosAlarmText.text = data.LocationAlarmNum.ToString();
+        PosAlarmText.text = data.AlarmPersonNum.ToString();
         DevAlarmText.text = data.DevAlarmNum.ToString();
     }
 
@@ -200,7 +238,7 @@ public class ParkInformationManage : MonoBehaviour
                 if (IsInvoking("StartRefreshData"))
                 {
                     CancelInvoke("StartRefreshData");
-
+                    Debug.LogError("刷新统计信息");
                 }
                 ParkInfoUI.SetActive(false);
                 return;
@@ -210,9 +248,7 @@ public class ParkInformationManage : MonoBehaviour
                 ParkInfoUI.SetActive(true);
                 if (!IsInvoking("StartRefreshData"))
                 {
-                    //注释：用于崩溃测试；
-                    InvokeRepeating("StartRefreshData", 0, CommunicationObject.Instance.AreaStatisticsRefreshInterval);//todo:定时获取
-                    //Invoke("StartRefreshData", 0);
+                    StartRefreshData();
                 }
             }
 
@@ -226,10 +262,43 @@ public class ParkInformationManage : MonoBehaviour
             ParkInfoUI.SetActive(false);
         }
     }
+    public void DevLoadData()
+    {
+        //DevAlarmItem = new List<DeviceAlarm>();
+        DeviceAlarmList = new List<DeviceAlarm>();
+        ParkDeviceAlarmList = new List<DeviceAlarm>();
 
+        searchArg = new AlarmSearchArg();
+        if (FactoryDepManager.currentDep != null)
+            searchArg.AreaId = FactoryDepManager.currentDep.NodeID;
+        //todo:设置时间、告警等级。
+
+        var devAlarms = CommunicationObject.Instance.GetDeviceAlarms(searchArg);
+        if (devAlarms != null)
+            DeviceAlarmList = new List<DeviceAlarm>();
+        if (devAlarms.devAlarmList != null )
+        {
+            DeviceAlarmList.AddRange(devAlarms.devAlarmList);
+        }
+        
+        DevScreenAlarm(DeviceAlarmList);
+    }
+    public void DevScreenAlarm(List<DeviceAlarm> DevList)
+    {
+        if (FactoryDepManager.currentDep == null) return;
+        string AreaDevName = FactoryDepManager.currentDep.NodeName;
+        int ParkDevId = FactoryDepManager.currentDep.NodeID;
+        //List<DeviceAlarm>alarms = DevList.FindAll(i=> i.AreaId==ParkDevId);//只显示当前区域下的告警数据
+        ParkDeviceAlarmList.AddRange(DevList);
+        ParkDevAlarmInfo.Instance.ShowDevAlarm();
+        ParkDevAlarmInfo.Instance.GetDevAlarmList(ParkDeviceAlarmList, AreaDevName);
+       
+    }
     private void LoadData()
     {
         AlarmItem = new List<LocationAlarm>();
+        perAlarmData = new AlarmSearchArg();
+        perAlarmData.IsAll = false ;
         var personnelAlarm = CommunicationObject.Instance.GetLocationAlarms(perAlarmData);
         if (personnelAlarm != null)
         {
@@ -256,15 +325,22 @@ public class ParkInformationManage : MonoBehaviour
 
             SetAreaAlarmNodeID(dep, ParkPerId, AlarmItem[i]);
 
-        } 
+        }
         PersonnelAlarmParkInfo.Instance.GetPerAlarmList(ParkAlarmInfoList, AreaName);
     }
+    /// <summary>
+    /// 点击人员告警
+    /// </summary>
+    /// <param name="b"></param>
     public void PersonnelAlarm_Click(bool b)
     {
         if (PersonToggle.isOn == true)
         {
+            if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
+            ParkDevAlarmInfo.Instance.CloseDevAlarmWindow();
+            PersonSubsystemManage.Instance.ExitDevSubSystem();
+            DevSubsystemManage.Instance.ExitDevSubSystem();
             LoadData();
-           
             PersonnelAlarmParkInfo.Instance.ShowPersonnelAlarmParkWindow(true);
         }
         else
@@ -273,18 +349,42 @@ public class ParkInformationManage : MonoBehaviour
             PersonnelAlarmParkInfo.Instance.ShowPersonnelAlarmParkWindow(false);
         }
     }
-    public void SetAreaAlarmNodeID(DepNode node,int Id, LocationAlarm info)
+    public void DevAlarm_Click(bool b)
     {
-        if (node  !=null )
+        if (DevToggle.isOn)
         {
-          if (node.NodeID == Id)  
+            if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
+            PersonnelAlarmParkInfo.Instance.ShowPersonnelAlarmParkWindow(false);
+            PersonSubsystemManage.Instance.ExitDevSubSystem();
+            DevSubsystemManage.Instance.ExitDevSubSystem();
+            DevLoadData();
 
-            ParkAlarmInfoList.Add(info);
         }
-        if (node.ParentNode!=null)
+        else
+        {
+            ParkDeviceAlarmList.Clear();
+            ParkDevAlarmInfo.Instance.CloseDevAlarmWindow();
+        }
+    }
+
+
+    public void SetAreaAlarmNodeID(DepNode node, int Id, LocationAlarm info)
+    {
+        if (node != null)
+        {
+            if (node.NodeID == Id)
+
+                ParkAlarmInfoList.Add(info);
+        }
+        if (node.ParentNode != null)
         {
             SetAreaAlarmNodeID(node.ParentNode, Id, info);
         }
-      
+
+    }
+    public void ClosePerAndDevAlarmWindow()
+    {
+        ParkDevAlarmInfo.Instance.CloseDevAlarmWindow();
+        PersonnelAlarmParkInfo.Instance.ShowPersonnelAlarmParkWindow(false);
     }
 }

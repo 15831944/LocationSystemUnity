@@ -29,13 +29,18 @@ public class LoginManage : MonoBehaviour {
 
     private Action AfterLoginSuccessfullyAction;
 
-    private CommunicationObject communicationObject;
+    public CommunicationObject communicationObject;
 
     private string IP;
     private string Port;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     // Use this for initialization
     void Start () {
-        Instance = this;
         if (communicationObject == null)
         {
             communicationObject = GetComponent<CommunicationObject>();
@@ -66,13 +71,48 @@ public class LoginManage : MonoBehaviour {
     [ContextMenu("LoginTest")]
     public void LoginTest()
     {
-        Login(communicationObject.ip, communicationObject.port, "Admin", "Admin");
+        // Login(communicationObject.ip, communicationObject.port, "Admin", "Admin@123456");
+        string username = "Admin";
+        string password = "Admin@123456";
+        LoginInfo info = new LoginInfo();
+        info.UserName = username;
+        info.Password = password;
+        Login(info, callback, errorCallback);
+    }
+
+    private void errorCallback(string obj)
+    {
+        Debug.Log(obj.ToString());
+    }
+
+    private void callback(LoginInfo obj)
+    {
+        if (obj != null)
+        {
+            info = obj;
+            isLoginSucceed = info.Result;
+            if (info.Result)
+            {
+                Debug.LogFormat("登录成功！   用户:{0}，密码:{1},权限：{1}", info.UserName, info.Password,info.Authority);
+            }
+            else
+            {
+                Debug.LogFormat("登录失败！  用户:{0},密码:{1}", info.UserName,info.Password);
+            }
+
+        }
+        else
+        {
+            isLoginSucceed = false;
+            Debug.LogFormat("登陆连接失败！用户:{0}",info.UserName);
+        }
+        isAfterLoginInit = true;
     }
 
     /// <summary>
     /// 登录
     /// </summary>
-    public void Login(string ipT,string portT, string username,string passward)
+    public void Login(string ipT,string portT, string user,string pass)
     {
         if (communicationObject == null)
         {
@@ -80,29 +120,91 @@ public class LoginManage : MonoBehaviour {
             return;
         }
         info = new LoginInfo();
-        info.UserName = username;
-        info.Password = passward;
+        info.UserName = user;
+        info.Password = pass;
         IP = ipT;
         Port = portT;
         Debug.Log("Login ip:"+ ipT);
-        communicationObject.Login(ipT, portT, info,(sender, e)=>{
-            if (e.Error == null)
+        communicationObject.Login(ipT, portT, user, pass, (result)=>{
+            if (result != null)
             {
-                info = e.Result;
-                isLoginSucceed = true;               
-                Debug.LogFormat("登录成功！  ip:{0}:{1}  用户:{2}", ipT, portT, info.UserName);            
+                info = result;
+                isLoginSucceed = info.Result;
+                if (info.Result)
+                {
+                    Debug.LogFormat("登录成功！  ip:{0}  用户:{1}，密码:{2},权限：{3}", ipT, portT, info.UserName, info.Authority);
+                }
+                else
+                {
+                    Debug.LogFormat("登录失败！  ip:{0}  用户:{1},密码:{2}", ipT, portT, info.UserName);
+                }
+                        
             }
             else
             {
                 isLoginSucceed = false;
-                Debug.LogFormat("登录失败！  ip:{0}:{1}  用户:{2}", ipT, portT, info.UserName);
+                Debug.LogFormat("登陆连接失败！  ip:{0}:{1}  用户:{2}", ipT, portT, info.UserName);
                 //AfterLoginFailed();
             }
             isAfterLoginInit = true;
-
         });
 
     }
+    /// <summary>
+    /// 调用Api登录
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="passWord"></param>
+    public void Login(string user, string pass)
+    {
+        Debug.Log("api登录");
+        LoginInfo info = new LoginInfo();
+        info.UserName = user;
+        info.Password = pass;
+        Login(info, callback, errorCallback);
+    }
+    /// <summary>
+    /// webApi登录
+    /// </summary>
+    public void Login(LoginInfo info, Action<LoginInfo> callback, Action<string> errorCallback)
+    {
+        if (communicationObject == null)
+        {
+            Log.Error("Login", communicationObject == null);
+            return;
+        }
+        communicationObject.Login(info, (result) =>
+        {
+            if (result != null)
+            {
+                info = result;
+                isLoginSucceed = info.Result;
+                if (info.Result)
+                {
+                    Debug.LogFormat("登录成功！   用户:{0}，密码:{1},权限：{2}",info.UserName,info.Password, info.Authority);
+                }
+                else
+                {
+                    Debug.LogFormat("登录失败！   用户:{0},密码:{1}",info.UserName,info.Password);
+                }
+
+            }
+            else
+            {
+                isLoginSucceed = false;
+                Debug.LogFormat("登陆连接失败！  用户:{0}",info.UserName);
+                //AfterLoginFailed();
+            }
+            isAfterLoginInit = true;
+        }, (error) =>
+         {
+             Debug.Log(error);
+         });
+
+
+    }
+
+    private FileDownLoad downLoad = null;
 
     /// <summary>
     /// 登录之后初始化
@@ -138,7 +240,11 @@ public class LoginManage : MonoBehaviour {
                                  if(isVersionLower)
                                  {
                                      CommunicationObject.Instance.DebugLog("更新版本");
-                                     FileDownLoad downLoad = FileDownLoad.Instance;
+                                     if(downLoad==null)
+                                     {
+                                         downLoad = FileDownLoad.Instance;
+                                         downLoad.ShowProgress += DownLoad_ShowProgress;
+                                     } 
                                      if (downLoad)
                                      {
                                          Debug.Log("download:"+ info.LocationURL);
@@ -184,6 +290,16 @@ public class LoginManage : MonoBehaviour {
         }
     }
 
+    private void DownLoad_ShowProgress(bool isActive, float value, string msg)
+    {
+        DownloadProgressBar progress = DownloadProgressBar.Instance;
+        if (progress)
+        {
+            if (isActive) progress.Show(value, msg);
+            else progress.Hide();
+        }
+    }
+
     /// <summary>
     /// 保存登录信息到配置文件
     /// </summary>
@@ -220,7 +336,7 @@ public class LoginManage : MonoBehaviour {
     /// </summary>
     private void LoginSuccess()
     {
-        OpenSignalR(IP, Port);
+        //OpenSignalR(IP, Port);
         Invoke("AfterLoginSuccessfully", 2f);//延迟两秒可以使（正在登录...）动画更流畅一点。
     }
     /// <summary>
@@ -263,6 +379,14 @@ public class LoginManage : MonoBehaviour {
     /// <returns></returns>
     private bool IsVersionLower(string systemVersion,string clientVersion)
     {
+        if (systemVersion == null)
+        {
+            Debug.LogError("IsVersionLower systemVersion == null");return false;
+        }
+        if (clientVersion == null)
+        {
+            Debug.LogError("IsVersionLower clientVersion == null"); return false;
+        }
         systemVersion = systemVersion.Trim();
         clientVersion = clientVersion.Trim();
 
@@ -369,6 +493,17 @@ public class LoginManage : MonoBehaviour {
         isLoginSucceed = false;
         Debug.Log("退出登录！");
     }
+    /// <summary>
+    /// webApi退出登录
+    /// </summary>
+    /// <param name="info"></param>
+    /// <param name="callback"></param>
+    /// <param name="errorCallback"></param>
+    public void Logout(LoginInfo info, Action<LoginInfo> callback, Action<string> errorCallback)
+    {
+        communicationObject.LoginOut(info,callback,errorCallback);
+    }
+
 
     /// <summary>
     /// 添加登录成功之后绑定事件

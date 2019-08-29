@@ -32,80 +32,80 @@ public static class AssetBundleHelper
 
     public static List<string> names = new List<string>();
 
-    public static IEnumerator LoadAssetGameObject(string txt, Action<GameObject> createAction = null)
-    {
-        //Log.Info("AssetBundleHelper.LoadAssetGameObject","txt:" + txt);
-        if (unityType == UnityType.UNITY_EDITOR_ANDROID || unityType == UnityType.UNITY_ANDROID || unityType == UnityType.UNITY_WEBGL)
-        {
-            //txt = PinYinConverter.Get(txt);//android打包Assets时不能有中文字符
-        }
-        //var path = GetAssetPath();
-        string path = GetAssetPath();
-        //Log.Info("AssetBundleHelper.LoadAssetGameObject","path:" + path);
-        yield return LoadAssetObjectWithNoDep(path, txt, AssetbundleGetSuffixalName.prefab,createAction);
+    //public static IEnumerator LoadAssetGameObject(string txt, Action<GameObject> createAction = null)
+    //{
+    //    //Log.Info("AssetBundleHelper.LoadAssetGameObject","txt:" + txt);
+    //    if (unityType == UnityType.UNITY_EDITOR_ANDROID || unityType == UnityType.UNITY_ANDROID || unityType == UnityType.UNITY_WEBGL)
+    //    {
+    //        //txt = PinYinConverter.Get(txt);//android打包Assets时不能有中文字符
+    //    }
+    //    //var path = GetAssetPath();
+    //    string path = GetAssetPath();
+    //    //Log.Info("AssetBundleHelper.LoadAssetGameObject","path:" + path);
+    //    yield return LoadAssetObjectWithNoDep(path, txt, AssetbundleGetSuffixalName.prefab,createAction);
 
-        //Debug.Log("LoadAssetGameObject:" + txt);
-        //if (names.Contains(txt))
-        //{
-        //    while (!models.ContainsKey(txt))
-        //        //等待同名的资源被加载,
-        //        //因为已经被加载的资源,不能重复加载，
-        //        //因为yield return的关系，可能在之前模型还没被获取的时候就又再次进来获取相同的模型了。
-        //    {
-        //        Debug.Log("Wait LoadAssetGameObject:" + txt);
-        //        yield return null;
-        //        //yield return new WaitForEndOfFrame();
-        //    }
-        //    yield return models[txt];
-        //}
-        //else
-        //{
-        //    names.Add(txt);
+    //    //Debug.Log("LoadAssetGameObject:" + txt);
+    //    //if (names.Contains(txt))
+    //    //{
+    //    //    while (!models.ContainsKey(txt))
+    //    //        //等待同名的资源被加载,
+    //    //        //因为已经被加载的资源,不能重复加载，
+    //    //        //因为yield return的关系，可能在之前模型还没被获取的时候就又再次进来获取相同的模型了。
+    //    //    {
+    //    //        Debug.Log("Wait LoadAssetGameObject:" + txt);
+    //    //        yield return null;
+    //    //        //yield return new WaitForEndOfFrame();
+    //    //    }
+    //    //    yield return models[txt];
+    //    //}
+    //    //else
+    //    //{
+    //    //    names.Add(txt);
 
-        //    //不同平台下StreamingAssets的路径是不同的，这里需要注意一下。
-        //    var path = GetAssetPath();
-        //    string url = path + txt;
-        //    WWW www = WWW.LoadFromCacheOrDownload(url, 5);
-        //    yield return www;
-        //    if (www.error != null)
-        //    {
-        //        //Could not resolve host的话是路径有问题
-        //        Debug.LogError(www.error + ":" + url + "|" + txt + "|" + path);
-        //        models.Add(txt, null);
-        //        yield return null;
-        //    }
-        //    else
-        //    {
-        //        AssetBundle bundle = www.assetBundle;
-        //        //Log("bundle:"+bundle);
-        //        yield return bundle;
-        //        GameObject obj = bundle.LoadAsset<GameObject>(txt);
-        //        if (obj == null)
-        //        {
-        //            models.Add(txt, null);
-        //            Debug.LogError("加载的资源为空:" + url + "|" + txt);
-        //            yield return null;
-        //        }
-        //        else
-        //        {
-        //            //T instance = GameObject.Instantiate(obj);
-        //            GameObject go = (obj as GameObject);
-        //            go.tag = Tags.Prefab;
-        //            go.transform.position = new Vector3(1000, 1000, 1000);
-        //            if (createAction != null)
-        //            {
-        //                createAction(obj);
-        //            }
-        //            models.Add(txt, obj);
-        //            //instance.name = txt;
+    //    //    //不同平台下StreamingAssets的路径是不同的，这里需要注意一下。
+    //    //    var path = GetAssetPath();
+    //    //    string url = path + txt;
+    //    //    WWW www = WWW.LoadFromCacheOrDownload(url, 5);
+    //    //    yield return www;
+    //    //    if (www.error != null)
+    //    //    {
+    //    //        //Could not resolve host的话是路径有问题
+    //    //        Debug.LogError(www.error + ":" + url + "|" + txt + "|" + path);
+    //    //        models.Add(txt, null);
+    //    //        yield return null;
+    //    //    }
+    //    //    else
+    //    //    {
+    //    //        AssetBundle bundle = www.assetBundle;
+    //    //        //Log("bundle:"+bundle);
+    //    //        yield return bundle;
+    //    //        GameObject obj = bundle.LoadAsset<GameObject>(txt);
+    //    //        if (obj == null)
+    //    //        {
+    //    //            models.Add(txt, null);
+    //    //            Debug.LogError("加载的资源为空:" + url + "|" + txt);
+    //    //            yield return null;
+    //    //        }
+    //    //        else
+    //    //        {
+    //    //            //T instance = GameObject.Instantiate(obj);
+    //    //            GameObject go = (obj as GameObject);
+    //    //            go.tag = Tags.Prefab;
+    //    //            go.transform.position = new Vector3(1000, 1000, 1000);
+    //    //            if (createAction != null)
+    //    //            {
+    //    //                createAction(obj);
+    //    //            }
+    //    //            models.Add(txt, obj);
+    //    //            //instance.name = txt;
 
-        //            bundle.Unload(false);
-        //            Debug.Log("Instantiate:" + obj);
-        //            yield return obj;
-        //        }
-        //    }
-        //}
-    }
+    //    //            bundle.Unload(false);
+    //    //            Debug.Log("Instantiate:" + obj);
+    //    //            yield return obj;
+    //    //        }
+    //    //    }
+    //    //}
+    //}
 
 
     private static string GetAssetPath3()
@@ -134,7 +134,34 @@ public static class AssetBundleHelper
         //    _assetPath = GetAssetPath(unityType);
         //}
         //return _assetPath;
-        return GetAssetPath(unityType);
+        var path = GetAssetPath(unityType);
+        if (IsFromHttp)
+            path = HttpUrl + "/";
+        return path + CurrentPlatformString()+"/";
+    }
+
+    /// <summary>
+    /// Return a string representing the current application platform. Used to compose
+    /// directory name when create bundles, and when search for bundles locally.
+    /// </summary>
+    /// <returns></returns>
+    private static string CurrentPlatformString()
+    {
+        switch (Application.platform)
+        {
+            case RuntimePlatform.OSXPlayer:
+            case RuntimePlatform.OSXEditor:
+                return "macOS";
+            case RuntimePlatform.Android:
+                return "Android";
+            case RuntimePlatform.IPhonePlayer:
+                return "iOS";
+            case RuntimePlatform.WindowsEditor:
+            case RuntimePlatform.WindowsPlayer:
+                return "Windows";
+            default:
+                return "unknown";
+        }
     }
 
     public static string GetAssetPath(UnityType ut)
@@ -173,6 +200,10 @@ public static class AssetBundleHelper
     //    return path;
     //}
 
+    public static string HttpUrl = "";
+
+    public static bool IsFromHttp = false;
+
     public static UnityType unityType = UnityType.UNITY_STANDALONE_WIN;
 
     public static void SetUnityType(UnityType type)
@@ -192,22 +223,42 @@ public static class AssetBundleHelper
 
     private static Dictionary<string, string[]> m_Dependencies = new Dictionary<string, string[]>(); //对应物体的依赖资源
 
+    ///// <summary>
+    ///// 读取一个资源,不需要加载依赖文件的使用该方法
+    ///// </summary>
+    //public static IEnumerator LoadAssetObjectWithNoDep<T>(string ppath, string fileName, string loadName,
+    //    string suffixalName, Action<T> action) where T : Object
+    //{
+    //    var path = GetAssetPath();
+    //    return LoadAssetObjectWithNoDep<T>(path, loadName, suffixalName, action);
+    //}
+
     /// <summary>
     /// 读取一个资源,不需要加载依赖文件的使用该方法
     /// </summary>
-    public static IEnumerator LoadAssetObjectWithNoDep<T>(string ppath, string fileName, string loadName,
+    public static IEnumerator LoadAssetObject<T>(string subDir,string loadName,
         string suffixalName, Action<T> action) where T : Object
     {
-        //var path = GetAssetPath2(fileName);
-        var path = GetAssetPath();
-        return LoadAssetObjectWithNoDep<T>(path, loadName, suffixalName, action);
+        var path = GetAssetPath()+subDir+"/";
+        return LoadAssetObjectWithNoDep<T>(path, loadName, loadName, suffixalName, action);
     }
 
     /// <summary>
     /// 读取一个资源,不需要加载依赖文件的使用该方法
     /// </summary>
-    public static IEnumerator LoadAssetObjectWithNoDep<T>(string path, string loadName,string suffixalName, Action<T> action) where T :Object
-    {        
+    public static IEnumerator LoadAssetObject<T>(string ppath,string fileName, string loadName,
+        string suffixalName, Action<T> action) where T : Object
+    {
+        var path = GetAssetPath();
+        return LoadAssetObjectWithNoDep<T>(path, fileName, loadName, suffixalName, action);
+    }
+
+    /// <summary>
+    /// 读取一个资源,不需要加载依赖文件的使用该方法
+    /// </summary>
+    private static IEnumerator LoadAssetObjectWithNoDep<T>(string path,string fileName, string loadName,string suffixalName, Action<T> action) where T :Object
+    {
+        //默认情况下fileName和loadName相同，但是也可以不同
         //Log.Info("LoadAssetObjectWithNoDep",string.Format("{0}|{1}|{2}",path, loadName,suffixalName));
         if (loadName.IndexOf("机柜") >= 0)
         {
@@ -234,7 +285,7 @@ public static class AssetBundleHelper
             }
             //加载资源
             //www2 = WWW.LoadFromCacheOrDownload(path + loadName, 0);
-            www2 =new WWW(path + loadName);//加载资源
+            www2 =new WWW(path + fileName);//加载资源
             dicLoadingWWW.Add(fullname, www2);//加入到正在加载中的资源
             while (www2.isDone == false)//等待加载完毕
             {
@@ -333,11 +384,20 @@ public static class AssetBundleHelper
     /// 读取一个资源,不需要加载依赖文件的使用该方法
     /// </summary>
     /// <returns></returns>
-    public static IEnumerator LoadAssetObjectWithNoDep(string ppath, string fileName, string loadName,
+    public static IEnumerator LoadAssetObject(string subDir, string loadName,
         string suffixalName, Action<Object> action)
     {
-        return LoadAssetObjectWithNoDep<Object>(ppath, fileName, loadName, suffixalName, action);
+        return LoadAssetObject<Object>(subDir, loadName, suffixalName, action);
+    }
 
+    /// <summary>
+    /// 读取一个资源,不需要加载依赖文件的使用该方法
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerator LoadAssetObject(string path, string fileName, string loadName,
+        string suffixalName, Action<Object> action)
+    {
+        return LoadAssetObject<Object>(path, fileName,loadName, suffixalName, action);
     }
 
     /// <summary>
@@ -362,7 +422,11 @@ public static class AssetBundleHelper
             }
             if (obj == null)
             {
-                obj = assetBundle.LoadAssetAsync(loadName + ".fbs", typeof (GameObject)).asset;//3ds模型也没有的话试试fbs模型
+                obj = assetBundle.LoadAssetAsync(loadName + ".fbx", typeof (GameObject)).asset;//3ds模型也没有的话试试fbx模型
+            }
+            if (obj == null)
+            {
+                obj = assetBundle.LoadAssetAsync(loadName + ".fbs", typeof(GameObject)).asset;//3ds模型也没有的话试试fbs模型
             }
             if (obj == null)
             {
@@ -451,6 +515,10 @@ public static class AssetBundleHelper
             else if (assetBundle.Contains(loadName + ".fbs"))
             {
                 assetBundleRequest = assetBundle.LoadAssetAsync(loadName + ".fbs", typeof(GameObject));//3ds模型也没有的话试试fbs模型
+            }
+            else if (assetBundle.Contains(loadName + ".fbx"))
+            {
+                assetBundleRequest = assetBundle.LoadAssetAsync(loadName + ".fbx", typeof(GameObject));//3ds模型也没有的话试试fbs模型
             }
         }
         else if (sufName == AssetbundleGetSuffixalName.png)//读取图片

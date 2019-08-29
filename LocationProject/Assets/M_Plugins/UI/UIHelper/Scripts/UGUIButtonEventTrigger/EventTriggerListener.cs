@@ -14,6 +14,8 @@ public class EventTriggerListener : UnityEngine.EventSystems.EventTrigger
     public VoidDelegate onSelect;
     public VoidDelegate onDeselect;
     public VoidDelegate onUpdateSelect;
+    //public VoidDelegate onBeginDrag;
+    //public VoidDelegate onEndDrag;
 
     private bool isHover;//鼠标是否放在UI上
 
@@ -83,6 +85,18 @@ public class EventTriggerListener : UnityEngine.EventSystems.EventTrigger
         base.OnUpdateSelected(eventData);
         if (onUpdateSelect != null) onUpdateSelect(gameObject);
     }
+
+    //public override void OnBeginDrag(PointerEventData eventData)
+    //{
+    //    base.OnBeginDrag(eventData);
+    //    if (onUpdateSelect != null) onUpdateSelect(gameObject);
+    //}
+
+    //public override void OnEndDrag(PointerEventData eventData)
+    //{
+    //    base.OnEndDrag(eventData);
+    //    if (onUpdateSelect != null) onUpdateSelect(gameObject);
+    //}
 
     public void OnPointerHover()
     {

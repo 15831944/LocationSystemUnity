@@ -7,21 +7,25 @@ using Mogoson.CameraExtension;
 using RTEditor;
 using HighlightingSystem;
 
-public class demo : MonoBehaviour {
+public class demo : MonoBehaviour
+{
 
     //public List<Transform> points;
     //public GameObject target;
     //public AroundAlignCamera aroundAlignCamera;
     private void Awake()
     {
-        Debug.LogError("Awake");
+        //Debug.LogError("Awake");
     }
     private void OnEnable()
     {
-        Debug.LogError("OnEnable");
+        //Debug.LogError("OnEnable");
     }
+
+    [ContextMenu("Startq")]
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         //EditorGizmoSystem.Instance.TranslationGizmo.GizmoDragStart += TranslationGizmo_GizmoDragStart;
         //EditorGizmoSystem.Instance.TranslationGizmo.GizmoDragUpdate += TranslationGizmo_GizmoDragUpdate;
         //EditorGizmoSystem.Instance.TranslationGizmo.GizmoDragEnd += TranslationGizmo_GizmoDragEnd;
@@ -35,7 +39,24 @@ public class demo : MonoBehaviour {
         //aroundAlignCamera.OnAlignEnd += AroundAlignCamera_OnAlignEnd;
         //EventTriggerListener lis = EventTriggerListener.Get(imageObj);
         //EditorObjectSelection.Instance.ClearSelection()
+        //Debug.LogError("Start1");
+
+        //StartCoroutine(stest());
+
+        //Debug.LogError("Start2");
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerator stest()
+    {
+        Debug.LogError("stest1");
+        yield return null;
+        Debug.LogError("stest2");
+    }
+
 
     private void AroundAlignCamera_OnAlignEnd()
     {
@@ -46,7 +67,8 @@ public class demo : MonoBehaviour {
     float time = 0;
 
     // Update is called once per frame
-    void Update () {
+    void Update()
+    {
 
         //if (time < 10f)
         //{
@@ -58,7 +80,7 @@ public class demo : MonoBehaviour {
         //    time = 0;
         //}
         //Debug.Log(time);
-	}
+    }
 
     /// <summary>
     /// 点击测试
@@ -131,5 +153,75 @@ public class demo : MonoBehaviour {
     {
         Highlighter h = gameObject.AddMissingComponent<Highlighter>();
         h.FlashingOff();
+    }
+
+    public GameObject oriObj;
+    public GameObject targetObj;
+
+    [ContextMenu("CopyMaterial")]
+    public void CopyMaterial()
+    {
+        patht = "";
+        MeshRenderer[] oriMeshRenderers = oriObj.GetComponentsInChildren<MeshRenderer>(true);
+        MeshRenderer[] targetMeshRenderers = targetObj.GetComponentsInChildren<MeshRenderer>(true);
+
+        for (int i = 0; i < oriMeshRenderers.Length; i++)
+        {
+            patht = "";
+            MeshRenderer mr = oriMeshRenderers[i];
+            string path = GetPath(mr.transform);
+            Transform t = targetObj.transform.Find(path);
+            if (t == null) continue;
+            MeshRenderer mrtarget = t.GetComponent<MeshRenderer>();
+
+            for (int j = 0; j < mr.sharedMaterials.Length; j++)
+            {
+                //mrtarget.sharedMaterials[j] = mr.sharedMaterials[j];
+                mrtarget.sharedMaterials = mr.sharedMaterials;
+            }
+        }
+    }
+
+    
+
+    public GameObject pathobj;
+
+    [ContextMenu("GetPath")]
+    public void GetPath()
+    {
+        patht = "";
+        string path = GetPath(pathobj.transform);
+        Debug.LogError(path);
+        findObj = targetObj.transform.Find(path);
+    }
+
+    public Transform findObj;
+    public string patht = "";
+
+    public string GetPath(Transform tran)
+    {
+        //patht = tran.name + "/" + patht;
+        if (tran.parent != null)
+        {
+            if (tran.parent.name == oriObj.name)
+            {
+                patht = tran.name + patht;
+                //if (patht.Length > 0)
+                //{
+                //    patht = patht.Substring(1);
+                //}
+                return patht;
+            }
+            else
+            {
+                patht = tran.name + patht;
+                patht = "/" + patht;
+                return GetPath(tran.parent);
+            }
+        }
+        else
+        {
+            return tran.name;
+        }
     }
 }

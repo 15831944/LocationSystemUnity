@@ -51,12 +51,14 @@ public class MapSwitchItem : MonoBehaviour,IPointerClickHandler
     /// </summary>
     public void OnItemClick()
     {
-        if(CurrentFloor!=null&&CurrentFloor.FloorNode!=null)
+        if(CurrentFloor!=null)
         {
-            if (FactoryDepManager.currentDep == CurrentFloor.FloorNode) return;
+            var floorNode = CurrentFloor.FloorNode;
+            if (floorNode == null) return;
+            if (FactoryDepManager.currentDep == floorNode) return;
             Selcet();
-            SwitchManager.ItemSelectNode = CurrentFloor.FloorNode;
-            RoomFactory.Instance.FocusNode(CurrentFloor.FloorNode) ;
+            SwitchManager.ItemSelectNode = floorNode;
+            RoomFactory.Instance.FocusNode(floorNode) ;
         }
     }
     public void Selcet()

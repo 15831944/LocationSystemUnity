@@ -152,12 +152,17 @@ namespace StardardShader
             matBackups = new Material(m);
         }
 
+        public void SetBackup()
+        {
+            matBackups = new Material(mat);
+        }
+
         /// <summary>
         /// 恢复原有材质
         /// </summary>
         public void Recover()
         {
-            if (matBackups != null)
+            if (matBackups != null && mat != null)
             {
                 mat.CopyPropertiesFromMaterial(matBackups);
             }

@@ -41,17 +41,11 @@ public class RangeController : DepNode
     ///// 设备创建完成
     ///// </summary>
     //private Action OnDevCreateComplete;
-    // Use this for initialization
-    void Start()
+    private void Awake()
     {
         depType = DepType.Range;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
     /// <summary>
     /// 设置监控区域
     /// </summary>
@@ -68,14 +62,17 @@ public class RangeController : DepNode
     /// <param name="onComplete"></param>
     public override void OpenDep(Action onComplete = null, bool isFocusT = true)
     {
-        HideFacotry();
+        //HideFacotry();
         BuildingController building = ParentNode.ParentNode as BuildingController;
         if (building != null) building.LoadRoom(ParentNode, true, floor =>
         {
             //OnDevCreateComplete = onComplete;
-            DepNode lastDep = FactoryDepManager.currentDep;
-            FactoryDepManager.currentDep = this;
-            SceneEvents.OnDepNodeChanged(lastDep, this);
+
+            //DepNode lastDep = FactoryDepManager.currentDep;
+            //FactoryDepManager.currentDep = this;
+            //SceneEvents.OnDepNodeChanged(lastDep, this);
+            HideFacotry();
+            SceneEvents.OnDepNodeChanged(this);
 
             if (isFocusT)
             {
@@ -100,9 +97,11 @@ public class RangeController : DepNode
         });
         else
         {
-            DepNode lastDep = FactoryDepManager.currentDep;
-            FactoryDepManager.currentDep = this;
-            SceneEvents.OnDepNodeChanged(lastDep, this);
+            //DepNode lastDep = FactoryDepManager.currentDep;
+            //FactoryDepManager.currentDep = this;
+            //SceneEvents.OnDepNodeChanged(lastDep, this);
+
+            SceneEvents.OnDepNodeChanged(this);
 
             if (isFocusT)
             {
@@ -186,13 +185,15 @@ public class RangeController : DepNode
     //    RoomDevContainer.SetActive(true);
     //}
 
-    public void FocusOn(Action onDevCreateFinish = null)
+    public override void FocusOn(Action onDevCreateFinish = null)
     {
         IsFocus = true;
         //OnDevCreateComplete = onDevCreateFinish;
-        DepNode lastDep = FactoryDepManager.currentDep;
-        FactoryDepManager.currentDep = this;
-        SceneEvents.OnDepNodeChanged(lastDep, this);
+        //DepNode lastDep = FactoryDepManager.currentDep;
+        //FactoryDepManager.currentDep = this;
+        //SceneEvents.OnDepNodeChanged(lastDep, this);
+
+        SceneEvents.OnDepNodeChanged(this);
         //Todo:摄像头聚焦    
         AlignTarget alignTargetTemp;
         alignTargetTemp = monitorRangeObject != null ? GetTargetInfo(monitorRangeObject.gameObject) : GetTargetInfo(gameObject);

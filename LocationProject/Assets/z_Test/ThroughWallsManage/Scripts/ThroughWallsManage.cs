@@ -6,13 +6,13 @@ using UnityEngine.AI;
 public class ThroughWallsManage : MonoBehaviour {
 
     public static ThroughWallsManage Instance;
-    public bool isColliderThroughWallsTest;//碰撞器检测穿墙测试
+    public bool isCharacterControllerThroughWallsTest;//碰撞器检测穿墙测试
     public bool isNavMeshThroughWallsTest;//NavMesh穿墙测试
 
     public GameObject TestBuilding;//测试的建筑
 
     public GameObject manPrefabNormal;//一般人物预设
-    public GameObject manPrefabCollider;//碰撞器人物预设
+    public GameObject manPrefab_LOD_CharacterController;//碰撞器人物预设
     public GameObject manPrefabNavMesh;//NavMesh人物预设
 
     public LocationManager locationManager;
@@ -21,18 +21,20 @@ public class ThroughWallsManage : MonoBehaviour {
     void Start () {
         Instance = this;
 
-        if (isColliderThroughWallsTest)
+        if (isCharacterControllerThroughWallsTest)
         {
-            locationManager.characterPrefab = manPrefabCollider;
+            if(locationManager!=null)
+                locationManager.characterPrefab = manPrefab_LOD_CharacterController;
         }
         else if (isNavMeshThroughWallsTest)
         {
-            locationManager.characterPrefab = manPrefabNavMesh;
+            if (locationManager != null)
+                locationManager.characterPrefab = manPrefabNavMesh;
         }
 
         meshcolliders = new List<MeshCollider>();
         boxColliders = new List<BoxCollider>();
-        if (isColliderThroughWallsTest)
+        if (isCharacterControllerThroughWallsTest)
         {
             //SetAllMeshColliderTrue();
         }

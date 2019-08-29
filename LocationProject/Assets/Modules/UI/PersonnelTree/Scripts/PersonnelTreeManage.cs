@@ -3,6 +3,7 @@ using Location.WCFServiceReferences.LocationServices;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UIWidgets;
 using UnityEngine;
 using UnityEngine.UI;
 public class PersonnelTreeManage : MonoBehaviour
@@ -10,6 +11,42 @@ public class PersonnelTreeManage : MonoBehaviour
     public static PersonnelTreeManage Instance;
     public GameObject Window;
     public DepartmentDivideTree departmentDivideTree;
+
+
+    public List<Personnel> GetPersonnels()
+    {
+        if (departmentDivideTree)
+        {
+            return departmentDivideTree.personnels;
+            //return departmentDivideTree.GetPersonnelFromServer();
+        }
+        else
+        {
+            return new List<Personnel>();
+        }
+    }
+
+    public List<Personnel> GetAllPersonnels()
+    {
+        if (departmentDivideTree)
+        {
+            return departmentDivideTree.allPersonnels;
+        }
+        else
+        {
+            return new List<Personnel>();
+        }
+    }
+
+    public Personnel GetTagPerson(int tagId)
+    {
+        return GetAllPersonnels().Find((item) => item.TagId == tagId);
+    }
+
+    public Personnel GetPerson(int id)
+    {
+        return GetAllPersonnels().Find((item) => item.Id == id);
+    }
 
     public AreaDivideTree areaDivideTree;
 
@@ -24,6 +61,8 @@ public class PersonnelTreeManage : MonoBehaviour
 
     public Toggle AreaDivideToggle;
     public Toggle DepartmentDivideToggle;
+
+    public Image DepartAndJob_Bg;//岗位管理和部门管理背景图
     void Awake()
     {
         Instance = this;
@@ -31,25 +70,46 @@ public class PersonnelTreeManage : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Invoke("InitTree", 1f);//不延迟1秒，会导致加载拓扑树异常
-        //InitTree();
+        //Invoke("InitTree", 1f);//不延迟1秒，会导致加载拓扑树异常
 
         AreaDivideToggle.onValueChanged.AddListener(areaDivideTree.ShowAreaDivideWindow);
-        areaDivideTree.ShowAreaDivideWindow(true);
-        DepartmentDivideToggle.onValueChanged.AddListener(departmentDivideTree.ShowDepartmentWindow);
+        //areaDivideTree.ShowAreaDivideWindow(true);
+
+        if (departmentDivideTree != null)
+            DepartmentDivideToggle.onValueChanged.AddListener(departmentDivideTree.ShowDepartmentWindow);
+
+
     }
 
+
+    /// <summary>
+    /// 初始化人员和部门树
+    /// </summary>
     public void InitTree()
     {
-        //departmentDivideTree.ShowDepartmentDivideTree();
-        //areaDivideTree.ShowAreaDivideTree(null);
+        try
+        {
+            if (departmentDivideTree != null)
+            {
+                areaDivideTree.ShowAreaDivideTree(departmentDivideTree.ShowDepartmentDivideTree);//做成有先后关系的
+            }
+            else
+            {
+                areaDivideTree.ShowAreaDivideTree(null);//做成有先后关系的
+            }
+            areaDivideTree.ShowAreaDivideWindow(true);
+        }
+        catch (Exception e)
+        {
+            Log.Error("Error: PersonnelTreeManage.InitTree->" + e.ToString());
+        }
 
-        areaDivideTree.ShowAreaDivideTree(departmentDivideTree.ShowDepartmentDivideTree);//做成有先后关系的
     }
 
     public void ClosePersonnelWindow()
     {
-        departmentDivideTree.ShowDepartmentWindow(false);
+        if (departmentDivideTree != null)
+            departmentDivideTree.ShowDepartmentWindow(false);
     }
     #region 窗体收缩动画部分
     /// <summary>
@@ -118,11 +178,17 @@ public class PersonnelTreeManage : MonoBehaviour
     {
         if (!Window.activeInHierarchy)
             Window.SetActive(true);
-        if (areaDivideTree.AreaWindow==true)
+        if (AreaDivideToggle.isOn)
         {
             areaDivideTree.StartRefreshAreaPersonnel();
         }
-       
+        else
+        {
+            if (DepartmentDivideToggle.isOn)
+            {
+                departmentDivideTree.GetTopoTree();
+            }
+        }
     }
 
 
@@ -131,7 +197,64 @@ public class PersonnelTreeManage : MonoBehaviour
     /// </summary>
     public PersonNode PersonnelToPersonNode(Personnel personnelT)
     {
-        PersonNode nodeT = areaDivideTree.PersonList.Find((item) => item.Id == personnelT.Id);
+        PersonNode nodeT = areaDivideTree.FindPersonNode(personnelT.Id);
         return nodeT;
+    }
+
+    public void SelectPerson(Personnel person)
+    {
+        if (person == null)
+        {
+            Debug.LogError("PersonnelTreeManage.SelectPerson person==null");
+            return;
+        }
+        if (departmentDivideTree)
+            departmentDivideTree.Tree.SelectNodeByData(person.Id);
+        if (areaDivideTree)
+            areaDivideTree.Tree.SelectNodeByType(person.Id);
+    }
+
+    public void DeselectPerson(Personnel personnel)
+    {
+        if (departmentDivideTree)
+            departmentDivideTree.Tree.DeselectNodeByData(personnel.Id);
+        //PersonNode nodeT = PersonnelTreeManage.Instance.PersonnelToPersonNode(currentLocationFocusObj.personInfoUI.personnel.Id);
+        if (areaDivideTree)
+            areaDivideTree.Tree.AreaDeselectNodeByData(personnel.Id);
+    }
+
+    /// <summary>
+    /// 找到区域树部分中的区域节点
+    /// </summary>
+    /// <param name="areaId"></param>
+    /// <returns></returns>
+    public TreeNode<TreeViewItem> FindAreaNode(object areaId)
+    {
+        return areaDivideTree.Tree.AreaFindNodeById(areaId);
+    }
+
+    internal void RemovePersons(List<Tag> tags)
+    {
+        if (tags == null) return;
+        foreach (Tag item in tags)
+        {
+            if (item.Pos == null || (item.Pos != null && item.Pos.IsHide))
+            {
+                var personId = item.PersonId;
+                if (departmentDivideTree)
+                {
+                    TreeNode<TreeViewItem> node = departmentDivideTree.Tree.FindNodeByData(personId);
+                    if (node != null)
+                        node.Parent.Nodes.Remove(node);
+                }
+                if (areaDivideTree)
+                {
+                    TreeNode<TreeViewItem> node = areaDivideTree.Tree.FindNodeByData(personId);
+                    if (node != null)
+                        node.Parent.Nodes.Remove(node);
+                }
+            }
+        }
+
     }
 }

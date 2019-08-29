@@ -58,7 +58,7 @@ public class MobileInspectionHistoryItem : MonoBehaviour {
     /// </summary>
     public void DetailBtn_OnClick()
     {
-        MobileInspectionHistoryDetailInfo.Instance.DateUpdate(info );
-        MobileInspectionHistory_N.Instance.CloseBtn_OnClick();
+        MobileInspectionHistoryDetailInfo.Instance.DateUpdate(info);
+        MobileInspectionHistory_N.Instance.CloseBtn_OnClick();//关闭巡检历史路线窗口
     }
 }

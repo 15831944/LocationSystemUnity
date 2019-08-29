@@ -6,7 +6,7 @@ using UnityEditor;
 [CustomEditor(typeof(CircleImage), true)]
 public class CircleImageEditor : Editor
 {
-    CircleImage _target;
+    //CircleImage _target;
     private SerializedProperty sprite;
     private SerializedProperty color;
     private SerializedProperty material;
@@ -17,7 +17,7 @@ public class CircleImageEditor : Editor
     private SerializedProperty segements;
     void OnEnable()
     {
-        _target = (CircleImage)target;
+        //_target = (CircleImage)target;
         sprite = serializedObject.FindProperty("m_Sprite");
         color = serializedObject.FindProperty("m_Color");
         material = serializedObject.FindProperty("m_Material");

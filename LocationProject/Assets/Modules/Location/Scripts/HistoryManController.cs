@@ -19,16 +19,31 @@ public class HistoryManController : MonoBehaviour
 
     public LocationHistoryPathBase locationHistoryPathBase;
 
+    [HideInInspector]
+    public Transform titleTag;
+
+    public HistoryNameUI historyNameUI;
+
+    public Transform followTarget;
+
+    public Transform followTitle;
+
     // Use this for initialization
     void Start()
     {
+        titleTag = transform.Find("TitleTag");
         HighlightOn();
+        historyNameUI = followUI.GetComponent<HistoryNameUI>();
+        SetCameraFollowButtonEnable(false);
+
+        followTarget = this.transform;
+        followTitle = titleTag;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (SystemSettingHelper.systemSetting.IsDebug)
+        if (SystemSettingHelper.IsDebug())
         {
             if (LocationHistoryManager.Instance.CurrentFocusController == this)
             {
@@ -61,10 +76,10 @@ public class HistoryManController : MonoBehaviour
     private void OnDisable()
     {
         HighlightOff();
-        if (LocationHistoryManager.Instance.CurrentFocusController == this)
-        {
-            LocationHistoryManager.Instance.RecoverBeforeFocusAlign();
-        }
+        //if (LocationHistoryManager.Instance.CurrentFocusController == this)
+        //{
+        //    LocationHistoryManager.Instance.RecoverBeforeFocusAlign();
+        //}
     }
 
     /// <summary>
@@ -90,7 +105,7 @@ public class HistoryManController : MonoBehaviour
     public AlignTarget GetAlignTarget()
     {
         Quaternion quaDir = Quaternion.LookRotation(-transform.forward, Vector3.up);
-        AlignTarget alignTarget = new AlignTarget(transform, new Vector2(30, quaDir.eulerAngles.y), 5, new Range(5, 90), new Range(1, 40));
+        AlignTarget alignTarget = new AlignTarget(titleTag, new Vector2(30, quaDir.eulerAngles.y), 5, new Range(5, 90), new Range(1, 40));
         return alignTarget;
     }
 
@@ -108,7 +123,11 @@ public class HistoryManController : MonoBehaviour
     public void FollowUIbtn_OnClick(bool ison)
     {
         if (LocationHistoryManager.Instance)
-            LocationHistoryManager.Instance.Focus(this);
+            LocationHistoryManager.Instance.Focus(this,()=>
+            {
+                historyNameUI.SetCameraFollowToggleButtonActive(ison);//等摄像机移动后才切换摄像机控制权
+            });
+        //historyNameUI.SetCameraFollowToggleButtonActive(ison);
     }
 
     #region 让参与计算的基站显示出来（测试）,及显示人员真实位置的测试小球
@@ -121,14 +140,10 @@ public class HistoryManController : MonoBehaviour
     public IEnumerator ShowArchors_Coroutine()
     {
         bool ishasvalue = true;
-
-        if (locationHistoryPathBase.currentPointIndex - 1 >= 0)
+        var temp = locationHistoryPathBase.CurrentPosInterval;
+        if (temp > 0 && temp > 3f)//如果当前要执行历史点的值，超过播放时间值5秒，就认为这超过5秒时间里，没历史轨迹数据
         {
-            double temp = (locationHistoryPathBase.timelist[locationHistoryPathBase.currentPointIndex] - locationHistoryPathBase.timelist[locationHistoryPathBase.currentPointIndex - 1]).TotalSeconds;
-            if (temp > 3f)//如果当前要执行历史点的值，超过播放时间值5秒，就认为这超过5秒时间里，没历史轨迹数据
-            {
-                ishasvalue = false;
-            }
+            ishasvalue = false;
         }
 
         if (LocationHistoryManager.Instance.CurrentFocusController == this && ishasvalue)
@@ -147,21 +162,12 @@ public class HistoryManController : MonoBehaviour
     public void ShowArchors_T()
     {
         bool ishasvalue = true;
-        //try
-        //{
-            if (locationHistoryPathBase.currentPointIndex - 1 >= 0&& locationHistoryPathBase.currentPointIndex< locationHistoryPathBase.timelist.Count)
-            {
-                double temp = (locationHistoryPathBase.timelist[locationHistoryPathBase.currentPointIndex] - locationHistoryPathBase.timelist[locationHistoryPathBase.currentPointIndex - 1]).TotalSeconds;
-                if (temp > 3f)//如果当前要执行历史点的值，超过播放时间值5秒，就认为这超过5秒时间里，没历史轨迹数据
-                {
-                    ishasvalue = false;
-                }
-            }
-        //}
-        //catch
-        //{
-        //    int i = 0;
-        //}
+        var temp = locationHistoryPathBase.CurrentPosInterval;
+        if (temp > 0 && temp > 3f)//如果当前要执行历史点的值，超过播放时间值5秒，就认为这超过5秒时间里，没历史轨迹数据
+        {
+            ishasvalue = false;
+        }
+
         if (LocationHistoryManager.Instance.CurrentFocusController == this && ishasvalue)
         {
             ShowArchors();
@@ -238,7 +244,8 @@ public class HistoryManController : MonoBehaviour
     /// </summary>
     public Position GetPosition()
     {
-        List<Position> ps = MultHistoryPlayUI.Instance.GetPositionsByPersonnel(locationHistoryPathBase.personnel);
+        //List<Position> ps = MultHistoryPlayUI.Instance.GetPositionsByPersonnel(locationHistoryPathBase.personnel);
+        List<Position> ps = LocationHistoryUITool.GetPositionsByPersonnel(locationHistoryPathBase.personnel);
         if (ps != null)
         {
             if (locationHistoryPathBase.currentPointIndex < ps.Count)
@@ -251,4 +258,41 @@ public class HistoryManController : MonoBehaviour
         return null;
     }
     #endregion
+
+    public void SetCameraFollowButtonEnable(bool isEnable)
+    {
+        Image image = historyNameUI.CameraFollowToggleButton.GetComponent<Image>();
+        Button btn = historyNameUI.CameraFollowToggleButton.GetComponent<Button>();
+
+        image.raycastTarget = isEnable;
+        btn.interactable = isEnable;
+    }
+
+    private Renderer[] renderers;
+
+    [ContextMenu("EnableRenderer")]
+    public void EnableRenderer()
+    {
+        if (renderers == null)
+        {
+            renderers = gameObject.GetComponentsInChildren<Renderer>();
+        }
+        foreach (var render in renderers)
+        {
+            render.enabled = true;
+        }
+    }
+
+    [ContextMenu("DisableRenderer")]
+    public void DisableRenderer()
+    {
+        if (renderers == null)
+        {
+            renderers = gameObject.GetComponentsInChildren<Renderer>();
+        }
+        foreach (var render in renderers)
+        {
+            render.enabled = false;
+        }
+    }
 }

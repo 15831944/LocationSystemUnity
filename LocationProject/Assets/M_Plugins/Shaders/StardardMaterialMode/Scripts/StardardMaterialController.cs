@@ -19,6 +19,7 @@ namespace StardardShader
         // Use this for initialization
         void Start()
         {
+            AnewGetMaterials();
         }
 
         // Update is called once per frame

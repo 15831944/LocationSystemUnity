@@ -24,6 +24,7 @@ public class DevSubSystemTree : MonoBehaviour {
     /// 空数据
     /// </summary>
     public GameObject EmptyValueText;
+    public Scrollbar scrollBar;
     /// <summary>
     /// 有效数据
     /// </summary>
@@ -35,10 +36,12 @@ public class DevSubSystemTree : MonoBehaviour {
     /// <summary>
     /// 树节点
     /// </summary>
+    [System.NonSerialized]
     ObservableList<TreeNode<TreeViewItem>> nodes;
     /// <summary>
     /// 当前系统
     /// </summary>
+    [System.NonSerialized]
     private Dev_Monitor CurrentSystem;
     // Use this for initialization
     void Start()
@@ -163,6 +166,7 @@ public class DevSubSystemTree : MonoBehaviour {
         Tree.Start();
         Tree.Nodes = nodes;
         if (!IsNormalState) SortAlarm();
+        if (scrollBar) scrollBar.value = 1;
     }
     /// <summary>
     /// 创建根节点(监控)

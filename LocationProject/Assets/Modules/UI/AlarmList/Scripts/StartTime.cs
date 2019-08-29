@@ -26,6 +26,6 @@ public class StartTime : MonoBehaviour {
 	}
     public void ShowStartTime()
     {
-        StartTimeText.text = "2018年01月01日";
+        StartTimeText.text = DateTime.Now.Year.ToString() + "年01月01日"; ;
     }
 }

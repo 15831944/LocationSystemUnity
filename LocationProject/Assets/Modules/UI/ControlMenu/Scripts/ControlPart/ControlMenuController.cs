@@ -326,11 +326,11 @@ public class ControlMenuController : MonoBehaviour {
     {
         if (ison)
         {
-            MultHistoryPlayUI.Instance.ShowT();
+            LocationHistoryUITool.Show();          
         }
         else
         {
-            MultHistoryPlayUI.Instance.Hide();
+            LocationHistoryUITool.Hide();
         }
     }
 }

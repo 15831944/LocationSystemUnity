@@ -67,6 +67,19 @@ public class DoorAccessItem_Tween : MonoBehaviour {
             rightDoor = secondDoor;
         }
     }
+
+    [ContextMenu("Open")]
+    public void Open()
+    {
+        OpenDoor(null);
+    }
+
+    [ContextMenu("Close")]
+    public void Close()
+    {
+        CloseDoor(false, null);
+    }
+
     /// <summary>
     /// 开门
     /// </summary>

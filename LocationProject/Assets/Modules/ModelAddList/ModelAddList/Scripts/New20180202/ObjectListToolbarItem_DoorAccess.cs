@@ -292,7 +292,7 @@ public class ObjectListToolbarItem_DoorAccess : MonoBehaviour, IPointerEnterHand
     public void AddSave(List<GameObject>DoorAccessList,string doorID,int? areaId)
     {
         List<DevNode> doorList = new List<DevNode>();
-        List<Dev_DoorAccess> doorInfos = new List<Dev_DoorAccess>();
+        //List<Dev_DoorAccess> doorInfos = new List<Dev_DoorAccess>();
         if(IsDoorAccessAdd(DoorAccessList))
         {
             UGUIMessageBox.Show(errorMsg);
@@ -309,19 +309,22 @@ public class ObjectListToolbarItem_DoorAccess : MonoBehaviour, IPointerEnterHand
 
             GetDoorAccessData(door,doorID,areaId,out controller,out doorInfo);
             doorList.Add(controller);
-            doorInfos.Add(doorInfo);
+            //doorInfos.Add(doorInfo);
         }
         ShowEditUI(doorList);
         CommunicationObject service = CommunicationObject.Instance;
         if(service)
         {
             //bool value = service.AddDoorAccess(doorInfos);
-            foreach(var item in doorInfos)
+            foreach(var dev in doorList)
             {
-                bool value = service.AddDoorAccess(item);
-                Debug.Log("Add door access value : " + value);
-             
-            }
+                DoorAccessDevController doorDev=dev as DoorAccessDevController;
+                if(doorDev)
+                {
+                    doorDev.DoorAccessInfo=service.AddDoorAccess(doorDev.DoorAccessInfo);
+                    if(doorDev.DoorAccessInfo!=null)doorDev.Info = doorDev.DoorAccessInfo.DevInfo;
+                }
+            }                    
         }
     }
     /// <summary>

@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using UnityEngine.UI;
 using Assets.M_Plugins.Helpers.Utils;
+using Base.Common.Extensions;
 
 public class DeviceEdit : MonoBehaviour
 {
@@ -36,6 +37,10 @@ public class DeviceEdit : MonoBehaviour
     /// 角度输入框
     /// </summary>
     public InputField AngleField;
+    /// <summary>
+    /// 对接ID输入框
+    /// </summary>
+    public InputField AbtmentIDField;
 
     /// <summary>
     /// CAD坐标A
@@ -68,6 +73,7 @@ public class DeviceEdit : MonoBehaviour
         YPosField.onEndEdit.AddListener(OnInputFieldEndEdit);
         ZPosField.onEndEdit.AddListener(OnInputFieldEndEdit);
 	    AngleField.onEndEdit.AddListener(OnInputFieldEndEdit);
+        AbtmentIDField.onEndEdit.AddListener(OnInputFieldEndEdit);
 
         XPosField.onValueChanged.AddListener(OnPosChange);
         YPosField.onValueChanged.AddListener(OnPosChange);
@@ -124,12 +130,13 @@ public class DeviceEdit : MonoBehaviour
         CurrentDev = dev;
         NameField.text = dev.Info.Name;
         IDField.text = dev.Info.KKSCode;
+        AbtmentIDField.text = dev.Info.Abutment_DevID;
         DevPos devPos = dev.Info.Pos;
         if (devPos != null)
         {
             Vector3 cadPos = new Vector3(devPos.PosX, devPos.PosY, devPos.PosZ);
-            bool isLocation = !(CurrentDev.ParentDepNode == FactoryDepManager.Instance || CurrentDev is DepDevController);
-            Vector3 pos = LocationManager.CadToUnityPos(cadPos, isLocation);
+            bool isLocal = CurrentDev.IsLocal();
+            Vector3 pos = LocationManager.CadToUnityPos(cadPos, isLocal);
             XPosField.text = Math.Round(pos.x,2).ToString(CultureInfo.InvariantCulture);
             YPosField.text = Math.Round(pos.y, 2).ToString(CultureInfo.InvariantCulture);
             ZPosField.text = Math.Round(pos.z, 2).ToString(CultureInfo.InvariantCulture);
@@ -144,7 +151,39 @@ public class DeviceEdit : MonoBehaviour
             Debug.LogError("DevPos is null:"+dev.Info.Name);
             //ClearValue();
         }
+        SetAnglePosInputState(dev);
     }
+    private Color unInteractableColor = new Color(109f/255f,236f/255f,254f/255);//不可输入文本框颜色
+    /// <summary>
+    /// 设置角度和位置，是否可以输入
+    /// </summary>
+    /// <param name="devTemp"></param>
+    private void SetAnglePosInputState(DevNode devTemp)
+    {
+        if(devTemp.Info!=null&&TypeCodeHelper.IsStaticDev(devTemp.Info.TypeCode.ToString()))
+        {
+            XPosField.interactable = false;
+            XPosField.textComponent.color = unInteractableColor;
+            YPosField.interactable = false;
+            YPosField.textComponent.color = unInteractableColor;
+            ZPosField.interactable = false;
+            ZPosField.textComponent.color = unInteractableColor;
+            AngleField.interactable = false;
+            AngleField.textComponent.color = unInteractableColor;
+        }
+        else
+        {
+            XPosField.interactable = true;
+            XPosField.textComponent.color = Color.white;
+            YPosField.interactable = true;
+            YPosField.textComponent.color = Color.white;
+            ZPosField.interactable = true;
+            ZPosField.textComponent.color = Color.white;
+            AngleField.interactable = true;
+            AngleField.textComponent.color = Color.white;
+        }
+    }
+
     /// <summary>
     /// 设置摄像头设置界面
     /// </summary>
@@ -164,7 +203,7 @@ public class DeviceEdit : MonoBehaviour
     /// 关闭窗体
     /// </summary>
     public void Close()
-    {
+    {       
         window.SetActive(false);
     }
     /// <summary>
@@ -179,20 +218,21 @@ public class DeviceEdit : MonoBehaviour
         {
             CurrentDev.Info.Name = NameField.text;
             CurrentDev.Info.KKSCode = IDField.text;
+            CurrentDev.Info.Abutment_DevID = AbtmentIDField.text;
             string typeCode = CurrentDev.Info.TypeCode.ToString();
             DevPos posInfo=null;
             if (!TypeCodeHelper.IsStaticDev(typeCode))
             {
                 ChangeDevPosAngle();
-                bool isLocation = !(CurrentDev.ParentDepNode == FactoryDepManager.Instance || CurrentDev is DepDevController);
-                Vector3 cadPos = LocationManager.UnityToCadPos(TryParsePos(), isLocation);
+                bool isLocal = CurrentDev.IsLocal();
+                Vector3 cadPos = LocationManager.UnityToCadPos(TryParsePos(), isLocal);
                 posInfo = CurrentDev.Info.Pos;
                 if (posInfo != null)
                 {
                     posInfo.PosX = cadPos.x;
                     posInfo.PosY = cadPos.y;
                     posInfo.PosZ = cadPos.z;
-                    posInfo.RotationY = TryParseFloat(AngleField.text);
+                    posInfo.RotationY = AngleField.text.ToFloat();
                 }
                 manager.ChangeDevFollowInfo(CurrentDev);
                 manager.RefleshGizmoPosition();
@@ -214,7 +254,7 @@ public class DeviceEdit : MonoBehaviour
         if (TypeCodeHelper.IsStaticDev(CurrentDev.Info.TypeCode.ToString())) return;
         DevPos devPos = CurrentDev.Info.Pos;
         Vector3 cadPos = new Vector3(devPos.PosX, devPos.PosY, devPos.PosZ);
-        bool isRoomDev = !(CurrentDev.ParentDepNode == FactoryDepManager.Instance || CurrentDev is DepDevController);
+        bool isRoomDev = CurrentDev.IsLocal();
         Vector3 pos = LocationManager.CadToUnityPos(cadPos, isRoomDev);
         if (string.IsNullOrEmpty(NameField.text)) NameField.text = CurrentDev.Info.Name;
         CheckEmptyField(XPosField,pos.x);
@@ -236,7 +276,7 @@ public class DeviceEdit : MonoBehaviour
     /// </summary>
     private void ChangeDevPosAngle()
     {
-        bool isFactoryDev = CurrentDev.ParentDepNode == FactoryDepManager.Instance || CurrentDev is DepDevController;
+        bool isFactoryDev = CurrentDev.IsInPark();
         if (isFactoryDev)
         {
             CurrentDev.transform.position=TryParsePos();
@@ -246,7 +286,7 @@ public class DeviceEdit : MonoBehaviour
             CurrentDev.transform.localPosition = TryParsePos();
         }
         Vector3 angleTemp = CurrentDev.transform.eulerAngles;
-        angleTemp.y= TryParseFloat(AngleField.text);
+        angleTemp.y = AngleField.text.ToFloat();
         CurrentDev.transform.eulerAngles = angleTemp;
     }
     /// <summary>
@@ -256,8 +296,8 @@ public class DeviceEdit : MonoBehaviour
     {
         //bool isValueEmpty=string.IsNullOrEmpty(XPosField.text)|| string.IsNullOrEmpty(YPosField.text)|| string.IsNullOrEmpty(ZPosField.text)?true:false;
         //if (isValueEmpty) return;
-        bool isLocation = !(CurrentDev.ParentDepNode == FactoryDepManager.Instance || CurrentDev is DepDevController);
-        Vector3 cadPos = LocationManager.UnityToCadPos(TryParsePos(), isLocation);
+        bool isLocal = CurrentDev.IsLocal();
+        Vector3 cadPos = LocationManager.UnityToCadPos(TryParsePos(), isLocal);
         CadPosA.text = Math.Round(cadPos.z, 2).ToString(CultureInfo.InvariantCulture);
         CadPosB.text = Math.Round(cadPos.x, 2).ToString(CultureInfo.InvariantCulture);
     }
@@ -270,34 +310,16 @@ public class DeviceEdit : MonoBehaviour
         try
         {
             DevPos devPos = CurrentDev.Info.Pos;
-            float xPos = TryParseFloat(XPosField.text);
-            float yPos = TryParseFloat(YPosField.text);
-            float zPos = TryParseFloat(ZPosField.text);
+            float xPos = XPosField.text.ToFloat();
+            float yPos = YPosField.text.ToFloat(); 
+            float zPos = ZPosField.text.ToFloat(); 
             Vector3 pos = new Vector3(xPos, yPos, zPos);
             return pos;
         }
         catch (Exception e)
         {
-            Debug.LogError("Input Pos Error");
+            Debug.LogError("Input Pos Error:"+ e);
             return Vector3.zero;
-        }
-    }
-    /// <summary>
-    /// string转Float
-    /// </summary>
-    /// <param name="num"></param>
-    /// <param name="lastValue"></param>
-    /// <returns></returns>
-    private float TryParseFloat(string num)
-    {
-        try
-        {
-            float value = float.Parse(num);
-            return value;
-        }
-        catch (Exception e)
-        {
-            return DefaultValue;
         }
     }
     ///// <summary>

@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2DED2A71-2D5E-45C4-934F-3BB954765FDB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LOOM_Framework</RootNamespace>
+    <AssemblyName>LOOM Framework</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\Assets\Plugins\Lib\ThirdAssets\LOOM Framework\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\UnityEditorLib\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Examples\Scripts\FlockingMassive\Cannon.cs" />
+    <Compile Include="Examples\Scripts\FlockingMassive\FlockHelper.cs" />
+    <Compile Include="Examples\Scripts\FlockingMassive\HUDmanager.cs" />
+    <Compile Include="Examples\Scripts\FlockingMassive\MassiveFlockingExample.cs" />
+    <Compile Include="Examples\Scripts\FlockingMassive\MovingBodies.cs" />
+    <Compile Include="Examples\Scripts\FlockingMassive\ThreadedFlocking.cs" />
+    <Compile Include="Examples\Scripts\Simple Implementations\SimpleThreadingExample.cs" />
+    <Compile Include="Examples\Scripts\TextureBlur\TextureBlurThreaded.cs" />
+    <Compile Include="LOOM\Internal\MainThreadDispatcher.cs" />
+    <Compile Include="LOOM\Internal\MainThreadWatchdog.cs" />
+    <Compile Include="LOOM\Internal\MultithreadedWorkloadHelper.cs" />
+    <Compile Include="LOOM\Internal\SingleThreadStarter.cs" />
+    <Compile Include="LOOM\Internal\ThreadDispatchAction.cs" />
+    <Compile Include="LOOM\Internal\ThreadPoolSchedulerWorkerObjects.cs" />
+    <Compile Include="LOOM\Internal\ThreadWaitCommands.cs" />
+    <Compile Include="LOOM\Internal\UnityActivityWatchdog.cs" />
+    <Compile Include="LOOM\IThreadWorkerObject.cs" />
+    <Compile Include="LOOM\Loom.cs" />
+    <Compile Include="LOOM\ThreadPoolScheduler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Examples.meta" />
+    <None Include="Examples\Prefabs.meta" />
+    <None Include="Examples\Prefabs\CannonBall.prefab" />
+    <None Include="Examples\Prefabs\CannonBall.prefab.meta" />
+    <None Include="Examples\Prefabs\FlockingManager.prefab" />
+    <None Include="Examples\Prefabs\FlockingManager.prefab.meta" />
+    <None Include="Examples\Scenes.meta" />
+    <None Include="Examples\Scenes\FlockingMassive.unity" />
+    <None Include="Examples\Scenes\FlockingMassive.unity.meta" />
+    <None Include="Examples\Scenes\SimpleExampleImplementation.unity" />
+    <None Include="Examples\Scenes\SimpleExampleImplementation.unity.meta" />
+    <None Include="Examples\Scenes\TextureBlur.unity" />
+    <None Include="Examples\Scenes\TextureBlur.unity.meta" />
+    <None Include="Examples\Scripts.meta" />
+    <None Include="Examples\Scripts\FlockingMassive.meta" />
+    <None Include="Examples\Scripts\FlockingMassive\Cannon.cs.meta" />
+    <None Include="Examples\Scripts\FlockingMassive\FlockHelper.cs.meta" />
+    <None Include="Examples\Scripts\FlockingMassive\HUDmanager.cs.meta" />
+    <None Include="Examples\Scripts\FlockingMassive\MassiveFlockingExample.cs.meta" />
+    <None Include="Examples\Scripts\FlockingMassive\MovingBodies.cs.meta" />
+    <None Include="Examples\Scripts\FlockingMassive\ThreadedFlocking.cs.meta" />
+    <None Include="Examples\Scripts\Simple Implementations.meta" />
+    <None Include="Examples\Scripts\Simple Implementations\SimpleThreadingExample.cs.meta" />
+    <None Include="Examples\Scripts\TextureBlur.meta" />
+    <None Include="Examples\Scripts\TextureBlur\TextureBlurCodeExplained.jpg.meta" />
+    <None Include="Examples\Scripts\TextureBlur\TextureBlurThreaded.cs.meta" />
+    <None Include="Examples\Visuals.meta" />
+    <None Include="Examples\Visuals\Cubemap.jpg.meta" />
+    <None Include="Examples\Visuals\FlockingDemoLogo.jpg.meta" />
+    <None Include="Examples\Visuals\Floor.jpg.meta" />
+    <None Include="Examples\Visuals\FrameClean.fbx" />
+    <None Include="Examples\Visuals\FrameClean.fbx.meta" />
+    <None Include="Examples\Visuals\FrameHighPoly.fbx" />
+    <None Include="Examples\Visuals\FrameHighPoly.fbx.meta" />
+    <None Include="Examples\Visuals\Materials.meta" />
+    <None Include="Examples\Visuals\Materials\CannonBall.mat" />
+    <None Include="Examples\Visuals\Materials\CannonBall.mat.meta" />
+    <None Include="Examples\Visuals\Materials\Export_Logo_Clean_mi_car_paint_phen_x_passes1.mat" />
+    <None Include="Examples\Visuals\Materials\Export_Logo_Clean_mi_car_paint_phen_x_passes1.mat.meta" />
+    <None Include="Examples\Visuals\Materials\Floor.mat" />
+    <None Include="Examples\Visuals\Materials\Floor.mat.meta" />
+    <None Include="Examples\Visuals\Materials\Frame.mat" />
+    <None Include="Examples\Visuals\Materials\Frame.mat.meta" />
+    <None Include="Examples\Visuals\Materials\lambert1.mat" />
+    <None Include="Examples\Visuals\Materials\lambert1.mat.meta" />
+    <None Include="Examples\Visuals\Materials\mi_car_paint_phen_x_passes1.mat" />
+    <None Include="Examples\Visuals\Materials\mi_car_paint_phen_x_passes1.mat.meta" />
+    <None Include="Examples\Visuals\Materials\Particle.mat" />
+    <None Include="Examples\Visuals\Materials\Particle.mat.meta" />
+    <None Include="Examples\Visuals\Materials\Spheres.mat" />
+    <None Include="Examples\Visuals\Materials\Spheres.mat.meta" />
+    <None Include="Examples\Visuals\Particle.png.meta" />
+    <None Include="Examples\Visuals\Plane1x1.fbx" />
+    <None Include="Examples\Visuals\Plane1x1.fbx.meta" />
+    <None Include="Examples\Visuals\Rock_n_Snow.JPG.meta" />
+    <None Include="LOOM.meta" />
+    <None Include="LOOM\Internal.meta" />
+    <None Include="LOOM\Internal\MainThreadDispatcher.cs.meta" />
+    <None Include="LOOM\Internal\MainThreadWatchdog.cs.meta" />
+    <None Include="LOOM\Internal\MultithreadedWorkloadHelper.cs.meta" />
+    <None Include="LOOM\Internal\SingleThreadStarter.cs.meta" />
+    <None Include="LOOM\Internal\ThreadDispatchAction.cs.meta" />
+    <None Include="LOOM\Internal\ThreadPoolSchedulerWorkerObjects.cs.meta" />
+    <None Include="LOOM\Internal\ThreadWaitCommands.cs.meta" />
+    <None Include="LOOM\Internal\UnityActivityWatchdog.cs.meta" />
+    <None Include="LOOM\IThreadWorkerObject.cs.meta" />
+    <None Include="LOOM\Loom.cs.meta" />
+    <None Include="LOOM\ThreadPoolScheduler.cs.meta" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Examples\Scripts\TextureBlur\TextureBlurCodeExplained.jpg" />
+    <Content Include="Examples\Visuals\Cubemap.jpg" />
+    <Content Include="Examples\Visuals\FlockingDemoLogo.jpg" />
+    <Content Include="Examples\Visuals\Floor.jpg" />
+    <Content Include="Examples\Visuals\Particle.png" />
+    <Content Include="Examples\Visuals\Rock_n_Snow.JPG" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 public class FullViewCameraPath : MonoBehaviour
 {
+    public static FullViewCameraPath Instance;
     /// <summary>
     /// 主相机
     /// </summary>
@@ -72,15 +73,16 @@ public class FullViewCameraPath : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
+        Instance = this;
         SceneEvents.FullViewPartChange += OnFullViewPartChange;
-        SceneEvents.FullViewStateChange += OnViewChange;
+        //SceneEvents.FullViewStateChange += OnViewChange;
         CameraControl.OnAlignEnd += CloseCameraControl;
     }
     /// <summary>
     /// 全景退出和进入
     /// </summary>
     /// <param name="isFullView"></param>
-    private void OnViewChange(bool isFullView)
+    public void OnViewChange(bool isFullView)
     {
         if(!isFullView)
         {
@@ -131,16 +133,12 @@ public class FullViewCameraPath : MonoBehaviour
     {
         MouseTranslate.enabled = true;
         CameraControl.enabled = true;
-        MouseTranslate.areaSettings.center = FactoryPositon.transform;
+        //MouseTranslate.areaSettings.center = FactoryPositon.transform;
+        MouseTranslate.areaSettings.SetCenter(FactoryPositon.transform);
         MouseTranslate.SetTranslatePosition(FactoryPositon.transform.position);
         CameraControl.AlignVeiwToTarget(MouseTranslate.transform, DefaultAngles, DefaultDistance);
         CameraControl.gameObject.SetActive(false);
-        FullViewCanvas.SetActive(false);
-        FactoryDepManager dep = FactoryDepManager.Instance;
-        if(dep)
-        {           
-            dep.CreateFactoryDev();
-        }
+        FullViewCanvas.SetActive(false);        
     }
     /// <summary>
     /// 进入电厂

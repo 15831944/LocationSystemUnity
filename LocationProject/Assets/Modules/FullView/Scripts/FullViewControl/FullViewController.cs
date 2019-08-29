@@ -1,4 +1,5 @@
-﻿using MonitorRange;
+﻿using DG.Tweening;
+using MonitorRange;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -94,6 +95,7 @@ public class FullViewController : MonoBehaviour {
     /// 是否正在做转场动画
     /// </summary>
     private bool IsDoingAnimation;
+   // public SystemModeTweenManage systemModeTweenManage;
     #endregion
     #region Private Method
     // Use this for initialization
@@ -118,7 +120,7 @@ public class FullViewController : MonoBehaviour {
             
         }catch(Exception e)
         {
-            Debug.LogError("Error:FullViewController.BindingUIMethod "+e.ToString());
+            Log.Error("Error:FullViewController.BindingUIMethod "+e.ToString());
         }
     }
     /// <summary>
@@ -222,46 +224,125 @@ public class FullViewController : MonoBehaviour {
     public void SwitchToFullView()
     {
         isFullView = true;
-        //进入视图初始化
-        currentPart = FullViewPart.MainBuilding;
-        SceneEvents.OnFullViewStateChange(isFullView);
+        Log.Error("FullViewController->返回首页!");
+        if (SystemModeTweenManage.Instance !=null&&SystemModeTweenManage.Instance .IsStartTween==false)
+        {
+            Log.Info("FullViewController.SystemModeTweenManage.TweenSequence rewind start.");
+            SystemModeTweenManage.Instance.TweenSequence.OnRewind(() =>
+            {
+                Log.Info("FullViewController.SystemModeTweenManage.TweenSequence rewind end.");
+                SystemModeTweenManage.Instance. KillModdleTween();
+                Log.Info("FullViewController.SwitchToFullView.TransferAnimation start.");
+                TransferAnimation.DoTransferAnimation(()=> 
+                {
+                    Log.Info("FullViewController.SwitchToFullView.TransferAnimation end.");
+                    currentPart = FullViewPart.MainBuilding;
+                    if (FullViewCameraPath.Instance) FullViewCameraPath.Instance.OnViewChange(true);
+                    Log.Info("FullViewController.SceneEvents.OnFullViewStateChange:"+IsFullView);
+                    SceneEvents.OnFullViewStateChange(isFullView);
+                });               
+            }).PlayBackwards();
+
+            //进入视图初始化
+        }
+        else
+        {
+            Log.Info("FullViewController.SwitchToFullView. without tween.");
+            currentPart = FullViewPart.MainBuilding;
+            if (FullViewCameraPath.Instance) FullViewCameraPath.Instance.OnViewChange(true);
+            SceneEvents.OnFullViewStateChange(isFullView);
+        }
+
+        if (SceneAssetManager.Instance)
+        {
+            SceneAssetManager.Instance.SetEnableLoadBuilding(false);
+        }
+
     }
     /// <summary>
     /// 退出全景模式
     /// </summary>
     public void ExitFullView()
     {
+        Log.Error("FullViewController->进入电厂!");
         if (IsDoingAnimation)
         {
-            Debug.Log("Transfer Animation not complete.");
+            Log.Info("FullViewController.Transfer Animation not complete.");
             return;
         }
         IsDoingAnimation = true;
+        Log.Info("FullViewController.Transfer Animation start...");
         TransferAnimation.DoTransferAnimation(() =>
         {
-            //IsDoingAnimation = false;
-            //isFullView = false;
-            //SceneEvents.OnFullViewStateChange(isFullView);
-            ////MonitorRangeManager.Instance.ShowRanges(SceneEvents.DepNode);
-            //IsClickUGUIorNGUI.Instance.Recover();//解决鼠标右键旋转场景时，会跳一下的的问题（是IsClickUGUIorNGUI中鼠标点击检测问题）
-            InvokeRepeating("WaitForTopoTree", 0, 0.1f);
+            Log.Info("FullViewController.Transfer Animation complete...");
+            if (FullViewCameraPath.Instance) FullViewCameraPath.Instance.OnViewChange(false);
+            InitTopTreeBefroeFactory();
+            if (SceneAssetManager.Instance)
+            {
+                SceneAssetManager.Instance.SetEnableLoadBuilding(true);
+            }
         });
     }
 
-    public void WaitForTopoTree()
+
+    /// <summary>
+    /// 进入电厂前，初始化拓扑树数据
+    /// </summary>
+    public void InitTopTreeBefroeFactory()
     {
-        if (RoomFactory.Instance.isTopoInited)//要等待这里完成
+        if (!RoomFactory.Instance.isTopoInited)//要等待这里完成
         {
-            CancelInvoke("WaitForTopoTree");
-            IsDoingAnimation = false;
-            isFullView = false;
-            SceneEvents.OnFullViewStateChange(isFullView);
-            //MonitorRangeManager.Instance.ShowRanges(SceneEvents.DepNode);
-            IsClickUGUIorNGUI.Instance.Recover();//解决鼠标右键旋转场景时，会跳一下的的问题（是IsClickUGUIorNGUI中鼠标点击检测问题）
+            Log.Info("FullViewController.Roomfactory.Init...");
+            RoomFactory.Instance.Init(()=> 
+            {
+                Log.Info("FullViewController.Roomfactory.Init complete!");
+                Log.Info("FullViewController.InitPeronnelTree start!");
+                if (PersonnelTreeManage.Instance) PersonnelTreeManage.Instance.InitTree();
+                Log.Info("FullViewController.InitPeronnelTree end!");
+                EnterFactory();
+            });           
         }
         else
         {
-            return;
+            Log.Info("FullViewController.enter factory while topoTree inited!");
+            EnterFactory();
+        }
+    }
+    /// <summary>
+    /// 进入电厂
+    /// </summary>
+    private void EnterFactory()
+    {
+        try
+        {
+            Log.Info("FullViewController.enter facotry start...");
+            SystemModeTweenManage.Instance.SetStartTween();
+           
+            Log.Info("FullViewController.tween sequence start...");
+            SystemModeTweenManage.Instance.TweenSequence.OnComplete(() =>
+            {
+                ParkInformationManage.Instance.ShowParkInfoUI(true);
+                Log.Info("FullViewController.tween sequence end...");
+                SystemModeTweenManage.Instance.IsStartTween = false;
+                SystemModeTweenManage.Instance.ModdleTween();
+            }).Restart();
+            if(AlarmPushManage.Instance)AlarmPushManage.Instance.ShowIsShow();
+            FactoryDepManager dep = FactoryDepManager.Instance;
+            if (dep)
+            {
+                Log.Info("FullViewController.start creat factory dev...");
+                dep.CreateFactoryDev();
+                Log.Info("FullViewController.creat factory dev complete.");
+            }
+            IsDoingAnimation = false;
+            isFullView = false;
+            Log.Info("FullViewController.enter factory event start...");
+            SceneEvents.OnFullViewStateChange(isFullView);
+            //MonitorRangeManager.Instance.ShowRanges(SceneEvents.DepNode);
+            IsClickUGUIorNGUI.Instance.Recover();//解决鼠标右键旋转场景时，会跳一下的的问题（是IsClickUGUIorNGUI中鼠标点击检测问题）
+        }catch(Exception e)
+        {
+            Log.Error("Error:FullViewController enter factory:"+e.ToString());
         }
     }
     /// <summary>
@@ -269,8 +350,16 @@ public class FullViewController : MonoBehaviour {
     /// </summary>
     public void ExitFullViewImmediately()
     {
-        isFullView = false;
-        SceneEvents.OnFullViewStateChange(isFullView);
+        if (FullViewCameraPath.Instance) FullViewCameraPath.Instance.OnViewChange(false);
+        InitTopTreeBefroeFactory();
+        if (SceneAssetManager.Instance)
+        {
+            SceneAssetManager.Instance.SetEnableLoadBuilding(true);
+        }
+    }
+     void OnDestroy()
+    {
+        //Log.Info("FullViewController.OnDestory->Application Quit.");
     }
     #endregion
 }

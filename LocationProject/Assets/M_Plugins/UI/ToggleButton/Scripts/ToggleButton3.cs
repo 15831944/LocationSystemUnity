@@ -71,6 +71,7 @@ public class ToggleButton3 : MonoBehaviour
 
     public void SetToggle(bool isonT)
     {
+        ison = isonT;
         SetImage(isonT);
         ToggleButton3_OnValueChanged(isonT);
     }
@@ -88,6 +89,10 @@ public class ToggleButton3 : MonoBehaviour
     /// </summary>
     private void SetImage(bool ison)
     {
+        if (image == null)
+        {
+            image = btn.image;
+        }
         if (ison)
         {
             image.sprite = selectSprite;
@@ -104,5 +109,24 @@ public class ToggleButton3 : MonoBehaviour
     public void Txt_OnClick(GameObject o)
     {
         Btn_OnClick();
+    }
+
+    /// <summary>
+    /// 恢复状态
+    /// </summary>
+    public void RReset()
+    {
+        //ison = false;
+        //SetImage(false);
+        SetState(false);
+    }
+
+    /// <summary>
+    /// 设置状态,不触发事件
+    /// </summary>
+    public void SetState(bool b)
+    {
+        ison = b;
+        SetImage(b);
     }
 }

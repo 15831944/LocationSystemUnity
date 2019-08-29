@@ -41,6 +41,7 @@ public class FanAnimation : MonoBehaviour {
     private float minRotateDis = 50f;
     private void Update()
     {
+        if (Camera.main == null) return;
         if (Vector3.Distance(Camera.main.transform.position,transform.position)< minRotateDis)
         {
             if(FanSequence!=null)

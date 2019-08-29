@@ -143,6 +143,18 @@ public class DoorAccessItem : MonoBehaviour {
         AddBoxCollider();
         TweenPart = gameObject.AddMissingComponent<DoorAccessItem_Tween>();
         TweenPart.SetDoor(isSingleDoor,firstDoor,secondDoor);
+        if (firstDoor)
+        {
+            MeshCollider collider=firstDoor.AddMissingComponent<MeshCollider>();
+            collider.convex = true;
+            collider.isTrigger = true;
+        }
+        if (secondDoor)
+        {
+            MeshCollider collider = secondDoor.AddMissingComponent<MeshCollider>();
+            collider.convex = true;
+            collider.isTrigger = true;
+        }
     }
     public void InitRollingDoor()
     {
@@ -264,18 +276,27 @@ public class DoorAccessItem : MonoBehaviour {
     /// <summary>
     /// 门Collider扩大缩小的值
     /// </summary>
-    private float colliderEnlargeSize = 2f;
+    private float colliderEnlargeSize = 4f;
     /// <summary>
     /// 卷闸门扩大的值
     /// </summary>
-    private float rollingEnlargeSize = 4f;
+    private float rollingEnlargeSize = 6f;
+
+    /// <summary>
+    /// 是否以及调大了碰撞体，防止一直变大。
+    /// </summary>
+    public bool IsLargeCollder = false;
+
     /// <summary>
     /// 扩大门的Collider
     /// </summary>
+    [ContextMenu("EnlargeCollider")]
     public void EnlargeCollider()
     {
         if (DoorCollider == null) return;
         if (!DoorCollider.enabled) DoorCollider.enabled = true;
+        if (IsLargeCollder) return;
+        IsLargeCollder = true;
         float sizeEnlarge = IsRollingDoor ? rollingEnlargeSize : colliderEnlargeSize;
         if (IsDoorInXField)
         {
@@ -289,13 +310,18 @@ public class DoorAccessItem : MonoBehaviour {
             size.x += sizeEnlarge;
             DoorCollider.size = size;
         }
+
+        //ConstantOn(Color.blue);
     }
     /// <summary>
     /// 恢复门的Collider
     /// </summary>
+    [ContextMenu("RecoverCollider")]
     public void RecoverCollider()
     {
         if (DoorCollider == null) return;
+        if (IsLargeCollder==false) return;
+        IsLargeCollder = false;
         float sizeRecover = IsRollingDoor ? rollingEnlargeSize : colliderEnlargeSize;
         if (IsDoorInXField)
         {
@@ -314,6 +340,7 @@ public class DoorAccessItem : MonoBehaviour {
     /// <summary>
     /// 关闭所有门
     /// </summary>
+    [ContextMenu("CloseAllDoor")]
     public void CloseAllDoor()
     {
         if (DoorLeft != null) DoorLeft.transform.localEulerAngles = Vector3.zero;
@@ -465,7 +492,8 @@ public class DoorAccessItem : MonoBehaviour {
     void OnTriggerEnter(Collider other)
     {
         FirstPersonController person = other.gameObject.GetComponent<FirstPersonController>();
-        if (person != null)
+        if (person != null && person.gameObject.layer != LayerMask.NameToLayer("Person")) 
+            //定位人员的Layer是Person，漫游人员没有设置是Default
         {
             OnFPSEnter(person.gameObject);
         }
@@ -473,7 +501,7 @@ public class DoorAccessItem : MonoBehaviour {
     void OnTriggerExit(Collider other)
     {
         FirstPersonController person = other.gameObject.GetComponent<FirstPersonController>();
-        if (person != null)
+        if (person != null && person.gameObject.layer != LayerMask.NameToLayer("Person"))
         {
             OnFPSExit(person.gameObject);
         }
@@ -506,7 +534,7 @@ public class DoorAccessItem : MonoBehaviour {
     /// <param name="person"></param>
     public void OnFPSEnter(GameObject person)
     {
-        SetBuildingState(true);
+        SetBuildingState(person,true);
         if (IsRollingDoor)
         {
             OpenDoor();
@@ -545,7 +573,7 @@ public class DoorAccessItem : MonoBehaviour {
     }
     public void OnFPSExit(GameObject person)
     {
-        SetBuildingState(false);
+        SetBuildingState(person,false);
         if (IsRollingDoor)
         {
             CloseDoor(false);
@@ -554,29 +582,31 @@ public class DoorAccessItem : MonoBehaviour {
         if (DoorRight != null) DoorRight.transform.DOLocalRotate(Vector3.zero, 1f);
         if (DoorLeft != null) DoorLeft.transform.DOLocalRotate(Vector3.zero, 1f);
     }
-    private void SetBuildingState(bool isEnterBuilding)
+    private void SetBuildingState(GameObject person,bool isEnter)
     {
+        Debug.Log("DoorAccessItem.SetBuildingState isEnter:" + isEnter);
         if (doorBuilding == null) doorBuilding = transform.GetComponentInParent<BuildingController>();
-        if (doorBuilding == null) return;
         DevSubsystemManage manager = DevSubsystemManage.Instance;
-        if (isEnterBuilding)
+        if (doorBuilding == null||manager==null) return;             
+        if (isEnter)//进入门的范围
         {
-            doorBuilding.ShowBuildingDev(true);
-            RoamManage.Instance.SetLight(true);
-            if (!manager.IsBuildingExist(doorBuilding))
+            BuildingBox box = doorBuilding.GetComponent<BuildingBox>();
+            if(box!=null)
             {
-                //Debug.LogError(string.Format("{0} enter", doorBuilding.NodeName));
-                DevSubsystemManage.Instance.SetTriggerBuilding(doorBuilding, true);                                
-                if (!doorBuilding.IsDevCreate)
+                box.LoadBuilding(dep =>
                 {
-                    doorBuilding.IsDevCreate = true;
-                    RoomFactory.Instance.CreateDepDev(doorBuilding, true);
-                }                              
-            }          
+                    LoadBuildingDev(doorBuilding);
+                });
+            }
+            else
+            {
+                LoadBuildingDev(doorBuilding);
+            }                     
         }
-        else
+        else//离开门的范围
         {
-            if (!manager.IsBuildingExist(doorBuilding))
+            var isExist = manager.IsBuildingExist(doorBuilding);
+            if (!isExist)
             {
                 DevSubsystemManage.Instance.SetTriggerBuilding(doorBuilding, false);
                 //doorBuilding.ShowBuildingDev(false);
@@ -584,6 +614,37 @@ public class DoorAccessItem : MonoBehaviour {
             }           
         }
     }
+    /// <summary>
+    /// 加载建筑内设备
+    /// </summary>
+    /// <param name="doorBuilding"></param>
+    private void LoadBuildingDev(BuildingController doorBuilding)
+    {
+        doorBuilding.ShowBuildingDev(true);
+        RoamManage.Instance.SetLight(true);
+        var isExist = DevSubsystemManage.Instance.IsBuildingExist(doorBuilding);//人是否已经在建筑里面了
+
+        if (!isExist)//进入门的范围，但是还没踏入建筑时，加载建筑内的设备。
+        {
+            //Debug.LogError(string.Format("{0} enter", doorBuilding.NodeName));
+            DevSubsystemManage.Instance.SetTriggerBuilding(doorBuilding, true);  //设置已经进入建筑了，进入门的范围则算是进入建筑了                               
+        }
+        else //先进入建筑的范围，再进入门的范围
+        {
+
+        }
+        //进入门的范围则算是进入建筑了
+        if (!doorBuilding.IsDevCreate)
+        {
+            doorBuilding.IsDevCreate = true;
+            //RoomFactory.Instance.CreateDepDev(doorBuilding, true);//进入建筑，创建设备。
+            doorBuilding.LoadDevices(() =>
+            {
+                RoomFactory.Instance.CreateDepDev(doorBuilding, true);
+            });
+        }
+    }
+
     /// <summary>
     /// 门是否在X轴上
     /// </summary>

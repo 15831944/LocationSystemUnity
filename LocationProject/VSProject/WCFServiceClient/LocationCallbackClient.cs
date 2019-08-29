@@ -1,13 +1,13 @@
 ﻿using System;
 using System.ServiceModel;
-using Location.WCFServiceReferences.LocationCallbackServices;
+using Location.WCFServiceReferences.LocationServices;
 
 namespace WCFClientLib
 {
     public class LocationCallbackClient:WCFClient
         //,ILocationAlarmServiceCallback
     {
-        public LocationAlarmServiceClient InnerClient { get; set; }
+       // public LocationAlarmServiceClient InnerClient { get; set; }
 
         public LocationCallbackClient(string host, string port):base(host,port,WCFClientHostType.Self)
         {
@@ -24,9 +24,9 @@ namespace WCFClientLib
             Binding = wsBinding;
             EndpointAddress = new EndpointAddress(Url);
 
-            InnerClient = new LocationAlarmServiceClient(
-                new InstanceContext(this), 
-                Binding, EndpointAddress);
+          //  InnerClient = new LocationAlarmServiceClient(
+            //    new InstanceContext(this), 
+            //    Binding, EndpointAddress);
         }
 
         public bool Connect()
@@ -34,7 +34,7 @@ namespace WCFClientLib
             try
             {
                 SetConnectInfo();
-                InnerClient.Connect();
+            //    InnerClient.Connect();
                 return true;
             }
             catch (Exception ex)
@@ -48,10 +48,10 @@ namespace WCFClientLib
         {
             try
             {
-                if (InnerClient != null)
-                {
-                    InnerClient.DisConnect();
-                }
+                //if (InnerClient != null)
+                //{
+                //    InnerClient.DisConnect();
+                //}
                 return true;
             }
             catch (Exception ex)

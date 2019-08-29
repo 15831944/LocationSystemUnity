@@ -30,7 +30,8 @@ public class RoomController : DepNode
     /// </summary>
     private Action OnDevCreateComplete;
     // Use this for initialization
-    void Start()
+
+    void Awake()
     {
         depType = DepType.Room;
     }
@@ -87,9 +88,11 @@ public class RoomController : DepNode
         if (building != null) building.LoadRoom(ParentNode, true, floor =>
         {
             OnDevCreateComplete = onComplete;
-            DepNode lastDep = FactoryDepManager.currentDep;
-            FactoryDepManager.currentDep = this;
-            SceneEvents.OnDepNodeChanged(lastDep, this);
+            //DepNode lastDep = FactoryDepManager.currentDep;
+            //FactoryDepManager.currentDep = this;
+            //SceneEvents.OnDepNodeChanged(lastDep, this);
+
+            SceneEvents.OnDepNodeChanged(this);
             //Todo:摄像头聚焦    
             if (isFocusT)
             {
@@ -182,6 +185,8 @@ public class RoomController : DepNode
             DevNode dev = devs.Find(i => i.isAlarm == true);
             if (dev != null) return;
         }
+
+        if (monitorRangeObject.isAlarming) return;//如果机房正处于告警就返回
         monitorRangeObject.FlashingOn(Color.green, 2f);
         if (IsInvoking("FlashingOff"))
         {
@@ -198,6 +203,12 @@ public class RoomController : DepNode
     /// </summary>
     private void FlashingOff()
     {
+        //房间有消防告警，不关闭高亮闪烁
+        if(DevAlarmManage.Instance!=null&&NodeID!=0)
+        {
+            bool isDepFireAlarm = DevAlarmManage.Instance.IsDepFireAlarm(NodeID);
+            if (isDepFireAlarm) return;
+        }
         if (monitorRangeObject == null) return;
         monitorRangeObject.FlashingOff();
     }
@@ -235,4 +246,11 @@ public class RoomController : DepNode
                                camDistance, angleRange, disRange);
         return alignTargetTemp;
     }
+
+    //public void OnDestroy()
+    //{
+    //    int i = 0;
+    //    //Debug.LogError("RoomController_OnDestroy");
+    //    RoomFactory.Instance.RemoveDepNodeById(NodeID);
+    //}
 }

@@ -34,7 +34,17 @@ public class BuildingFollowUI : MonoBehaviour {
 	void Start () {
         UIToggle.onValueChanged.AddListener(OnUIClick);
     }
-	
+
+    private void OnEnable()
+    {
+        UGUIFollowTarget follow = transform.GetComponent<UGUIFollowTarget>();
+        if (follow&&follow.Target)
+        {
+            bool isEnable = follow.Target.activeInHierarchy;
+            if (!isEnable) gameObject.SetActive(false);         //加载精细模型时，不显示
+        }
+    }
+
     /// <summary>
     /// 设置信息
     /// </summary>

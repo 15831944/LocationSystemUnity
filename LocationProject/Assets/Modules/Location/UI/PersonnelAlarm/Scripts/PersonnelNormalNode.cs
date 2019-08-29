@@ -55,11 +55,9 @@ public class PersonnelNormalNode : MonoBehaviour
             if (PersonInfoUI.personnel != null)
             {
                 //PersonnelTreeManage.Instance.departmentDivideTree.Tree.SelectNodeByData(PersonInfoUI.personnel.Id);
-                //PersonnelTreeManage.Instance.departmentDivideTree.Tree.SelectNodeByData(PersonInfoUI.personnel.TagId);
-                //PersonnelTreeManage.Instance.areaDivideTree.Tree.SelectNodeByType(PersonInfoUI.personnel.TagId);//PersonNode.Id==Personnel.Id
-                PersonnelTreeManage.Instance.departmentDivideTree.Tree.SelectNodeByData(PersonInfoUI.personnel.Id);
-                PersonnelTreeManage.Instance.areaDivideTree.Tree.SelectNodeByType(PersonInfoUI.personnel.Id);//PersonNode.Id==Personnel.Id
+                //PersonnelTreeManage.Instance.areaDivideTree.Tree.SelectNodeByType(PersonInfoUI.personnel.Id);//
 
+                PersonnelTreeManage.Instance.SelectPerson(PersonInfoUI.personnel);
             }
 
             AlarmToggle.isOn = true;
@@ -67,12 +65,17 @@ public class PersonnelNormalNode : MonoBehaviour
         }
         else
         {
-            //ControlMenuController.Instance.SetMultHistoryToggle(true);
             PersonInfoUI.SetContentGridActive(false);
-            //Window.SetActive(false);
-           
             AlarmToggle.isOn = false;
-            //StartOutManage.Instance.SetUpperStoryButtonActive(true);
+            PersonnelToggle.enabled = false;
+            PersonnelToggle.enabled = true;//这两句代码用于刷新Toggle，不然存在选中恢复到不选中状态时UI图标没恢复过来，但是实际上已经恢复过来，只是需要刷新一下
+            //PersonnelToggle.gameObject.SetActive(false);
+            //PersonnelToggle.gameObject.SetActive(true);
+            //LocationManager.Instance.HideCurrentPersonInfoUI();
+            //if (LocationManager.Instance.IsFocus)
+            //{
+            //    LocationManager.Instance.RecoverBeforeFocusAlign();
+            //}
         }
     }
 }

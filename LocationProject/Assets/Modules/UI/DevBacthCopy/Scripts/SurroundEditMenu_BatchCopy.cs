@@ -786,7 +786,7 @@ public class SurroundEditMenu_BatchCopy : MonoBehaviour
     public Vector3 UnityPosToCad(Transform dev, DevNode devNode)
     {
         Vector3 pos;
-        if (devNode.ParentDepNode == FactoryDepManager.Instance || devNode is DepDevController)
+        if (devNode.IsLocal())
         {
             pos = LocationManager.GetCadVector(dev.position);
         }

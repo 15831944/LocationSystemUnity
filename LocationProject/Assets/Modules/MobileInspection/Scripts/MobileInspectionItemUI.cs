@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -61,20 +62,58 @@ public class MobileInspectionItemUI : MonoBehaviour {
     {
         if (ison)
         {
-            print("ItemBtn_OnClick!");
-            MobileInspectionDetailsUI.Instance.Show(InspectionTrackInfo);
-            MobileInspectionInfoFollow.Instance.DateUpdate(InspectionTrackInfo);
-               ToggleGroup toggleGroup = MobileInspectionUI_N.Instance.toggleGroup;
-            FunctionSwitchBarManage.Instance.SetTransparentToggle(true);
-            changeTextColor.ClickTextColor();
+            //print("ItemBtn_OnClick!");
+            GetInspectionDetail(InspectionTrackInfo,infoDetail=> 
+            {
+                InspectionTrackInfo = infoDetail;
+                MobileInspectionDetailsUI.Instance.Show(InspectionTrackInfo);
+                MobileInspectionInfoFollow.Instance.DateUpdate(InspectionTrackInfo);
+                ToggleGroup toggleGroup = MobileInspectionUI_N.Instance.toggleGroup;
+                FunctionSwitchBarManage.Instance.SetTransparentToggle(true);
+                changeTextColor.ClickTextColor();
+                MobileInspectionInfoManage.Instance.CloseWindow();//关闭巡检点详情窗口
+                MobileInspectionHistoryDetailsUI.Instance.CloseBtn_OnClick();//关闭巡检项窗口
+            });           
         }
         else
         {
-           changeTextColor.NormalTextColor();
+           	changeTextColor.NormalTextColor();
 
-            MobileInspectionInfoFollow.Instance.Hide();
-            FunctionSwitchBarManage.Instance.SetTransparentToggle(false);
-            MobileInspectionDetailsUI.Instance.SetWindowActive(false);
+			MobileInspectionInfoFollow.Instance.Hide();
+			FunctionSwitchBarManage.Instance.SetTransparentToggle(false);
+			MobileInspectionDetailsUI.Instance.SetWindowActive(false);
+            MobileInspectionInfoManage.Instance.CloseWindow();//关闭巡检点详情窗口
+            MobileInspectionHistoryDetailsUI.Instance.CloseBtn_OnClick();//关闭巡检项窗口
         }
+    }
+
+    private void GetInspectionDetail(InspectionTrack oldInfo, Action<InspectionTrack> onDataRecieve=null)
+    {
+        if(oldInfo.Route!=null)
+        {
+            onDataRecieve(oldInfo);
+        }
+        else
+        {
+            CommunicationObject service = CommunicationObject.Instance;
+            if (service)
+            {
+                InspectionTrack trackNew = null;
+                ThreadManager.Run(() =>
+                {
+                    trackNew = service.GetInspectionTrackById(oldInfo);
+                }, () =>
+                {
+                    if (onDataRecieve != null)
+                    {
+                        onDataRecieve(trackNew);
+                    }
+                }, "");
+            }
+            else
+            {
+                if (onDataRecieve != null) onDataRecieve(null);
+            }
+        }        
     }
 }

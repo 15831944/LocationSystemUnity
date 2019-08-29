@@ -11,7 +11,7 @@ public class DepartmentDivideTree : MonoBehaviour
 {
 
     public Text DepartmentText;
-    public string RootName;
+    //public string RootName;
     public ChangeTreeView Tree;
     ObservableList<TreeNode<TreeViewItem>> nodes;
     public AreaDivideTree areaDivideTree;
@@ -26,7 +26,9 @@ public class DepartmentDivideTree : MonoBehaviour
     /// <summary>
     /// 人员信息列表
     /// </summary>
-    public List<Personnel> personnels;
+    [System.NonSerialized] public List<Personnel> personnels = new List<Personnel>();
+
+    [System.NonSerialized] public List<Personnel> allPersonnels = new List<Personnel>();
     ///// <summary>
     ///// 部门人员树数据
     ///// </summary>
@@ -37,75 +39,130 @@ public class DepartmentDivideTree : MonoBehaviour
     Dictionary<int, TreeNode<TreeViewItem>> DepartmentPersonDic = new Dictionary<int, TreeNode<TreeViewItem>>();
     Dictionary<int, TreeNode<TreeViewItem>> DepartmentDic = new Dictionary<int, TreeNode<TreeViewItem>>();
 
+    private bool isDepartmentTreeShow;
+
+    [System.NonSerialized]
+    private Department departmentInfo;//部门信息
+
     void Start()
     {
-        if (personnels == null)
-        {
-            personnels = new List<Personnel>();
-        }
         //DepartmentDivideToggle.onValueChanged.AddListener(ShowDepartmentWindow);
+    }
+    /// <summary>
+    /// 删除部门树的某一个部门节点
+    /// </summary>
+    /// <param name="ID"></param>
+    public void ReshDeleteDepartTree(Department depart)
+    {
+        bool IsDepart = DepartmentDic.ContainsKey(depart .Id );
+        if (!IsDepart) return;
+        TreeNode<TreeViewItem> DeleteDpart = DepartmentDic[depart.Id];
+        if (depart.ParentId == null)
+        {
+            nodes.Remove(DeleteDpart);
+        }
+        else
+        {
+            
+            TreeNode<TreeViewItem> ParentDpartNode = DepartmentDic[(int )depart.ParentId];
+            ParentDpartNode.Nodes.Remove(DeleteDpart);
+        }        
+    }
+    /// <summary>
+    /// 添加部门
+    /// </summary>
+    /// <param name="depart"></param>
+    public void ReshAddDepartTree(Department depart)
+    {
+        int ParentId =(int ) depart.ParentId;
+        TreeNode<TreeViewItem> ParentDpartNode = DepartmentDic[ParentId];
+        TreeNode<TreeViewItem> CreatDapartNode = CreateTopoNode(depart);
+        Department CreatDapart = (Department)CreatDapartNode.Item.Tag; 
+        CreatDapart.ParentId = depart.ParentId;
+        ParentDpartNode.Nodes .Add(CreatDapartNode);
+        AddNodes(depart, CreatDapartNode);
     }
     public void ShowDepartmentDivideTree()
     {
-        //Loom.StartSingleThread(() =>
-        //{
-        //    RefleshData(root =>
-        //    {
-        //        Loom.DispatchToMainThread(() =>
-        //        {
-        //            //StructureTree(topoRoot);
-        //            StructureTree(root);
-        //            Tree.Start();
-        //            Tree.Nodes = nodes;
-        //            SetListeners();
-        //            //注释：用于崩溃测试；
-        //            InvokeRepeating("RefleshDataThread", 1, CommunicationObject.Instance.DepartmentTreeRefreshInterval);
-        //            //Invoke("RefleshDataThread", 1);
-        //        });
-        //    });
-        //});
+        //之前存在问题的步骤：
+        //1.服务端获取部门信息，通过部门信息获取人员信息
+        //2.先创建personnel节点，存在DepartmentPersonDic中
+        //3.人员创建完成后，回调中开始创建部门树(如果Department中，leafNodes中有personnel信息，那么上面先创建personnel是多余的)
 
-        RefleshData(root =>
+        //新的步骤（取消了上面第二步，把刷新树和构造树分离开来）
+        GetDepartmentData(root =>
         {
             //StructureTree(topoRoot);
             StructureTree(root);
             Tree.Start();
             Tree.Nodes = nodes;
             SetListeners();
-
-            //注释：用于崩溃测试；
-            InvokeRepeating("RefleshDataThread", 1, CommunicationObject.Instance.DepartmentTreeRefreshInterval);
-            //Invoke("RefleshDataThread", 1);
+            AfterGetDepTree(root, null);
         });
-
-        //GetTopoTree();
-        //Tree.Start();
-        //Tree.Nodes = nodes;
-        //SetListeners();
     }
     /// <summary>
-    /// 获取区域数据
+    /// 从服务端获取部门信息
+    /// </summary>
+    /// <param name="onDataRecieved"></param>
+    private void GetDepartmentData(Action<Department> onDataRecieved)
+    {
+        //之前把下面的方法放在Threadmanager,提示UI线程的错误
+        CommunicationObject.Instance.GetDepartmentTree((data) =>
+        {
+            if (data == null) return;
+            departmentInfo = data;
+            if (onDataRecieved != null) onDataRecieved(data);
+        });
+    }
+    private int backupRefreshTime = 10;
+    /// <summary>
+    /// 打开/关闭部门树时，刷新/取消刷新数据
+    /// </summary>
+    /// <param name="isRefresh"></param>
+    private void SetTreeRefresh(bool isRefresh)
+    {
+        if (isRefresh)
+        {
+            if (!IsInvoking("GetTopoTree"))
+            {
+                //如果单例为空，采用备用刷时间
+                int refreshTime = CommunicationObject.Instance == null ? backupRefreshTime : CommunicationObject.Instance.RefreshSetting.PersonTree;
+                InvokeRepeating("GetTopoTree", 0, refreshTime);
+                Debug.LogError("StartRefresh department tree,refresh time:" + refreshTime);
+            }
+        }
+        else
+        {
+            if (IsInvoking("GetTopoTree"))
+            {
+                CancelInvoke("GetTopoTree");
+                Debug.LogError("Close department tree refresh...");
+            }
+        }
+    }
+    /// <summary>
+    /// 从服务端获取人员信息
+    /// </summary>
+    /// <returns></returns>
+    public List<Personnel> GetPersonnelFromServer()
+    {
+        if (CommunicationObject.Instance == null) return new List<Personnel>();
+        Personnel[] personGroup = CommunicationObject.Instance.GetPersonnels();
+        if (personGroup != null && personGroup.Length != 0)
+        {
+            return personGroup.ToList();
+        }
+        else
+        {
+            return new List<Personnel>();
+        }
+    }
+    /// <summary>
+    /// 获取区域数据（实际作用：刷新部门树）
     /// </summary>
     public void GetTopoTree()
     {
-        //topoRoot = CommunicationObject.Instance.GetDepTree();
-        //StructureTree(topoRoot);
-        //if (personnels == null)
-        //{
-        //    personnels = new List<Personnel>();
-        //}
-        //personnels = CommunicationObject.GetPersonnels(topoRoot);
-
-        //Loom.StartSingleThread(() =>
-        //{
         RefleshData(null);
-        //    Loom.DispatchToMainThread(() =>
-        //    {
-        //        StructureTree(topoRoot);
-        //    });
-        //});
-
-        //InvokeRepeating("RefleshDataThread", 1, 1);
     }
 
     /// <summary>
@@ -115,37 +172,23 @@ public class DepartmentDivideTree : MonoBehaviour
     {
         if (isRefresh)
         {
-            Debug.LogWarning("RefleshData isRefresh:"+ isRefresh);
+            Debug.LogWarning("RefleshData isRefresh:" + isRefresh);
             return;
         }
         isRefresh = true;
-        //if (!CommunicationObject.Instance.isAsync)
-        //{
-        //    var topoRoot = CommunicationObject.Instance.GetDepartmentTree();
-        //    AfterGetDepTree(topoRoot, callback);
-        //}
-        //else
-        //{
-        //    CommunicationObject.Instance.GetDepartmentTreeAsync((data) =>
-        //    {
-        //        AfterGetDepTree(data, callback);
-        //    });
-        //}
-        CommunicationObject.Instance.GetDepartmentTreeAsync((data) =>
+        CommunicationObject.Instance.GetDepartmentTree((data) =>
         {
-            AfterGetDepTree(data, callback);
             isRefresh = false;
+            if (data == null) return;
+            AfterGetDepTree(data, callback);
         });
     }
 
     private void AfterGetDepTree(Department topoRoot, Action<Department> callback)
     {
-        if (personnels == null)
-        {
-            personnels = new List<Personnel>();
-        }
+        //疑问：部门会不新增？如果可以，除了人员的刷新，还得处理部门的新增和删除
         personnels = CommunicationObject.GetPersonnels(topoRoot);//todo:这里也可以改成异步的
-
+        allPersonnels = GetPersonnelFromServer();//改成从服务端获取
         RefreshDeppartmentTree();
         if (callback != null)
         {
@@ -154,98 +197,114 @@ public class DepartmentDivideTree : MonoBehaviour
     }
 
     bool isRefresh;
-    /// <summary>
-    /// 刷新树数据
-    /// </summary>
-    private void RefleshDataThread()
-    {
-        if (isRefresh) return;
-        isRefresh = true;
-
-        //if (!CommunicationObject.Instance.isAsync)
-        //{
-        //    Loom.StartSingleThread(() =>
-        //    {
-        //        try
-        //        {
-        //            var topoRoot = CommunicationObject.Instance.GetDepartmentTree();
-        //            //StructureTree(topoRoot);
-        //            if (personnels == null)
-        //            {
-        //                personnels = new List<Personnel>();
-        //            }
-        //            personnels = CommunicationObject.GetPersonnels(topoRoot);//没有发消息
-        //            Loom.DispatchToMainThread(() =>
-        //            {
-        //                RefreshDeppartmentTree();
-        //            });
-        //        }
-        //        catch
-        //        {
-        //            Debug.LogError("刷新部门树数据，出错！");
-        //        }
-        //        isRefresh = false;
-        //    });
-        //}
-        //else
-        //{
-        //    CommunicationObject.Instance.GetDepartmentTreeAsync((data) =>
-        //    {
-        //        AfterGetDepTree(data, null);
-        //    });
-        //}
-
-        CommunicationObject.Instance.GetDepartmentTreeAsync((data) =>
-        {
-            AfterGetDepTree(data, null);
-            isRefresh = false;
-        });
-    }
 
     private void RefreshDeppartmentTree()
     {
         TreeNode<TreeViewItem> node = Tree.SelectedNode;
         foreach (var person in personnels)
         {
-            if (DepartmentPersonDic.ContainsKey(person.Id))
+            if (person.Name == "高磊")
             {
+                int id = person.Id;
+            }
+            if (DepartmentPersonDic.ContainsKey(person.Id))
+            {              
+                #region backupCode
+                //TreeNode<TreeViewItem> personP = DepartmentPersonDic[person.Id];
+                //Personnel personNodenew  = (Personnel)personP.Item.Tag;
+                //if (personNodenew == null) continue;
+                //int num = personNodenew.Id ;
+                //Personnel personNode = personnels.Find((item) => item.Id == num);
+
+                //if (personNode == null) continue;
+
+                //if (person.ParentId != personNode.ParentId)
+                //{
+                //    if (DepartmentDic.ContainsKey((int)person.ParentId))
+                //    {
+                //        SetMinusParentNodepersonnelNum(personP.Parent);
+                //        personP.Parent = DepartmentDic[(int)person.ParentId];
+                //        personNode.ParentId = person.ParentId;
+                //        SetAddParentNodepersonnelNum(personP.Parent);
+                //    }
+                //}
+                #endregion
                 TreeNode<TreeViewItem> personP = DepartmentPersonDic[person.Id];
-
-                //Personnel personNode = (Personnel)personP.Item.Tag;
-
-                int num = (int)personP.Item.Tag;
-                Personnel personNode = personnels.Find((item) => item.TagId == num);
-
-                if (personNode == null) continue;
-
-                if (person.ParentId != personNode.ParentId)
+                if (personP.Item != null && personP.Item.Tag is Personnel)
                 {
-                    if (DepartmentDic.ContainsKey((int)person.ParentId))
+                    Personnel personOld = (Personnel)personP.Item.Tag;
+                    if (personOld.ParentId != person.ParentId)
                     {
-                        SetMinusParentNodepersonnelNum(personP.Parent);
-                        personP.Parent = DepartmentDic[(int)person.ParentId];
-                        personNode.ParentId = person.ParentId;
-                        SetAddParentNodepersonnelNum(personP.Parent);
+                        if (DepartmentDic.ContainsKey((int)person.ParentId))
+                        {
+                            SetMinusParentNodepersonnelNum(personP.Parent);
+                            personP.Parent = DepartmentDic[(int)person.ParentId];
+                            personOld.ParentId = person.ParentId;
+                            SetAddParentNodepersonnelNum(personP.Parent);
+                        }
                     }
                 }
             }
             else
             {
                 TreeNode<TreeViewItem> newperson = CreatePersonnalNode(person);
+               
                 if ((DepartmentDic.ContainsKey((int)person.ParentId)))
                 {
-                    if (DepartmentDic[(int)person.ParentId] != null)
-                    {
-                        newperson.Parent = DepartmentDic[(int)person.ParentId];
+                    TreeNode<TreeViewItem> ParentPersonnel = DepartmentDic[(int)person.ParentId];
+                    ParentPersonnel.Nodes.Add(newperson);
+                      newperson.Parent = DepartmentDic[(int)person.ParentId];
                         SetAddParentNodepersonnelNum(newperson.Parent);
-                    }
                 }
             }
         }
         RomvePersonnelNode(DepartmentPersonDic, personnels);
+       
     }
 
-    List<Personnel> romveNode = new List<Personnel>();
+    /// <summary>
+    /// 隐藏离线人员
+    /// </summary>
+    public void HideOffLinePerson()
+    {
+        foreach (var person in personnels )
+        {   
+            TreeNode<TreeViewItem> personShow = DepartmentPersonDic[person.Id];
+            if(CheckPersonIsPositioning(person) == null )
+                personShow.IsVisible = false;
+            else
+                personShow.IsVisible = true;
+        }
+    }
+    /// <summary>
+    /// 显示所有人
+    /// </summary>
+    public void ShowAllPerson()
+    {
+        foreach(var person in personnels)
+        {
+            TreeNode<TreeViewItem> personShow = DepartmentPersonDic[person.Id];
+            personShow.IsVisible = true;
+        }
+    }
+    /// <summary>
+    /// 检测人员是否能定位
+    /// </summary>
+    public LocationObject CheckPersonIsPositioning(Personnel person)
+    {
+        if (person.Tag != null)
+        {
+            if (person.Tag.IsActive)
+            {
+                List<LocationObject> listT = LocationManager.Instance.GetPersonObjects();
+                LocationObject locationObjectT = listT.Find((item) => item.personnel.Id == person.Id);
+                return locationObjectT;
+            }
+        }
+        return null;
+    }
+   // List<Personnel> romveNode = new List<Personnel>();
+    [System.NonSerialized] List<Personnel> romveNode = new List<Personnel>();
     /// <summary>
     /// 删除电场中消失的人
     /// </summary>
@@ -264,9 +323,14 @@ public class DepartmentDivideTree : MonoBehaviour
         }
         foreach (var per in romveNode)
         {
+            if (per == null) continue;
+            bool IsPer = DepartmentPersonDic.ContainsKey((int)per.ParentId);
+            if (!IsPer) return;
+            TreeNode<TreeViewItem> ParentPersonnel = DepartmentDic[(int)per.ParentId];
             TreeNode<TreeViewItem> personnelsP = DepartmentPersonDic[per.Id];
+          
             DepartmentDic.Remove(per.Id);
-            personnelsP.Dispose();
+            ParentPersonnel.Nodes.Remove(personnelsP);
         }
     }
     /// <summary>
@@ -287,11 +351,13 @@ public class DepartmentDivideTree : MonoBehaviour
             }
         }
         if (topoNode.LeafNodes != null)//添加子节点的子节点
+        {
             foreach (Personnel child in topoNode.LeafNodes)
-            {
+            {                
                 var node = CreatePersonnalNode(child);
                 treeNode.Nodes.Add(node);
             }
+        }          
         if (topoNode.LeafNodes != null)
         {
             SetParentNodepersonnelNum(treeNode.Parent, topoNode.LeafNodes.Length);
@@ -309,7 +375,7 @@ public class DepartmentDivideTree : MonoBehaviour
             int currentNum = 0;
             var nodeNum = parentNode.Item.Name;
             var array = nodeNum.Split(new char[2] { '(', ')' });
-            if (array != null)
+            if (array != null && array.Length > 2)
             {
                 try
                 {
@@ -326,6 +392,16 @@ public class DepartmentDivideTree : MonoBehaviour
                     parentNode.Item.Name = string.Format("{0} ({1})", anode.Name, currentNum + num);
 
                 }
+            }
+            else
+            {
+                //2.父节点原来没人，直接把子节点的加上
+                if (parentNode.Item.Tag is Department)
+                {
+                    Department anode = parentNode.Item.Tag as Department;//取出区域的名称
+                    parentNode.Item.Name = string.Format("{0} ({1})", anode.Name, currentNum + num);
+                }
+
             }
             if (parentNode.Parent != null)
             {
@@ -374,7 +450,6 @@ public class DepartmentDivideTree : MonoBehaviour
                     {
                         parentNode.Item.Name = string.Format("{0} ", anode.Name);
                     }
-
                 }
             }
             if (parentNode.Parent != null)
@@ -437,7 +512,8 @@ public class DepartmentDivideTree : MonoBehaviour
     {
         Sprite icon = Icons[0];//设备图标 todo:以后可以判断是机柜还是设备，机柜则换上机柜图标
         var item = new TreeViewItem(personnal.Name, icon);
-        item.Tag = personnal.Id;
+        //item.Tag = personnal.Id;//这个导致其他地方取不到personnel
+        item.Tag = personnal;
         var node = new TreeNode<TreeViewItem>(item);
         if (!DepartmentPersonDic.ContainsKey(personnal.Id))
         {
@@ -499,21 +575,18 @@ public class DepartmentDivideTree : MonoBehaviour
             LocationManager.Instance.RecoverBeforeFocusAlign();
             return;
         }
-        if (!(node.Item.Tag is int) && !(node.Item.Tag is string))
+        if (!(node.Item.Tag is Personnel))
         {
             //LocationManager.Instance.RecoverBeforeFocusAlign();
             return;
         }
-        //Personnel tagT = node.Item.Tag as Personnel;
-        int tagT = (int)node.Item.Tag;
-        if (tagT != null)
+        Personnel person = node.Item.Tag as Personnel;
+        if (person != null)
         {
             ParkInformationManage.Instance.ShowParkInfoUI(false);
-            AlarmPushManage.Instance.ShowAlarmPushWindow(false);
-            //LocationManager.Instance.FocusPerson(tagT.Id);
-            Personnel personnelT = personnels.Find((item) => item.Id == tagT);
-            //LocationManager.Instance.FocusPersonAndShowInfo(tagT);
-            LocationManager.Instance.FocusPersonAndShowInfo((int)personnelT.TagId);
+            AlarmPushManage.Instance.CloseAlarmPushWindow( false);
+            //Personnel personnelT = personnels.Find((item) => item.Id == tagT);
+            LocationManager.Instance.FocusPersonAndShowInfo((int)person.TagId);
         }
     }
     /// <summary>
@@ -528,24 +601,7 @@ public class DepartmentDivideTree : MonoBehaviour
             return;
         }
         nodes = new ObservableList<TreeNode<TreeViewItem>>();
-        if (string.IsNullOrEmpty(RootName))
-        {
-            //不显示根节点，显示根节点下的第一级节点
-            ShowFirstLayerNodes(root);
-        }
-        else
-        {
-            Department rootNode = root.Children.ToList().Find(i => i.Name == RootName);
-            if (rootNode != null)
-            {
-                ShowFirstLayerNodes(rootNode);//显示某一个一级节点下的内容
-            }
-            else
-            {
-                ShowFirstLayerNodes(root);
-            }
-
-        }
+        ShowFirstLayerNodes(root);
     }
     /// <summary>
     /// 展示第一层的节点
@@ -553,8 +609,6 @@ public class DepartmentDivideTree : MonoBehaviour
     /// <param name="root"></param>
     private void ShowFirstLayerNodes(Department root)
     {
-
-
         foreach (Department child in root.Children)
         {
             var rootNode = CreateTopoNode(child);
@@ -583,14 +637,17 @@ public class DepartmentDivideTree : MonoBehaviour
     /// </summary>
     public void ShowDepartmentWindow(bool ison)
     {
+       //PersonnelTreeManage.Instance.DepartAndJob_Bg.overrideSprite = Resources.Load("ChangeUI/treeview_border3", typeof(Sprite)) as Sprite; //切换图片
+
         if (ison)
         {
-            //areaDivideTree.ShowAreaDivideWindow(false);
+            //SetTreeRefresh(true);
             DepartmentWindow.SetActive(true);
             SelectedTextChange();
         }
         else
         {
+            //SetTreeRefresh(false);
             CloseDepartmentWindow();
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,14 +65,40 @@ public class UAVPhotoDisplay : MonoBehaviour {
     /// </summary>
     private FullViewPart currentPart;
 
+    private bool isPhotoInit;
+
     // Use this for initialization
     void Awake () {
+        //GetHomePagePictureInfo();
         SceneEvents.FullViewPartChange += OnFullViewPartChange;
         showLastButton.onClick.AddListener(ShowLast);
         showNextButton.onClick.AddListener(ShowNext);
+        SceneEvents.ConnectStateChange += ConnectStateChange;
 
     }
-	void OnDestroy()
+
+    void Start()
+    {
+        GetHomePagePictureInfo();
+    }
+    /// <summary>
+    /// 重连后，初始化图片
+    /// </summary>
+    /// <param name="state"></param>
+    private void ConnectStateChange(SceneEvents.ServerConnectState state)
+    {
+        if (!SystemSettingHelper.systemSetting.IsShowHomePage) return;
+        if(state==SceneEvents.ServerConnectState.reConnect)
+        {
+            if(!isPhotoInit)
+            {
+                GetHomePagePictureInfo();
+                OnFullViewPartChange(currentPart);
+                //Invoke("GetHomePagePictureInfo",5);
+            }
+        }
+    }
+    void OnDestroy()
     {
         SceneEvents.FullViewPartChange -= OnFullViewPartChange;
     }
@@ -193,7 +220,7 @@ public class UAVPhotoDisplay : MonoBehaviour {
             displayLastImage(currentSprits,ImageContent);
         }
     }
-    private string livingQuatersName = "生活区";
+    private string livingQuatersName = "办公区";
     private string mainBuildingName = "主厂区";
     private string boilerRoomName = "锅炉区";
     private string waterTreatmentName = "水处理区";
@@ -232,5 +259,75 @@ public class UAVPhotoDisplay : MonoBehaviour {
                 Debug.LogError("Error:UAVPhotoDisplay.OnFullViewPartChange,part not find." + currentPart);
                 break;
         }
+    }
+    private DateTime recordTime;
+    public void GetHomePagePictureInfo()
+    {
+        if (!SystemSettingHelper.systemSetting.IsShowHomePage) return;
+        recordTime = DateTime.Now;
+        ClearSpriteMemory();//防止断线重连，图片缓存出错
+        var PictureName = CommunicationObject.Instance.HomePagePicture();
+        int width = 602;
+        int height = 392;               
+        foreach (var name  in PictureName)
+        {
+            Texture2D texture = new Texture2D(width, height);
+            if (name.Contains("生活")|| name.Contains("办公"))
+            {
+                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
+                texture.LoadImage(PictureInfo);
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                livingPartSprites.Add(sprite);                
+            }
+            else if (name.Contains("主厂房"))
+            {             
+                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
+                texture.LoadImage(PictureInfo);
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                mainFacotrySprites.Add(sprite);                
+            }
+            else if (name.Contains("锅炉"))
+            {              
+                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
+                texture.LoadImage(PictureInfo);
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                boilerPartSprites.Add(sprite);               
+            }
+            else if (name.Contains("水处理"))
+            {
+                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
+                texture.LoadImage(PictureInfo);
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));           
+                waterTreatmentSprites.Add(sprite);              
+            }
+            else if (name.Contains("气能源"))
+            {
+                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
+                texture.LoadImage(PictureInfo);
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));         
+                gasEnergySprites.Add(sprite);                
+            }
+            else if (name.Contains("整体"))
+            {
+                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
+                texture.LoadImage(PictureInfo);
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));           
+                fullFactorySprites.Add(sprite);              
+            }
+        }
+        isPhotoInit = true;
+        Debug.LogErrorFormat("TrySetUAVPhoto,cost Time{0}s.",(DateTime.Now-recordTime).TotalSeconds);
+    }
+    /// <summary>
+    /// 清除Sprite缓存
+    /// </summary>
+    private void ClearSpriteMemory()
+    {
+        livingPartSprites.Clear();
+        mainFacotrySprites.Clear();
+        boilerPartSprites.Clear();
+        waterTreatmentSprites.Clear();
+        gasEnergySprites.Clear();
+        fullFactorySprites.Clear();
     }
 }

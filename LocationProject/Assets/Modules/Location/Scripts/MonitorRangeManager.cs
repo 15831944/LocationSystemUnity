@@ -14,7 +14,22 @@ namespace MonitorRange
 {
     public class MonitorRangeManager : MonoBehaviour
     {
-        public static MonitorRangeManager Instance;
+        private static MonitorRangeManager _instance;
+        public static MonitorRangeManager Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = GameObject.FindObjectOfType<MonitorRangeManager>();
+                }
+                return _instance;
+            }
+            set
+            {
+                _instance = value;
+            }
+        }
         /// <summary>
         /// 显示范围Render
         /// </summary>
@@ -39,33 +54,33 @@ namespace MonitorRange
         /// 根区域范围节点
         /// </summary>
         public RangeNode rootRangeNode;
-        /// <summary>
-        /// 区域信息根节点
-        /// </summary>
-        public DepNode rootDepNode;
+        ///// <summary>
+        ///// 区域信息根节点
+        ///// </summary>
+        //public DepNode rootDepNode;
         /// <summary>
         /// 是否是区域编辑状态
         /// </summary>
         public bool IsEditState;
-        /// <summary>
-        /// 是否显示告警区域
-        /// </summary>
-        private bool isShowAlarmArea;
-        /// <summary>
-        /// 是否显示告警区域
-        /// </summary>
-        public bool IsShowAlarmArea
-        {
-            get
-            {
-                return isShowAlarmArea;
-            }
+        ///// <summary>
+        ///// 是否显示告警区域
+        ///// </summary>
+        //private bool isShowAlarmArea;
+        ///// <summary>
+        ///// 是否显示告警区域
+        ///// </summary>
+        //public bool IsShowAlarmArea
+        //{
+        //    get
+        //    {
+        //        return isShowAlarmArea;
+        //    }
 
-            set
-            {
-                isShowAlarmArea = value;
-            }
-        }
+        //    set
+        //    {
+        //        isShowAlarmArea = value;
+        //    }
+        //}
 
         /// <summary>
         /// 创建区域结束
@@ -117,7 +132,8 @@ namespace MonitorRange
         private void SceneEvents_BuildingOpenStartAction()
         {
             Debug.Log("大楼开始展开了！");
-            HideAllRanges();
+            //HideAllRanges();
+            HideOtherRanges();
         }
 
         /// <summary>
@@ -141,7 +157,7 @@ namespace MonitorRange
         /// <summary>
         /// 大楼展开完毕监听方法
         /// </summary>
-        private void SceneEvents_BuildingOpenCompleteAction()
+        private void SceneEvents_BuildingOpenCompleteAction(BuildingController building)
         {
             Debug.Log("大楼展开了完毕！");
             //else
@@ -153,7 +169,8 @@ namespace MonitorRange
             {
                 ShowAreaEdit(SceneEvents.DepNode);
             }
-            SceneEvents.DepNode.monitorRangeObject.SetRendererEnable(false);//把大楼的区域范围隐藏掉
+            if (SceneEvents.DepNode.monitorRangeObject)
+                SceneEvents.DepNode.monitorRangeObject.SetRendererEnable(false);//把大楼的区域范围隐藏掉
             SetMonitorRangeFollowPosition(FactoryDepManager.currentDep);
         }
 
@@ -170,12 +187,16 @@ namespace MonitorRange
                 Log.Info("CurrentDep:" + arg2);
                 //else
                 //{
-                ShowRanges(arg2);
-                //}
-                if (IsEditState)
+                if (ActionBarManage.Instance.CurrentState == ViewState.人员定位)
                 {
-                    ShowAreaEdit(arg2);
+                    ShowRanges(arg2);
+                    if (IsEditState)
+                    {
+                        ShowAreaEdit(arg2);
+                    }
                 }
+                //}
+
             }
         }
 
@@ -186,18 +207,23 @@ namespace MonitorRange
         /// </summary>
         public void CreateAllRanges()
         {
-            rootDepNode = FactoryDepManager.Instance;
+            DepNode rootDepNode = FactoryDepManager.Instance;
             PhysicalTopology topoNode = rootDepNode.TopoNode;
             rootparent = CreateRangeParent(); //区域根物体
             rootRangeNode = new RangeNode();
-            CreateRangesByRootNode(topoNode, rootRangeNode, rootparent);
+            CreateRangesByRootNode(topoNode, rootRangeNode);
             if (!isShowRangeRender)
             {
                 HideAllRanges(true);
             }
-            MonitorRangeObject[] rangeObjs = areasParent.GetComponentsInChildren<MonitorRangeObject>();
+            MonitorRangeObject[] rangeObjs = GetMonitorRangeObjectList();
             rangelist = new List<MonitorRangeObject>(rangeObjs);
-            IsCreateAreaComplete = true;
+            isCreateAreaComplete = true;
+        }
+
+        public void AddRangeToList(MonitorRangeObject o)
+        {
+            rangelist.Add(o);
         }
 
         /// <summary>
@@ -221,7 +247,7 @@ namespace MonitorRange
                 //CreateRanges(FilterParkMonitorRange(topoNode.Children));
                 Transform pparent = CreateRangeParent(); //区域根物体
                 rootRangeNode = new RangeNode();
-                CreateRangesByRootNode(topoNode, rootRangeNode, pparent);
+                CreateRangesByRootNode(topoNode, rootRangeNode);
             }
             else if (topoNode.Type == Types.楼层)
             {
@@ -238,113 +264,72 @@ namespace MonitorRange
         }
 
         /// <summary>
-        /// 创建所有区域范围根据顶部节点（递归）
+        /// 创建所有区域范围，根据顶部节点（递归）
         /// </summary>
-        /// <param name="pNode">数据节点</param>
-        /// <param name="rangeNode">区域范围节点</param>
+        /// <param name="newArea">数据节点</param>
+        /// <param name="newNode">区域范围节点</param>
         /// <param name="pparentT">父物体</param>
-        public void CreateRangesByRootNode(PhysicalTopology pNode, RangeNode rangeNode, Transform pparentT)
+        public void CreateRangesByRootNode(PhysicalTopology newArea, RangeNode newNode)
         {
-            if (pNode == null)
+            if (newArea == null)
             {
-                Debug.LogError("MonitorRangeManager.CreateRangesByRootNode: pNode == null");
+                Debug.LogError("MonitorRangeManager.CreateRangesByRootNode: newArea == null");
                 return;
             }
-            Transform pparent = pparentT; //区域根物体
-            //Transform content = CreateRangeParent(pNode.Type.ToString() + "(" + pNode.Id + ")" + ":" + pNode.Name, pparent); //创建父物体
-            Transform content = null;
-            rangeNode.info = pNode;
-            rangeNode.ranges = new List<MonitorRangeObject>();
-            rangeNode.subNodes = new List<RangeNode>();
-            if (pNode.Name.Contains("#1变主区域告警区域"))
+
+            if (newNode == null)
             {
-                int i = 0;
-            }
-            if (pNode.Name.Contains("集控楼"))
-            {
-                int i = 0;
-            }
-            MonitorRangeObject thisRangeObject = null;
-            if (pNode.Type != Types.分组 && pNode.Type != Types.CAD)
-            {
-                thisRangeObject = CreateRange(pNode, rangeNode, pparent); //创建自身区域范围
+                Debug.LogError("MonitorRangeManager.CreateRangesByRootNode: newNode == null");
+                return;
             }
 
+            Log.Info("MonitorRangeManager.CreateRangesByRootNode", string.Format("area:{0}",newArea.Name));
+
+            //Transform pparent = pparentT; //区域根物体
+            //Transform content = CreateRangeParent(pNode.Type.ToString() + "(" + pNode.Id + ")" + ":" + pNode.Name, pparent); //创建父物体
+
+            newNode.SetInfo(newArea);
+            //rangeNode.ranges = new List<MonitorRangeObject>();
+            //rangeNode.subNodes = new List<RangeNode>();
+
+            //if (areaInfo.Name.Contains("#1变主区域告警区域"))
+            //{
+            //    int i = 0;
+            //}
+            //if (areaInfo.Name.Contains("集控楼"))
+            //{
+            //    int i = 0;
+            //}
+            MonitorRangeObject thisRangeObject = null;
+            if (newArea.Type != Types.分组 && newArea.Type != Types.CAD)
+            {
+                thisRangeObject = CreateRange(newArea, newNode); //创建自身区域范围
+            }
+
+            Transform content = null;
             if (thisRangeObject == null)
             {
                 //content = CreateRangeParent(pNode.Type.ToString() + "(" + pNode.Id + ")" + ":" + pNode.Name, pparent); //创建父物体
-                string pName = pNode.Type.ToString() + "(" + pNode.Id + ")" + ":" + pNode.Name;
+                string pName = newArea.Type.ToString() + "(" + newArea.Id + ")" + ":" + newArea.Name;
                 GameObject o = new GameObject(pName); ;
                 o.transform.SetParent(rootparent);
                 content = o.transform;
             }
             else
             {
-
                 content = thisRangeObject.transform;
-                thisRangeObject.name = pNode.Type.ToString() + "(" + pNode.Id + ")" + ":" + pNode.Name;
-                //if (pNode.Transfrom.IsCreateAreaByData)
-                //{
-                //    if (!pNode.Transfrom.IsRelative)
-                //    {
-                //        //float posx = LocationManager.Instance.axisZero.x * thisRangeObject.transform.parent.lossyScale.x;
-                //        //float posy = LocationManager.Instance.axisZero.y * thisRangeObject.transform.parent.lossyScale.y;
-                //        //float posz = LocationManager.Instance.axisZero.z * thisRangeObject.transform.parent.lossyScale.z;
-                //        //Vector3 posT = new Vector3(posx, posy, posz);
-                //        float posx = thisRangeObject.transform.localPosition.x * thisRangeObject.transform.parent.lossyScale.x;
-                //        float posy = thisRangeObject.transform.localPosition.y * thisRangeObject.transform.parent.lossyScale.y;
-                //        float posz = thisRangeObject.transform.localPosition.z * thisRangeObject.transform.parent.lossyScale.z;
-                //        Vector3 posT = new Vector3(posx, posy, posz);
-                //        thisRangeObject.transform.position = LocationManager.Instance.axisZero + posT;
-                //    }
-                //    else
-                //    {
-                //        if (rangeNode.parentNode != null)
-                //        {
-                //            PhysicalTopology buldingNode = rangeNode.parentNode.info;
-                //            TransformM tm = buldingNode.Transfrom;
-                //            Vector3 buildPos = Vector3.zero;
-                //            if (tm != null && tm.IsCreateAreaByData)
-                //            {
-                //                //Vector3 pos2D = new Vector3((float)(tm.X - tm.SX / 2f), (float)(tm.Y - tm.SY / 2 + pNode.Transfrom.SY), (float)(tm.Z - tm.SZ / 2));//建筑物的右下角坐标
-                //                Vector3 pos2D = new Vector3((float)(-tm.SX / 2f), (float)(-tm.SY / 2), (float)(-tm.SZ / 2));//建筑物的左下角坐标
-                //                                                                                                            //Log.Info("建筑物的右下角坐标:" + pos2D);
-
-                //                //content.transform.localPosition = buildPos;
-                //                buildPos = LocationManager.GetRealSizeVector(pos2D);
-                //            }
-                //            else
-                //            {
-                //                Vector3 pSize = rangeNode.parentNode.thisRange.gameObject.GetGlobalSize();
-                //                buildPos = new Vector3((float)(pSize.x / 2f), (float)(-(pSize.y + rangeNode.parentNode.thisRange.yOffset) / 2), (float)(pSize.z / 2));//建筑物的左下角坐标
-                //            }
-
-                //            float posx = buildPos.x / thisRangeObject.transform.parent.lossyScale.x;
-                //            float posy = buildPos.y / thisRangeObject.transform.parent.lossyScale.y;
-                //            float posz = buildPos.z / thisRangeObject.transform.parent.lossyScale.z;
-                //            Vector3 posT = new Vector3(posx, posy, posz);
-                //            thisRangeObject.transform.localPosition += posT;
-                //        }
-                //    }
-                //}
-                //else//
-                //{
-
-                //}
-                //rangeNode.thisRange = thisRangeObject; //创建自身区域范围
+                thisRangeObject.name = newArea.Type.ToString() + "(" + newArea.Id + ")" + ":" + newArea.Name;
             }
 
-
-
-            if (pNode.Children != null)
+            if (newArea.Children != null)
             {
-                foreach (PhysicalTopology child in pNode.Children)
+                foreach (PhysicalTopology child in newArea.Children)
                 {
                     RangeNode subNode = new RangeNode();
-                    subNode.parentNode = rangeNode;
-                    rangeNode.subNodes.Add(subNode);
+                    subNode.parentNode = newNode;
+                    newNode.subNodes.Add(subNode);
 
-                    CreateRangesByRootNode(child, subNode, content);
+                    CreateRangesByRootNode(child, subNode);//递归
 
                 }
             }
@@ -589,7 +574,8 @@ namespace MonitorRange
             if (depNodeT == null || FullViewController.Instance.IsFullView) return;
             if (depNodeT.depType == DepType.Factory)
             {
-                if (rootDepNode != null)
+                //if (rootDepNode != null)
+                if (isCreateAreaComplete)
                 {
                     ShowAllRanges();
                 }
@@ -602,6 +588,8 @@ namespace MonitorRange
             {
                 FilterRangesByMRObject(depNodeT);
             }
+            //LocationManager.Instance.RefleshLocationAlarms();
+            LocationManager.Instance.InitLocationAlarms();
         }
 
         /// <summary>
@@ -657,48 +645,52 @@ namespace MonitorRange
         //    }
         //}
 
-        public MonitorRangeObject CreateRange(PhysicalTopology p, RangeNode rangenodeT, Transform parent)
+        public MonitorRangeObject CreateRange(PhysicalTopology newArea, RangeNode newRangeNode)
         {
-            if (p == null)
+            if (newArea == null)
             {
-                Log.Alarm("MonitorRangeManager.CreateRange", "p == null");
+                Log.Alarm("MonitorRangeManager.CreateRange", "newArea == null");
                 return null;
             }
-            if (p.Transfrom == null)
+            if (newArea.Transfrom == null)
             {
-                Log.Alarm("MonitorRangeManager.CreateRange", "p.Transfrom == null");
+                Log.Alarm("MonitorRangeManager.CreateRange", "newArea.Transfrom == null");
                 return null;
             }
-            //Log.Info(string.Format("CreateRange：{0},({1},{2},{3})", p.Name, p.Transfrom.X, p.Transfrom.Y, p.Transfrom.Z));
-            DepNode depNodeT = RoomFactory.Instance.GetDepNodeById(p.Id);
-            if (p.Id == 63)
-            {
-                int i = 0;
-            }
-            if (p.Id == 710)
-            {
-                int i = 0;
-            }
+            Log.Info("MonitorRangeManager.CreateRange", string.Format("CreateRange：{0},({1},{2},{3})", newArea.Name, newArea.Transfrom.X, newArea.Transfrom.Y, newArea.Transfrom.Z));
+
+
+            DepNode areaDepNode = RoomFactory.Instance.GetDepNodeByTopo(newArea);//找到该区域数据（PhysicalTopology）对应的（三维）区域节点
+            //if (p.Id == 63)
+            //{
+            //    int i = 0;
+            //}
+            //if (p.Id == 710)
+            //{
+            //    int i = 0;
+            //}
             //if (depNodeT == null || depNodeT.NodeObject == null)
             //{
             //    return null;
             //}
             //if (p.Type == Types.CAD) return null;
-            MonitorRangeObject rangeObject = rangelist.Find((item) => item.info.Id == p.Id);
+            MonitorRangeObject rangeObject = rangelist.Find((item) => item.info.Id == newArea.Id);
             if (!rangeObject)
             {
+                //新建
                 //GameObject o = CreateAreaObject(parent);
-                GameObject o = CreateAreaObject();
-                o.name = GetTopoNodeObjectName(p);
+                GameObject o = CreateAreaObject();//创建预设
+                o.name = GetTopoNodeObjectName(newArea);
                 o.SetLayerAll(Layers.IgnoreRaycast);//Layers.Range
-                MonitorRangeObject mapAreaObject = o.AddComponent<MonitorRangeObject>();
-                mapAreaObject.Init(p.Id, p, rangenodeT, depNodeT);
-                rangeObject = mapAreaObject;
+                MonitorRangeObject newMonitorRange = o.AddComponent<MonitorRangeObject>();
+                newMonitorRange.Init(newArea, newRangeNode, areaDepNode);//应该是在这里设置位置信息的
+                rangeObject = newMonitorRange;
                 o.SetActive(true);
             }
             else
             {
-                rangeObject.Init(p.Id, p, rangenodeT, depNodeT);
+                //已经存在
+                rangeObject.Init(newArea, newRangeNode, areaDepNode);//应该是在这里设置位置信息的
                 rangeObject.gameObject.SetActive(true);
             }
             return rangeObject;
@@ -804,26 +796,19 @@ namespace MonitorRange
         /// </summary>
         public void FilterRangesByMRObject(DepNode depNodeT)
         {
-            //if (rootDepNode == null) return;
             if (depNodeT == null) return;
-            HideAllRanges();
-
-            //MonitorRangeObject[] filterRangeObjs = mrObject.GetComponentsInChildren<MonitorRangeObject>();
-            //foreach (MonitorRangeObject obj in filterRangeObjs)
-            //{
-            //    if (isShowRangeRender)
-            //    {
-            //        obj.SetRendererEnable(true);
-            //    }
-            //    obj.SetColliderEnable(true);
-            //}
-
+            //HideAllRanges();
+            HideOtherRanges();
             FilterRangesByMRObjectop(depNodeT);
 
         }
 
         private void FilterRangesByMRObjectop(DepNode depNodeT)
         {
+            if (depNodeT.name.Contains("调压站告警区域"))
+            {
+                int i = 0;
+            }
             if (depNodeT.monitorRangeObject != null)
             {
                 if (isShowRangeRender)
@@ -832,7 +817,8 @@ namespace MonitorRange
                 }
                 else
                 {
-                    if (depNodeT.monitorRangeObject.IsOnAlarmArea && MonitorRangeManager.Instance.IsShowAlarmArea)
+                    //if (depNodeT.monitorRangeObject.isAlarming && MonitorRangeManager.Instance.IsShowAlarmArea)
+                    if (depNodeT.monitorRangeObject.isAlarming)
                     {
                         depNodeT.monitorRangeObject.SetRendererEnable(true);
                     }
@@ -852,7 +838,12 @@ namespace MonitorRange
                 }
             }
 
-            if (depNodeT.TopoNode.Type == Types.机房)//如果过滤的节点是机房类型，则与该节点兄弟节点的Collider不应该被关闭
+            //if (depNodeT == null || depNodeT.TopoNode == null)
+            //{
+            //    int i = 0;
+            //}
+
+            if (depNodeT.TopoNode != null && depNodeT.TopoNode.Type == Types.机房)//如果过滤的节点是机房类型，则与该节点兄弟节点的Collider不应该被关闭
             {
                 if (depNodeT.ParentNode != null && depNodeT.ParentNode.ChildNodes != null)
                 {
@@ -883,21 +874,37 @@ namespace MonitorRange
             }
         }
 
+        private MonitorRangeObject[] GetMonitorRangeObjectList()
+        {
+            if (areasParent == null)
+            {
+                Debug.LogError("MonitorRangeManager.GetMonitorRangeObjectList areasParent == null");
+                return new MonitorRangeObject[0];
+            }
+            MonitorRangeObject[] rangeObjs = areasParent.GetComponentsInChildren<MonitorRangeObject>();
+            return rangeObjs;
+        }
+
         /// <summary>
         /// 显示所有区域范围
         /// </summary>
         public void ShowAllRanges()
         {
-            MonitorRangeObject[] rangeObjs = areasParent.GetComponentsInChildren<MonitorRangeObject>();
+            MonitorRangeObject[] rangeObjs = GetMonitorRangeObjectList();
             foreach (MonitorRangeObject obj in rangeObjs)
             {
+                if (obj.name.Contains("调压站告警区域"))
+                {
+                    int i = 0;
+                }
                 if (isShowRangeRender)
                 {
                     obj.SetRendererEnable(true);
                 }
                 else
                 {
-                    if (obj.IsOnAlarmArea && MonitorRangeManager.Instance.IsShowAlarmArea)
+                    //if (obj.isAlarming && MonitorRangeManager.Instance.IsShowAlarmArea)
+                    if (obj.isAlarming)
                     {
                         obj.SetRendererEnable(true);
                     }
@@ -910,9 +917,9 @@ namespace MonitorRange
         /// 隐藏所有区域范围
         /// </summary>
         /// <param name="isCollider">设置Collder状态</param>
-        private void HideAllRanges(bool isCollider = false)
+        public void HideAllRanges(bool isCollider = false)
         {
-            MonitorRangeObject[] rangeObjs = areasParent.GetComponentsInChildren<MonitorRangeObject>();
+            MonitorRangeObject[] rangeObjs = GetMonitorRangeObjectList();
             foreach (MonitorRangeObject obj in rangeObjs)
             {
                 obj.SetRendererEnable(false);
@@ -924,30 +931,46 @@ namespace MonitorRange
         }
 
         /// <summary>
-        /// 设置告警区域
+        /// 隐藏其他区域范围,根据当前区域
         /// </summary>
-        /// <param name="b"></param>
-        public void SetIsAlarmArea(bool b)
+        private void HideOtherRanges()
         {
-            IsShowAlarmArea = b;
+            MonitorRangeObject[] rangeObjs = GetMonitorRangeObjectList();
+            foreach (MonitorRangeObject obj in rangeObjs)
+            {
+                if (!IsBelongtoCurrentDep(obj.depNode))
+                {
+                    obj.SetRendererEnable(false);
+                    obj.SetColliderEnable(false);
+                }
+            }
         }
+
+        ///// <summary>
+        ///// 设置告警区域
+        ///// </summary>
+        ///// <param name="b"></param>
+        //public void SetIsAlarmArea(bool b)
+        //{
+        //    IsShowAlarmArea = b;
+        //}
 
         /// <summary>
         /// 显示告警区域
         /// </summary>
         public void ShowAlarmArea()
         {
-            IsShowAlarmArea = true;
-            //MonitorRangeObject[] rangeObjs = areasParent.GetComponentsInChildren<MonitorRangeObject>();
-            //foreach (MonitorRangeObject obj in rangeObjs)
-            //{
-            //    if (obj.IsOnAlarmArea)
-            //    {
-            //        obj.SetRendererEnable(true);
-            //    }
-            //}
+            //IsShowAlarmArea = true;
+            ////MonitorRangeObject[] rangeObjs = GetMonitorRangeObjectList();
+            ////foreach (MonitorRangeObject obj in rangeObjs)
+            ////{
+            ////    if (obj.IsOnAlarmArea)
+            ////    {
+            ////        obj.SetRendererEnable(true);
+            ////    }
+            ////}
 
-            FilterRangesByMRObject(SceneEvents.DepNode);
+            //FilterRangesByMRObject(SceneEvents.DepNode);
         }
 
         /// <summary>
@@ -955,15 +978,15 @@ namespace MonitorRange
         /// </summary>
         public void HideAlarmArea()
         {
-            IsShowAlarmArea = false;
-            MonitorRangeObject[] rangeObjs = areasParent.GetComponentsInChildren<MonitorRangeObject>();
-            foreach (MonitorRangeObject obj in rangeObjs)
-            {
-                if (obj.IsOnAlarmArea && obj.alarmPersons.Count == 0)
-                {
-                    obj.SetRendererEnable(false);
-                }
-            }
+            //IsShowAlarmArea = false;
+            //MonitorRangeObject[] rangeObjs = GetMonitorRangeObjectList();
+            //foreach (MonitorRangeObject obj in rangeObjs)
+            //{
+            //    if (obj.isAlarming && obj.alarmPersons.Count == 0)
+            //    {
+            //        obj.SetRendererEnable(false);
+            //    }
+            //}
         }
 
         /// <summary>
@@ -1039,12 +1062,13 @@ namespace MonitorRange
                     {
                         continue;
                     }
-                    if (childNodeT.TopoNode.Type == Types.范围 || childNodeT.TopoNode.Type == Types.机房)
+                    if (childNodeT.IsRoom())
                     {
                         if (childNodeT.monitorRangeObject == null) continue;
 
                         childNodeT.monitorRangeObject.SetEditEnable(isEnable);
-                        if (childNodeT.monitorRangeObject.IsOnAlarmArea && MonitorRangeManager.Instance.IsShowAlarmArea && !isEnable)
+                        //if (childNodeT.monitorRangeObject.isAlarming && MonitorRangeManager.Instance.IsShowAlarmArea && !isEnable)
+                        if (childNodeT.monitorRangeObject.isAlarming && !isEnable)
                         {
                         }
                         else
@@ -1087,6 +1111,7 @@ namespace MonitorRange
                 EditorGizmoSystem.Instance.RotationGizmo.SetAxisVisibility(false, 2);
                 EditorGizmoSystem.Instance.RotationGizmo.ShowRotationSphere = false;
                 EditorGizmoSystem.Instance.RotationGizmo.ShowCameraLookRotationCircle = false;
+
             }
             else
             {
@@ -1246,7 +1271,7 @@ namespace MonitorRange
         public DepNode ZhuchangfangSecordDepNode;
 
         /// <summary>
-        /// 对主厂房的人员进行特殊处理，定位高度要是大于2，就返回二层
+        /// 对主厂房的人员进行特殊处理，定位高度要是大于2，就返回主厂房二层
         /// </summary>
         public DepNode GetDoZhuchangfang(DepNode depnodeT, float y)
         {
@@ -1256,6 +1281,7 @@ namespace MonitorRange
             {
                 if (y > 2f)
                 {
+                    //Debug.LogErrorFormat("楼层：主厂房4.5m层，  高度：{0}", y);
                     bool isbool = IsBelongDepNodeByName("主厂房4.5m层", depnodeT);
                     if (isbool)
                     {
@@ -1265,6 +1291,7 @@ namespace MonitorRange
                 }
                 else
                 {
+                    //Debug.LogErrorFormat("楼层：主厂房0m层，  高度：{0}", y);
                     bool isbool = IsBelongDepNodeByName("主厂房0m层", depnodeT);
                     if (isbool)
                     {
@@ -1281,15 +1308,17 @@ namespace MonitorRange
         /// </summary>
         public void InitZhuchangfang()
         {
-            if (ZhuchangfangFirstDepNode == null)
-            {
-                ZhuchangfangFirstDepNode = GetZhuchangfangFirstDepNode(rootDepNode);
-            }
+            //if (ZhuchangfangFirstDepNode == null)
+            //{
+            //ZhuchangfangFirstDepNode = GetZhuchangfangFirstDepNode(rootDepNode);
+            ZhuchangfangFirstDepNode = RoomFactory.Instance.GetDepNodeByName("主厂房0m层");
+            //}
 
-            if (ZhuchangfangSecordDepNode == null)
-            {
-                ZhuchangfangSecordDepNode = GetZhuchangfangSecordDepNode(rootDepNode);
-            }
+            //if (ZhuchangfangSecordDepNode == null)
+            //{
+            //ZhuchangfangSecordDepNode = GetZhuchangfangSecordDepNode(rootDepNode);
+            ZhuchangfangSecordDepNode = RoomFactory.Instance.GetDepNodeByName("主厂房4.5m层");
+            //}
         }
 
         /// <summary>
@@ -1411,6 +1440,23 @@ namespace MonitorRange
             }
         }
 
+        /// <summary>
+        /// 判断节点是否在楼层或楼层以下节点
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsBelongtoFloor(DepNode depnodeT)
+        {
+            if (depnodeT == null) return false;
+            if (depnodeT.IsFloor())
+            {
+                return true;
+            }
+            else
+            {
+                return IsBelongtoCurrentDep(depnodeT.ParentNode);
+            }
+        }
+
 
         /// <summary>
         /// 判断当前人员是否在当前区域下，并执行相关操作
@@ -1427,6 +1473,24 @@ namespace MonitorRange
             return true;
         }
 
+
+        /// <summary>
+        /// 判断节点所在的大楼节点
+        /// </summary>
+        /// <returns></returns>
+        public static DepNode GetDepNodeBuild(DepNode depnodeT)
+        {
+            if (depnodeT == null) return null;
+            if (depnodeT.IsBuild())
+            {
+                return depnodeT;
+            }
+            else
+            {
+                return GetDepNodeBuild(depnodeT.ParentNode);
+            }
+        }
+
         #endregion
     }
 
@@ -1441,21 +1505,45 @@ namespace MonitorRange
         /// </summary>
         public PhysicalTopology info;
         /// <summary>
-        /// 该节点自身的区域范围
-        /// </summary>
-        public MonitorRangeObject thisRange;
-        /// <summary>
         /// 父范围节点
         /// </summary>
         public RangeNode parentNode;
         /// <summary>
-        /// 该节点下的区域范围物体集合
-        /// </summary>
-        public List<MonitorRangeObject> ranges;
-        /// <summary>
         /// 子节点集合
         /// </summary>
         public List<RangeNode> subNodes;
+
+        /// <summary>
+        /// 该节点自身的区域范围
+        /// </summary>
+        public MonitorRangeObject rangeObject;
+        /// <summary>
+        /// 该节点下的区域范围物体集合
+        /// </summary>
+        public List<MonitorRangeObject> subRangeList;
+
+        public RangeNode NewNode()
+        {
+            RangeNode node = new RangeNode();
+            node.parentNode = this;
+            if (this.subNodes == null)
+            {
+                this.subNodes = new List<RangeNode>();
+            }
+            this.subNodes.Add(node);
+
+            node.subRangeList = new List<MonitorRangeObject>();
+            node.subNodes = new List<RangeNode>();
+
+            return node;
+        }
+
+        public void SetInfo(PhysicalTopology info)
+        {
+            this.info = info;
+            this.subRangeList = new List<MonitorRangeObject>();
+            this.subNodes = new List<RangeNode>();
+        }
 
     }
     #endregion

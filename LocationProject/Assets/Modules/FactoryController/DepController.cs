@@ -97,9 +97,11 @@ public class DepController : DepNode {
         {
             building.HighlightOn(false);
         }
-        DepNode lastDep = FactoryDepManager.currentDep;
-        FactoryDepManager.currentDep = this;
-        SceneEvents.OnDepNodeChanged(lastDep, FactoryDepManager.currentDep);
+        //DepNode lastDep = FactoryDepManager.currentDep;
+        //FactoryDepManager.currentDep = this;
+        //SceneEvents.OnDepNodeChanged(lastDep, FactoryDepManager.currentDep);
+
+        SceneEvents.OnDepNodeChanged(this);
     }
     /// <summary>
     /// 关闭区域

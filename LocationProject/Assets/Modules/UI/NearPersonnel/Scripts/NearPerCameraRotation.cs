@@ -48,7 +48,7 @@ public class NearPerCameraRotation : MonoBehaviour {
     public void GetNearPersonnelCamInfo(NearbyDev devList, int total, int i)
     {
        
-        camName = devList.TypeName .ToString();
+        camName = devList.Name.ToString();
         
         this.transform.GetComponent<RectTransform >().anchoredPosition3D  = new Vector3(devList.X, devList.Z , devList.Y );
         devId = devList.id;

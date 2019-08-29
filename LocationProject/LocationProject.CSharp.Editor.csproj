@@ -1,0 +1,744 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{73C06AFD-3178-07B2-EB8D-C0B1F4EE41B8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Assembly-CSharp-Editor</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
+    <CompilerResponseFile></CompilerResponseFile>
+    <UnityProjectType>Editor:5</UnityProjectType>
+    <UnityBuildTarget>WebGL:20</UnityBuildTarget>
+    <UnityVersion>2017.3.1f1</UnityVersion>
+    <RootNamespace></RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Debug\</OutputPath>
+    <IntermediateOutputPath>Temp\UnityVS_obj\Debug\</IntermediateOutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_3_1;UNITY_2017_3;UNITY_2017;UNITY_ANALYTICS;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_GENERICS;ENABLE_PVR_GI;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_GRID;ENABLE_TILEMAP;ENABLE_TERRAIN;ENABLE_DIRECTOR;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_TIMELINE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;ENABLE_NATIVE_ARRAY;ENABLE_SPRITE_MASKING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;ENABLE_MONO_BDWGC;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_PLAYMODE_TESTS_RUNNER;ENABLE_VIDEO;ENABLE_RMGUI;ENABLE_PACKMAN;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_STYLE_SHEETS;ENABLE_LOCALIZATION;PLATFORM_WEBGL;UNITY_WEBGL;UNITY_WEBGL_API;UNITY_DISABLE_WEB_VERIFICATION;UNITY_GFX_USE_PLATFORM_VSYNC;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_VR;ENABLE_SPATIALTRACKING;ENABLE_IL2CPP;NET_2_0;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_NATIVE_ARRAY_CHECKS;UNITY_TEAM_LICENSE;ENABLE_VSTU</DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Release\</OutputPath>
+    <IntermediateOutputPath>Temp\UnityVS_obj\Release\</IntermediateOutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_3_1;UNITY_2017_3;UNITY_2017;UNITY_ANALYTICS;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_GENERICS;ENABLE_PVR_GI;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_GRID;ENABLE_TILEMAP;ENABLE_TERRAIN;ENABLE_DIRECTOR;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_TIMELINE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;ENABLE_NATIVE_ARRAY;ENABLE_SPRITE_MASKING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;ENABLE_MONO_BDWGC;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_PLAYMODE_TESTS_RUNNER;ENABLE_VIDEO;ENABLE_RMGUI;ENABLE_PACKMAN;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_STYLE_SHEETS;ENABLE_LOCALIZATION;PLATFORM_WEBGL;UNITY_WEBGL;UNITY_WEBGL_API;UNITY_DISABLE_WEB_VERIFICATION;UNITY_GFX_USE_PLATFORM_VSYNC;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_VR;ENABLE_SPATIALTRACKING;ENABLE_IL2CPP;NET_2_0;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_NATIVE_ARRAY_CHECKS;UNITY_TEAM_LICENSE;ENABLE_VSTU</DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Core" />
+    <Reference Include="Boo.Lang" />
+    <Reference Include="UnityScript.Lang" />
+    <Reference Include="UnityEngine">
+      <HintPath>Library\UnityAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AccessibilityModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AccessibilityModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VehiclesModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.VehiclesModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ClothModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ClothModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainPhysicsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ClusterInputModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ClusterInputModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ClusterRendererModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ClusterRendererModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UNETModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UNETModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.DirectorModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.DirectorModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityAnalyticsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityAnalyticsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PerformanceReportingModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.PerformanceReportingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityConnectModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityConnectModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.WebModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.WebModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ARModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ARModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VRModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.VRModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.StyleSheetsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.StyleSheetsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CrashReportingModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.CrashReportingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GameCenterModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.GameCenterModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GridModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.GridModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.InputModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticlesLegacyModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ParticlesLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Physics2DModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ScreenCaptureModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.SharedInternalsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.SharedInternalsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.SpriteMaskModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.SpriteMaskModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.SpriteShapeModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.SpriteShapeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TerrainModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TilemapModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TilemapModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.VideoModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.WindModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.WindModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.UI">
+      <HintPath>Library\UnityAssemblies\UnityEditor.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.Networking">
+      <HintPath>Library\UnityAssemblies\UnityEditor.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PerformanceTesting">
+      <HintPath>Library\UnityAssemblies\UnityEngine.PerformanceTesting.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.TestRunner">
+      <HintPath>Library\UnityAssemblies\UnityEditor.TestRunner.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TestRunner">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TestRunner.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>Library\UnityAssemblies\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Timeline">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Timeline.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.Timeline">
+      <HintPath>Library\UnityAssemblies\UnityEditor.Timeline.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.TreeEditor">
+      <HintPath>Library\UnityAssemblies\UnityEditor.TreeEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIAutomation">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UIAutomation.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.UIAutomation">
+      <HintPath>Library\UnityAssemblies\UnityEditor.UIAutomation.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.GoogleAudioSpatializer">
+      <HintPath>Library\UnityAssemblies\UnityEditor.GoogleAudioSpatializer.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GoogleAudioSpatializer">
+      <HintPath>Library\UnityAssemblies\UnityEngine.GoogleAudioSpatializer.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.HoloLens">
+      <HintPath>Library\UnityAssemblies\UnityEditor.HoloLens.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.HoloLens">
+      <HintPath>Library\UnityAssemblies\UnityEngine.HoloLens.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.SpatialTracking">
+      <HintPath>Library\UnityAssemblies\UnityEditor.SpatialTracking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.SpatialTracking">
+      <HintPath>Library\UnityAssemblies\UnityEngine.SpatialTracking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.VR">
+      <HintPath>Library\UnityAssemblies\UnityEditor.VR.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.Graphs">
+      <HintPath>Library\UnityAssemblies\UnityEditor.Graphs.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.WSA.Extensions">
+      <HintPath>Library\UnityAssemblies\UnityEditor.WSA.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.WebGL.Extensions">
+      <HintPath>Library\UnityAssemblies\UnityEditor.WebGL.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.WindowsStandalone.Extensions">
+      <HintPath>Library\UnityAssemblies\UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
+      <HintPath>Library\UnityAssemblies\SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Advertisements">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.Advertisements">
+      <HintPath>Library\UnityAssemblies\UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Analytics">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.Analytics">
+      <HintPath>Library\UnityAssemblies\UnityEditor.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Purchasing">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Purchasing.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.Purchasing">
+      <HintPath>Library\UnityAssemblies\UnityEditor.Purchasing.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.StandardEvents">
+      <HintPath>Library\UnityAssemblies\UnityEngine.StandardEvents.dll</HintPath>
+    </Reference>
+    <Reference Include="MediaPlayer">
+      <HintPath>Assets\Plugins\MediaPlayer.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <HintPath>Assets\Plugins\System.ServiceModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Base.Common">
+      <HintPath>Assets\Plugins\Lib\Base.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Location.WCFServiceReferences">
+      <HintPath>Assets\Plugins\Lib\Location.WCFServiceReferences.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Common">
+      <HintPath>Assets\Plugins\Lib\Unity.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Modules.Alarms">
+      <HintPath>Assets\Plugins\Lib\Modules\Unity.Modules.Alarms.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Modules.Communication">
+      <HintPath>Assets\Plugins\Lib\Modules\Unity.Modules.Communication.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Modules.Context">
+      <HintPath>Assets\Plugins\Lib\Modules\Unity.Modules.Context.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Modules.Debug">
+      <HintPath>Assets\Plugins\Lib\Modules\Unity.Modules.Debug.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Modules.Settings">
+      <HintPath>Assets\Plugins\Lib\Modules\Unity.Modules.Settings.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Modules.UI">
+      <HintPath>Assets\Plugins\Lib\Modules\Unity.Modules.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Best HTTP (Pro)">
+      <HintPath>Assets\Plugins\Lib\ThirdAssets\Best HTTP (Pro)\Best HTTP (Pro).dll</HintPath>
+    </Reference>
+    <Reference Include="DownLoadHelper">
+      <HintPath>Assets\Plugins\Lib\ThirdAssets\DownLoadHelper\DownLoadHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="LOOM Framework">
+      <HintPath>Assets\Plugins\Lib\ThirdAssets\LOOM Framework\LOOM Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="DestMath">
+      <HintPath>Assets\Plugins\Lib\ThirdAssets\MathLibraryForUnity\DestMath.dll</HintPath>
+    </Reference>
+    <Reference Include="MathLibraryForUnity">
+      <HintPath>Assets\Plugins\Lib\ThirdAssets\MathLibraryForUnity\MathLibraryForUnity.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib.resources">
+      <HintPath>Assets\Plugins\zh-CHS\mscorlib.resources.dll</HintPath>
+    </Reference>
+    <Reference Include="DemiLib">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DemiLib\DemiLib.dll</HintPath>
+    </Reference>
+    <Reference Include="DemiEditor">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DemiLib\Editor\DemiEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DOTween\DOTween.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween43">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DOTween\DOTween43.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween46">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DOTween\DOTween46.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween50">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DOTween\DOTween50.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTweenEditor">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DOTween\Editor\DOTweenEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTweenPro">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DOTweenPro\DOTweenPro.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTweenProEditor">
+      <HintPath>Assets\ThirdPlugins\Demigiant\DOTweenPro\Editor\DOTweenProEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="EasyRoads3Dv3Editor">
+      <HintPath>Assets\ThirdPlugins\EasyRoads\EasyRoads3D\Editor\EasyRoads3Dv3Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="EasyRoads3Dv3">
+      <HintPath>Assets\ThirdPlugins\EasyRoads\EasyRoads3D\lib\EasyRoads3Dv3.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Assets\ThirdPlugins\Newtonsoft.Json\JsonDotNet\Assemblies\Standalone\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Vectrosity">
+      <HintPath>Assets\ThirdPlugins\Vectrosity\Plugins\Vectrosity.dll</HintPath>
+    </Reference>
+    <Reference Include="VectrosityEditor">
+      <HintPath>Assets\ThirdPlugins\Vectrosity\Plugins\Editor\VectrosityEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-UnityScript">
+      <HintPath>Library\ScriptAssemblies\Assembly-UnityScript.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-Boo">
+      <HintPath>Library\ScriptAssemblies\Assembly-Boo.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="LocationProject.CSharp.csproj">
+      <Project>{06EA579D-6DA0-0360-1E94-C302F11345AD}</Project>
+      <Name>LocationProject.CSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="LocationProject.CSharp.Plugins.csproj">
+      <Project>{208E12D8-ED7F-BBE0-C75D-8B991E261553}</Project>
+      <Name>LocationProject.CSharp.Plugins</Name>
+    </ProjectReference>
+    <ProjectReference Include="LocationProject.CSharp.Editor.Plugins.csproj">
+      <Project>{7BCA8AB4-DBD5-23EC-CBDE-775E0D69AB66}</Project>
+      <Name>LocationProject.CSharp.Editor.Plugins</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\M_Plugins\UI\PieChart\Editor\UGUI_PieChartDoTweenEditor.cs" />
+    <Compile Include="Assets\Modules\AssetLoad\Editor\ColumnSortComponent.cs" />
+    <Compile Include="Assets\Modules\AssetLoad\Editor\EditorHelper.cs" />
+    <Compile Include="Assets\Modules\AssetLoad\Editor\ModelAssetLoaderSettingWindow.cs" />
+    <Compile Include="Assets\Modules\AssetLoad\Editor\SceneAssetSettingWindow.cs" />
+    <Compile Include="Assets\Modules\AssetLoad\Editor\TableComponent.cs" />
+    <Compile Include="Assets\Modules\Editor\AssetbundleTool.cs" />
+    <Compile Include="Assets\Modules\Editor\MyTools.cs" />
+    <Compile Include="Assets\ThirdPlugins\AmplifyImpostors\Editor\About\About.cs" />
+    <Compile Include="Assets\ThirdPlugins\AmplifyImpostors\Editor\Inspector\AmplifyImpostorInspector.cs" />
+    <Compile Include="Assets\ThirdPlugins\AmplifyImpostors\Editor\ShaderEditorNode\AmplifyImpostorNode.cs" />
+    <Compile Include="Assets\ThirdPlugins\AssetBundleMagic\Editor\AssetBundleMagicEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\AssetBundleMagic\Editor\ChunkManagerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\Beautify\Editor\BeautifyEffectInspector.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineBasicMultiChannelPerlinEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineBlenderSettingsEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineBlendListCameraEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineBrainEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineClearShotEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineColliderEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineComposerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineConfinerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineExternalCameraEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineFramingTransposerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineFreeLookEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineGroupComposerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineHardLockToTargetEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineHardLookAtEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineMixingCameraEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineOrbitalTransposerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachinePathEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachinePOVEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineScreenComposerGuides.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineSmoothPathEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineStateDrivenCameraEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineTargetGroupEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineTrackedDollyEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineTransposerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineVirtualCameraBaseEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Editors\CinemachineVirtualCameraEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Menus\CinemachineMenu.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\PropertyDrawers\CinemachineBlendDefinitionPropertyDrawer.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\PropertyDrawers\CinemachineTagFieldPropertyDrawer.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\PropertyDrawers\GetSetDrawer.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\PropertyDrawers\LensSettingsPropertyDrawer.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\PropertyDrawers\MinDrawer.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Utility\BaseEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Utility\EmbeddedAssetHelpers.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Utility\SaveDuringPlay.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Utility\ScriptableObjectUtility.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Utility\SerializedPropertyHelper.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Windows\AboutWindow.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Windows\CinemachineColliderPrefs.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Base\Editor\Windows\CinemachineSettings.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\PostFX\Editor\CinemachinePostProcessingEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\PostFX\Editor\PostFXAutoImport.cs" />
+    <Compile Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\Timeline\Editor\CinemachineShotEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\CircleImage\Scripts\Editor\CircleImageEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\AntialiasingEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\BloomAndFlaresEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\BloomEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\CameraMotionBlurEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\ColorCorrectionCurvesEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\ColorCorrectionLookupEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\DepthOfFieldDeprecatedEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\DepthOfFieldEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\EdgeDetectionEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\NoiseAndGrainEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\SunShaftsEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\TonemappingEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\DCG Shaders\_Common\Editor\ImageEffects\VignetteAndChromaticAberrationEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\Demigiant\DOTweenPro\Editor\DOTweenAnimationInspector.cs" />
+    <Compile Include="Assets\ThirdPlugins\Demigiant\Editor\WelcomeScreen.cs" />
+    <Compile Include="Assets\ThirdPlugins\EasyRoads\Standard Assets\Editor\CrossPlatformInput\CrossPlatformInputInitialize.cs" />
+    <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-Camera\Editor\AlignMarkEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-Camera\Editor\AroundCameraEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-Camera\Editor\BaseEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-Camera\Editor\MouseTranslateEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-CommonCode\Editor\GenericEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\EditorCameraInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\EditorGizmoSystemInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\EditorObjectSelectionInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\EditorUndoRedoSystemInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\GizmoInspectorGUIBase.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\Helpers\EditorGUIStyles.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\RotationGizmoInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\RuntimeEditorApplicationInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\ScaleGizmoInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\SceneGizmoInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\TranslationGizmoInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Editor\VolumeScaleGizmoInspectorGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\ReadMeEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_Area2DEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_AutoStampMaker.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_ComputeEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_GenerateEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_ItemBehaviourEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_LayerGroupGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_LayerGroupResultGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_LayerGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_MeasureTerrainsEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_NodeGroupGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_NodeGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_NodeWindow.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_RawImageEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_SelectItemGroupGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_SelectItemGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_SettingsEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_TerrainAreaEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TC_TerrainLayerGUI.cs" />
+    <Compile Include="Assets\ThirdPlugins\TerrainComposer2\Scripts\Editor\TD.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\AccordionItemDrawer.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\CenteredSliderEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\CursorsEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\DragSupportEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\EasyLayoutEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewBaseEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewCustomBaseEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewCustomEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewCustomHeightEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewGameObjectsEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewIconsEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewItemEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ListViewPaginatorEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\MenuOptions.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ProgressbarEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\RangeSliderEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\RangeSliderFloatEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ResizableEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ResizableHeaderEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\ScrollRectPaginator.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\SpinnerEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\SpinnerFloatEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\SplitterEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TabButtonEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TabIconButtonEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TabIconsDrawer.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TileViewEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TreeViewComponentEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TreeViewCustomEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TreeViewDataSourceEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TreeViewDataSourceWindow.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Editor\TreeViewEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\ListView\Editor\ListViewCustomSampleEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\ListView\Editor\ListViewUnderlineSampleEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\ListView\Editor\ListViewVariableHeightEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\Shops\Editor\HarborListViewEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\Shops\Editor\TraderListViewEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\Table\Editor\SteamSpyViewEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\TileView\Editor\TileViewSampleEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\ToDoList\Editor\ToDoListViewEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\TreeView\Editor\TreeViewSampleEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UnityChart\SpringGUI\Editor\SpringGUI\ColorPicker\ColoredTapeEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UnityChart\SpringGUI\Editor\SpringGUI\ColorPicker\MainColorTapeEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UnityChart\SpringGUI\Editor\SpringGUI\ColorPicker\MultiColoredTapeEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UnityChart\SpringGUI\Editor\SpringGUI\ColorPicker\SuckerImageEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UnityChart\SpringGUI\Editor\SpringGUI\Common\SpringGUIMenuOptions.cs" />
+    <Compile Include="Assets\ThirdPlugins\UnityChart\SpringGUI\Editor\SpringGUI\UITree\UITreeEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UniversalMediaPlayer\Editor\UMPEditor.cs" />
+    <Compile Include="Assets\ThirdPlugins\UniversalMediaPlayer\Editor\UMPPostBuilds.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\M_Plugins\Shaders\Transparent\TransparentAlphaBlend.shader" />
+    <None Include="Assets\M_Plugins\Shaders\UGUI\Blurred picture\Blurred picture.shader" />
+    <None Include="Assets\M_Plugins\Shaders\UGUI\Blurred picture\SimpleGrabPassBlur.shader" />
+    <None Include="Assets\M_Plugins\Shaders\UGUI\Blurred picture\XMLReadme.XML" />
+    <None Include="Assets\M_Plugins\Shaders\UGUI\MaskIcon.shader" />
+    <None Include="Assets\Models\AutoModels\电厂主区域 FBX\metadata.xml" />
+    <None Include="Assets\Modules\ModelAddList\ModelAddList\XMLReadme.XML" />
+    <None Include="Assets\Modules\UI\FacilityDevInfo\Textures\23-大设备监控信息\read me.txt" />
+    <None Include="Assets\Plugins\HighlightingSystem\Resources\HighlightingBlur.shader" />
+    <None Include="Assets\Plugins\HighlightingSystem\Resources\HighlightingComposite.shader" />
+    <None Include="Assets\Plugins\HighlightingSystem\Resources\HighlightingCut.shader" />
+    <None Include="Assets\Plugins\HighlightingSystem\Resources\HighlightingOpaque.shader" />
+    <None Include="Assets\Plugins\HighlightingSystem\Resources\HighlightingTransparent.shader" />
+    <None Include="Assets\Plugins\HighlightingSystem\link.xml" />
+    <None Include="Assets\Plugins\Lib\ThirdAssets\MathLibraryForUnity\DestMath.xml" />
+    <None Include="Assets\Plugins\VectrosityDemos\ImageEffects\Shaders\_BloomAndFlares\MobileBloom.shader" />
+    <None Include="Assets\Standard Assets\Characters\FirstPersonCharacter\FirstPersonCharacterGuidelines.txt" />
+    <None Include="Assets\Standard Assets\Characters\RollerBall\RollerBallGuidelines.txt" />
+    <None Include="Assets\Standard Assets\Characters\ThirdPersonCharacter\ThirdPersonCharacterGuidelines.txt" />
+    <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
+    <None Include="Assets\StreamingAssets\Windows\Versions.txt" />
+    <None Include="Assets\ThirdPlugins\AmplifyImpostors\EditorResources\Shaders\Baking\ImpostorDilate.shader" />
+    <None Include="Assets\ThirdPlugins\AmplifyImpostors\EditorResources\Shaders\Baking\ShaderPacker.shader" />
+    <None Include="Assets\ThirdPlugins\AmplifyImpostors\EditorResources\Shaders\Runtime\AmplifyImpostors.cginc" />
+    <None Include="Assets\ThirdPlugins\AmplifyImpostors\EditorResources\Shaders\Runtime\AmplifyImpostorsTemplate.shader" />
+    <None Include="Assets\ThirdPlugins\AmplifyImpostors\EditorResources\Shaders\Runtime\OctahedronImpostor.shader" />
+    <None Include="Assets\ThirdPlugins\AmplifyImpostors\EditorResources\Shaders\Runtime\SphericalImpostor.shader" />
+    <None Include="Assets\ThirdPlugins\Beautify\Resources\Shaders\Beautify.cginc" />
+    <None Include="Assets\ThirdPlugins\Beautify\Resources\Shaders\Beautify.shader" />
+    <None Include="Assets\ThirdPlugins\CinemachinePlugin\Cinemachine\ReleaseNotes.txt" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\Water Shader\Shaders\Backface.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\Water Shader\Shaders\Caustics.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\Water Shader\Shaders\UnderWaterDistortion.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\Water Shader\Shaders\WaterFog.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\Water Shader\Shaders\WaterSurfaceDX11.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\Water Shader\Shaders\WaterSurfaceOpenGL.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\BlendModesOverlay.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\BlurEffectConeTaps.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\CameraMotionBlur.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\CameraMotionBlurDX11.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ChromaticAberrationShader.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ColorCorrection3DLut.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ColorCorrectionCurves.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ColorCorrectionCurvesSimple.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ColorCorrectionEffect.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ColorCorrectionSelective.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\Contrast Stretch\Adaptation.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\Contrast Stretch\Apply.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\Contrast Stretch\Luminance.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\Contrast Stretch\MinMaxReduction.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ContrastComposite.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ConvertDepth.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\CreaseApply.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\EdgeDetectNormals.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\FisheyeShader.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\GlobalFog.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\GrayscaleEffect.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\MotionBlur.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\MotionBlurClear.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\NoiseAndGrain.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\NoiseAndGrainDX11.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\NoiseEffectShaderRGB.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\NoiseEffectShaderYUV.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\PrepareSunShaftsBlur.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\RadialBlur.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\SSAOShader.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ScreenSpaceAmbientObscurance.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\SepiaToneEffect.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\ShowAlphaChannel.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\SimpleClear.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\SunShaftsComposite.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\Tonemapper.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\TwirlEffect.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\VignettingShader.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\VortexEffect.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_Antialiasing\DLAA.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_Antialiasing\FXAA2.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_Antialiasing\FXAA3Console.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_Antialiasing\FXAAPreset2.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_Antialiasing\FXAAPreset3.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_Antialiasing\NFAA.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_Antialiasing\SSAA.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\Blend.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\BlendForBloom.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\BlendOneOne.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\BlurAndFlares.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\BrightPassFilter.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\BrightPassFilter2.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\LensFlareCreate.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\MobileBloom.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\MobileBlur.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\MultiPassHollywoodFlares.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\SeparableBlurPlus.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_BloomAndFlares\VignetteShader.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_DepthOfField\Bokeh34.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_DepthOfField\DepthOfField34.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_DepthOfField\DepthOfFieldDX11.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_DepthOfField\DepthOfFieldScatter.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_DepthOfField\SeparableBlur.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_DepthOfField\SeparableWeightedBlurDof34.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\_DepthOfField\TiltShiftHdrLensBlur.shader" />
+    <None Include="Assets\ThirdPlugins\DCG Shaders\_Common\Standard Assets\ImageEffects\Shaders\frag_ao.cginc" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTween\DOTween.XML" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTween\DOTween43.xml" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTween\DOTween46.xml" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTween\DOTween50.xml" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTween\Editor\DOTweenEditor.XML" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTween\readme.txt" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTweenPro\DOTweenPro.XML" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTweenPro\Editor\DOTweenProEditor.XML" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DOTweenPro\readme.txt" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DemiLib\DemiLib.xml" />
+    <None Include="Assets\ThirdPlugins\Demigiant\DemiLib\Editor\DemiEditor.XML" />
+    <None Include="Assets\ThirdPlugins\Demigiant\readme_DOTweenPro.txt" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D models\shaders\alpha_2sided.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D - Unity 5 Standard.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D - Unity 5 StandardSpecular.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-Alpha-Diffuse - Bumped.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-Alpha-Diffuse.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-AlphaTest-Bumped.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-AlphaTest-Diffuse.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-Normal-Bumped.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-Normal-Diffuse.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-Road-Edit-Mode.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\EasyRoads3D-Surface-Offset.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\EasyRoads3D\shaders\alpha_2sided.shader" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
+    <None Include="Assets\ThirdPlugins\EasyRoads\Standard Assets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />
+    <None Include="Assets\ThirdPlugins\HighlightingSystemDemo\Assets\Shaders\Dither.shader" />
+    <None Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-Camera\Readme.txt" />
+    <None Include="Assets\ThirdPlugins\Newtonsoft.Json\JsonDotNet\Assemblies\AOT\Newtonsoft.Json.XML" />
+    <None Include="Assets\ThirdPlugins\Newtonsoft.Json\JsonDotNet\Assemblies\Standalone\Newtonsoft.Json.XML" />
+    <None Include="Assets\ThirdPlugins\Newtonsoft.Json\JsonDotNet\Assemblies\Windows\Newtonsoft.Json.XML" />
+    <None Include="Assets\ThirdPlugins\Newtonsoft.Json\JsonDotNet\link.xml" />
+    <None Include="Assets\ThirdPlugins\Realistic_Water_Fountain\Realistic_Water_Fountain - Documentation.txt" />
+    <None Include="Assets\ThirdPlugins\Realistic_Water_Fountain\Shaders\Water_Shader.shader" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Readme\Hotkeys.txt" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Readme\Readme.txt" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Readme\Version History.txt" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Resources\Shaders\GLLine.shader" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Resources\Shaders\Geometry2D.shader" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Resources\Shaders\Gizmo Line.shader" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Resources\Shaders\Gizmo Solid Component.shader" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Resources\Shaders\Gradient Camera Bk.shader" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Resources\Shaders\TintedDiffuse.shader" />
+    <None Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Resources\Shaders\XZGrid.shader" />
+    <None Include="Assets\ThirdPlugins\RuntimeSceneGizmo\Materials\SceneGizmoShader.shader" />
+    <None Include="Assets\ThirdPlugins\RuntimeSceneGizmo\README.txt" />
+    <None Include="Assets\ThirdPlugins\TerrainComposer2\Defaults\ProjectorAdditive.shader" />
+    <None Include="Assets\ThirdPlugins\TerrainComposer2\ReadMe.txt" />
+    <None Include="Assets\ThirdPlugins\TerrainComposer2\Shaders\Compute\FlattenTerrain.shader" />
+    <None Include="Assets\ThirdPlugins\TerrainComposer2\Shaders\Compute\TC_Noise.cginc" />
+    <None Include="Assets\ThirdPlugins\TerrainComposer2\Shaders\Compute\TC_Noise2.cginc" />
+    <None Include="Assets\ThirdPlugins\TerrainComposer2\Shaders\Compute\TC_NoisesAdvanced.cginc" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\classes.txt" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Sample Assets\countries.txt" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Shaders\UIGradientShaderHLineHSV.shader" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Shaders\UIGradientShaderHLineRGB.shader" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Shaders\UIGradientShaderPlaneHSV.shader" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Shaders\UIGradientShaderPlaneRGB.shader" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Shaders\UIGradientShaderVLineHSV.shader" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\Shaders\UIGradientShaderVLineRGB.shader" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\changelog.txt" />
+    <None Include="Assets\ThirdPlugins\UIWidgets\readme.txt" />
+    <None Include="Assets\ThirdPlugins\UnityChart\SpringGUI\Scripts\SpringGUI\Icons\SpringGUI Icon Doc.txt" />
+    <None Include="Assets\ThirdPlugins\UniversalMediaPlayer\Shaders\UMP-ARVideoCanvas.shader" />
+    <None Include="Assets\ThirdPlugins\UniversalMediaPlayer\Shaders\UMP-VideoSphericalCanvas.shader" />
+    <None Include="Assets\ThirdPlugins\Vectrosity\Demos\Shaders\DepthMask.shader" />
+    <None Include="Assets\ThirdPlugins\Vectrosity\Demos\Shaders\SolidColor.shader" />
+    <None Include="Assets\ThirdPlugins\Vectrosity\Vectrosity Documentation\Vectrosity changelog.txt" />
+    <None Include="Assets\ThirdPlugins\Vectrosity\Vectrosity Documentation\Vectrosity5 Upgrade Guide.txt" />
+    <None Include="Assets\ThirdPlugins\Water_Splashes\LeftMouseForBigSplash_RightMouseForSmallSplash.txt" />
+    <None Include="Assets\ThirdPlugins\Water_Splashes\Water_Splashes - Documentation.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
+</Project>

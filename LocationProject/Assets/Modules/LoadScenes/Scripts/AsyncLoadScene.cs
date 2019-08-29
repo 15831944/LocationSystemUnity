@@ -39,7 +39,7 @@ public class AsyncLoadScene : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Debug.unityLogger.logEnabled = false;
+        //Debug.unityLogger.logEnabled = false;
         if (isLoadStart)
         {
             progressBeforeValue = 0;
@@ -48,7 +48,7 @@ public class AsyncLoadScene : MonoBehaviour
             //loadingSlider.value = 0.0f;
             ProgressbarLoad.Instance.Show(0f);
 
-            if (SceneManager.GetActiveScene().name == "Loading")
+            if (SceneManager.GetActiveScene().name.Contains("Loading"))
             {
                 //启动协程
                 StartCoroutine(AsyncLoading());
@@ -101,7 +101,7 @@ public class AsyncLoadScene : MonoBehaviour
         if (operation == null) return;
         progressBeforeValue = targetProgressValue;
         targetProgressValue = operation.progress;
-        Debug.LogError("operation.progress:" + Math.Round(operation.progress, 3));
+        //Debug.LogError("operation.progress:" + Math.Round(operation.progress, 3));
         if (Math.Round(operation.progress, 3) >= 0.9)//最大值是0.9f
         {
             targetProgressValue = 1f;
@@ -112,7 +112,7 @@ public class AsyncLoadScene : MonoBehaviour
             //插值运算
             currentProgressValue = Mathf.Lerp(currentProgressValue, targetProgressValue, Time.deltaTime * loadingSpeed);
             ProgressbarLoad.Instance.Show(currentProgressValue);
-            Debug.LogError("currentProgressValue:" + currentProgressValue);
+            //Debug.LogError("currentProgressValue:" + currentProgressValue);
             //if (Mathf.Abs(currentProgressValue - targetProgressValue) < 0.01f)
             //{
             //    ProgressbarLoad.Instance.Show(targetProgressValue);

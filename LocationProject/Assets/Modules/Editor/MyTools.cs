@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEditor;
 using UnityEngine.UI;
 using System.IO;
+using System.Collections.Generic;
 
 public class MyTools
 {
@@ -10,11 +11,36 @@ public class MyTools
     /// <summary>
     /// 自动计算所有子对象包围盒
     /// </summary>
-    [MenuItem("Tools/AddBoxCollider")]
+    [MenuItem("Tools/Collider/AddBoxCollider")]
     public static void AddBoxCollider()
     {
         Transform parent = Selection.activeGameObject.transform;
         ColliderHelper.CreateBoxCollider(parent);
+    }
+
+    /// <summary>
+    /// 添加所有的MeshCollider
+    /// </summary>
+    [MenuItem("Tools/Collider/AddAllMeshCollider")]
+    public static void AddAllMeshCollider()
+    {
+        Transform parent = Selection.activeGameObject.transform;
+        AddAllMeshCollider(parent);
+    }
+
+    public static void AddAllMeshCollider(Transform parent)
+    {
+        List<MeshFilter> meshFilters = parent.gameObject.FindComponentsInChildren<MeshFilter>();
+        foreach (var meshFilter in meshFilters)
+        {
+            MeshCollider meshCollider = meshFilter.gameObject.GetComponent<MeshCollider>();
+            if (meshCollider == null)
+            {
+                meshCollider = meshFilter.gameObject.AddComponent<MeshCollider>();
+                meshCollider.sharedMesh = meshFilter.sharedMesh;
+            }
+        }
+        //ColliderHelper.CreateBoxCollider(parent);
     }
 
     //[MenuItem("Tools/AddBoxColliderOld")]
@@ -59,7 +85,7 @@ public class MyTools
         BuildPipeline.BuildPlayer(levels, path + "/location.exe", BuildTarget.StandaloneWindows, BuildOptions.None);
 
         SystemSettingHelper.GetSystemSetting();
-        //SystemSettingHelper.systemSetting.IsDebug = false;
+
         GameObject versionObj = GameObject.Find("Version");
         if (versionObj)
         {

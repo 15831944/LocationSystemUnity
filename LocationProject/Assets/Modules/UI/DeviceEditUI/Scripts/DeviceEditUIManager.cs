@@ -210,7 +210,7 @@ public class DeviceEditUIManager : MonoBehaviour
         }
         if(CameraSceneManager.Instance)
         {
-            if(CameraSceneManager.Instance.alignCamera.target == dev.gameObject.transform)
+            if(CameraSceneManager.Instance.alignCamera.GetTarget() == dev.gameObject.transform)
             {
                 //FactoryDepManager.currentDep.FocusOn();
                 dev.FocusOff();

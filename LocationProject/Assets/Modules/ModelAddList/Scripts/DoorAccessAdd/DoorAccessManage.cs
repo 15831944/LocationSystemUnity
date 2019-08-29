@@ -61,6 +61,11 @@ public class DoorAccessManage : MonoBehaviour {
                 if (doorAccess)
                 {
                     DoorAccessItem doorItem = doorAccess.DoorItem;
+                    if(doorItem==null)
+                    {
+                        Log.Error("DoorAccessManage.PushDoorStateInfo.DoorAcessItem is null:"+doorAccess.Info==null? "devinfo id is null":doorAccess.Info.Id.ToString());
+                        return;
+                    }
                     doorItem.ChangeDoorState(state);
                     if(!DepDoorList.Contains(doorItem))DepDoorList.Add(doorItem);
                 }

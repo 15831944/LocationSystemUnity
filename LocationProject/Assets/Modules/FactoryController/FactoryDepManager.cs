@@ -36,10 +36,43 @@ public enum DepType
 }
 public class FactoryDepManager : DepNode {
     public static FactoryDepManager Instance;
+
+    public static DepNode _currentDep;
     /// <summary>
     /// 当前所属区域
     /// </summary>
-    public static DepNode currentDep;
+    public static DepNode currentDep
+    {
+        get
+        {
+            if (_currentDep == null)//切换模型时当前建筑模型可能会丢失
+            {
+                if (RoomFactory.Instance)
+                {
+                    _currentDep = RoomFactory.Instance.GetDepNodeById(currentNodeId);
+                }
+            }
+            return _currentDep;
+        }
+        set
+        {
+            _currentDep = value;
+            if (_currentDep == null)
+            {
+                Debug.LogError("FactoryDepManager _currentDep == null");
+            }
+            else
+            {
+                currentNode = value.TopoNode;
+                currentNodeId = value.NodeID;
+            }
+        }
+    }
+
+    public static PhysicalTopology currentNode;
+
+    public static int currentNodeId;
+
     /// <summary>
     /// CAD图纸
     /// </summary>
@@ -91,18 +124,66 @@ public class FactoryDepManager : DepNode {
         DepController[] DepControllers = GameObject.FindObjectsOfType<DepController>();
         foreach (DepController dep in DepControllers)
         {
-            ChildNodes.Add(dep);
+            if(!ChildNodes.Contains(dep))ChildNodes.Add(dep);
         }
-        colliders = GetComponentsInChildren<Collider>().ToList();
+        //colliders = GetComponentsInChildren<Collider>().ToList();
     }
+
+    public void ReplaceNode(DepNode node)
+    {
+        var oldNode = depHideList.FirstOrDefault(i => i.NodeID == node.NodeID);
+        if (depHideList != null)
+        {
+            depHideList.Remove(oldNode);
+            depHideList.Add(node);
+        }
+        else
+        {
+            Debug.LogError("FactoryDepManager.ReplaceNode:"+node.NodeName);
+        }
+    }
+
     void Start()
     {
-        
+        GetColliders();
     }
-    private void Update()
-    {
 
+    /// <summary>
+    /// 获取建筑下所有子物体
+    /// </summary>
+    public void GetColliders()
+    {
+        colliders = GetComponentsInChildren<Collider>(true).ToList();
     }
+    
+    /// <summary>
+    /// 获取所有建筑
+    /// </summary>
+    /// <returns></returns>
+    public List<BuildingController>GetAllBuildngController()
+    {
+        if (ChildNodes == null) return null;
+        List<BuildingController> buildings = new List<BuildingController>();
+        foreach(var dep in ChildNodes)
+        {
+            if(dep!=null)
+            {
+                if (dep is BuildingController) buildings.Add(dep as BuildingController);
+                else if(dep is DepController)
+                {
+                    DepController depTemp = dep as DepController;
+                    if (depTemp.ChildNodes == null) continue;
+                    foreach(var building in dep.ChildNodes)
+                    {
+                        if (!building.HaveTopNode) continue;
+                        if(building is BuildingController) buildings.Add(building as BuildingController);
+                    }
+                }
+            }
+        }
+        return buildings;
+    }
+
     /// <summary>
     /// 关闭其他建筑
     /// </summary>
@@ -124,6 +205,7 @@ public class FactoryDepManager : DepNode {
             }
             foreach (DepNode dep in ChildNodes)
             {
+                if (dep == null) continue;
                 if (dep.NodeID != parentId)
                 {
                     dep.gameObject.SetActive(false);
@@ -133,6 +215,7 @@ public class FactoryDepManager : DepNode {
                 {
                     foreach (DepNode building in dep.ChildNodes)
                     {
+                        if (building == null) continue;
                         if (building.NodeID != currentBuilding.NodeID)
                         {
                             building.gameObject.SetActive(false);
@@ -141,15 +224,15 @@ public class FactoryDepManager : DepNode {
                     }
                 }
             }
-            if (OtherBuilding != null)
-            {
-                Debug.Log("OtherBuilding.SetActive false...");
-                OtherBuilding.SetActive(false);
-            }
-            else
-            {
-                Debug.Log("OtherBuilding is null...");
-            }
+            //if (OtherBuilding != null)
+            //{
+            //    Debug.Log("OtherBuilding.SetActive false...");
+            //    OtherBuilding.SetActive(false);
+            //}
+            //else
+            //{
+            //    Debug.Log("OtherBuilding is null...");
+            //}
             FactoryDevContainer.SetActive(false);
         }
         catch(Exception e)
@@ -166,9 +249,19 @@ public class FactoryDepManager : DepNode {
         ShowFactory();
         foreach (DepNode dep in depHideList)
         {
+            if (dep == null)
+            {
+                continue;
+            }
+            if (dep.gameObject == null)
+            {
+                Debug.LogError("FactoryDepManager.ShowOtherBuilding:dep.gameObject == null");
+                continue;
+            }
             if (!dep.gameObject.activeInHierarchy)
             {
                 dep.gameObject.SetActive(true);
+                dep.gameObject.transform.parent.gameObject.SetActive(true);//2019_05_21_cww:J6J11显示要把父物体也显示出来，其他物体则不受影响
             }
         }
         if (OtherBuilding != null) OtherBuilding.SetActive(true);
@@ -194,9 +287,16 @@ public class FactoryDepManager : DepNode {
         }
         SceneBackButton.Instance.Hide();
         //ShowLocation();
-        DepNode last = currentDep;
-        currentDep = this;
-        SceneEvents.OnDepNodeChanged(last, currentDep);
+        SetCurrentDepNode(this);
+    }
+
+    public static void SetCurrentDepNode(DepNode node)
+    {
+        //DepNode last = currentDep;
+        //currentDep = node;
+        //SceneEvents.OnDepNodeChanged(last, currentDep);
+
+        SceneEvents.OnDepNodeChanged(node);
     }
     /// <summary>
     /// 聚焦整厂
@@ -269,17 +369,37 @@ public class FactoryDepManager : DepNode {
     /// </summary>
     public void CreateFactoryDev()
     {
+        //添加门控制脚本
+        InitDoorAccessModelAdd();
+
+        //创建区域设备
+        if (SystemSettingHelper.deviceSetting.LoadParkDevWhenEnter)
+        {
+            CreateParkDevs();
+        }
+    }
+
+    /// <summary>
+    /// 创建厂区设备
+    /// </summary>
+    [ContextMenu("CreateParkDevs")]
+    private void CreateParkDevs()
+    {
         //Debug.LogError("IsFactory dev create:"+IsDevCreate);
         if (IsDevCreate) return;
         IsDevCreate = true;
-        if(transform.GetComponent<DoorAccessModelAdd>()==null)
+        //RoomFactory.Instance.CreateDepDev(NodeID, FactoryDevContainer, RoomFactory.DevType.DepDev);
+        RoomFactory.Instance.CreateDepDev(this);
+    }
+
+    private void InitDoorAccessModelAdd()
+    {
+        if (transform.GetComponent<DoorAccessModelAdd>() == null)
         {
             //初始化门的控制脚本
             DoorAccessModelAdd modelAdd = gameObject.AddComponent<DoorAccessModelAdd>();
             modelAdd.AddDoorAccessManage();
         }
-        //RoomFactory.Instance.CreateDepDev(NodeID, FactoryDevContainer, RoomFactory.DevType.DepDev);
-        RoomFactory.Instance.CreateDepDev(this);
     }
 
     /// <summary>
@@ -324,6 +444,16 @@ public class FactoryDepManager : DepNode {
         }
     }
 
+
+    /// <summary>
+    /// 设置所有建筑的Collider是否启用
+    /// </summary>
+    public void SetAllColliderIgnoreRaycastOP(bool isIgnore)
+    {
+        GetColliders();
+        SetAllColliderIgnoreRaycast(isIgnore);
+    }
+
     /// <summary>
     /// 设置所有建筑的Collider是否启用
     /// </summary>
@@ -334,9 +464,18 @@ public class FactoryDepManager : DepNode {
         {
             foreach (Collider collider in colliders)
             {
-                if (collider.gameObject.layer == LayerMask.NameToLayer("Floor")) continue;
+                try
+                {
+                    if (collider.gameObject.layer == LayerMask.NameToLayer("Floor")) continue;
+                }
+                catch
+                {
+                    int i = 0;
+                }
+                if (collider.gameObject.layer == LayerMask.NameToLayer("Wall")) continue;
+                if (collider.gameObject.layer == LayerMask.NameToLayer("Railing")) continue;
                 //collider.gameObject.layer = LayerMask.NameToLayer(Layers.IgnoreRaycast);
-                if(!layerDic.ContainsKey(collider.gameObject))
+                if (!layerDic.ContainsKey(collider.gameObject))
                 {
                     layerDic.Add(collider.gameObject,collider.gameObject.layer);
                     collider.gameObject.layer = LayerMask.NameToLayer(Layers.IgnoreRaycast);
@@ -392,5 +531,31 @@ public class FactoryDepManager : DepNode {
     public void SetTerrain_Active(bool isActive)
     {
         terrain.gameObject.SetActive(isActive);
+    }
+
+    /// <summary>
+    /// 展开楼层(Editor)状态下
+    /// </summary>
+    [ContextMenu("ExpandInEditor")]
+
+    public void ExpandInEditor()
+    {
+        Debug.Log("FactoryDepManager.ExpandInEditor");
+        var buildings=GameObject.FindObjectsOfType<BuildingController>();
+        foreach (BuildingController building in buildings)
+        {
+            building.ExpandInEditor();
+        }
+    }
+
+    [ContextMenu("CollapseInEditor")]
+    public void CollapseInEditor()
+    {
+        Debug.Log("FactoryDepManager.CollapseInEditor");
+        var buildings = GameObject.FindObjectsOfType<BuildingController>();
+        foreach (BuildingController building in buildings)
+        {
+            building.CollapseInEditor();
+        }
     }
 }

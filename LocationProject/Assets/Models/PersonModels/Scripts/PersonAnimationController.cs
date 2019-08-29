@@ -10,10 +10,7 @@ public class PersonAnimationController : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        if (Animator == null)
-        {
-            Animator = gameObject.GetComponent<Animator>();
-        }
+        GetAnimator();
         //Animator.Play(StateName);
     }
 
@@ -36,13 +33,15 @@ public class PersonAnimationController : MonoBehaviour {
     [ContextMenu("DoStop")]
     public void DoStop()
     {
-        if (Animator == null)
-        {
-            Animator = gameObject.GetComponent<Animator>();
-        }
+        //if (isMove==false) return;
+        //isMove = false;
+
+        GetAnimator();
         if (Animator == null) return;
         Animator.SetBool("isMove", false);
     }
+
+    private bool isMove = true;
 
     /// <summary>
     /// 行走动画
@@ -50,12 +49,24 @@ public class PersonAnimationController : MonoBehaviour {
     [ContextMenu("DoMove")]
     public void DoMove()
     {
+        //if (isMove) return;
+        //isMove = true;
+
+        GetAnimator();
+        if (Animator == null) return;
+        Animator.SetBool("isMove", true);
+    }
+
+    private void GetAnimator()
+    {
         if (Animator == null)
         {
             Animator = gameObject.GetComponent<Animator>();
+            if (Animator == null)
+            {
+                Animator = gameObject.GetComponentInChildren<Animator>();
+            }
         }
-        if (Animator == null) return;
-        Animator.SetBool("isMove", true);
     }
 
     public void SetAnimator(bool isBool)

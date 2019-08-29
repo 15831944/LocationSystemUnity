@@ -14,11 +14,12 @@ public class DianChangLogin : MonoBehaviour
     public string password = "Admin";
 
     public InputField IpInput;
-    public InputField PortInput;
+    public Text  PortInput;
     public InputField NameInput;
     public InputField PasswordInput;
     public Button ExitBut;
     public GameObject  ExitObj;
+    public Text CurrentVersionNumber;
     /// <summary>
     /// 点击登陆
     /// </summary>
@@ -39,6 +40,7 @@ public class DianChangLogin : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("1");
         LoginBut.onClick.AddListener(Login_Click);
         ExitBut.onClick.AddListener(ExitLogin);
         StartShowLogin();
@@ -78,12 +80,14 @@ public class DianChangLogin : MonoBehaviour
         PortInput.text = port;
         NameInput.text = username;
         PasswordInput.text = password;
+        CurrentVersionNumber.text = SystemSettingHelper.versionSetting.VersionNumber;
     }
     /// <summary>
     /// 点击登陆界面
     /// </summary>
     public void Login_Click()
     {
+        Debug.Log("登录");
         string ipstr = IpInput.text;
         string portstr = PortInput.text;
         string namestr = NameInput.text;
@@ -93,7 +97,13 @@ public class DianChangLogin : MonoBehaviour
             LoginFail();
             return;
         }
+        if(LoginManage.Instance==null)
+        {
+            Debug.LogError("Error:LoginManage.Instance is null");
+            return;
+        }
         LoginManage.Instance.Login(ipstr, portstr, namestr, passwordstr);
+        //LoginManage.Instance.Login(namestr,passwordstr);
     }
     public void LoginProcess()
     {
@@ -141,6 +151,7 @@ public class DianChangLogin : MonoBehaviour
     public void CloseLogin()
     {
         LoginWindow.SetActive(false);
+        ExitObj.SetActive(false);
         StopAllCoroutines();
         StartCommand.Instance.SetTestPanel(false);
     }

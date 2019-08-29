@@ -17,13 +17,19 @@ public class AreaDivideTree : MonoBehaviour
     /// 部门划分拓朴树
     /// </summary>
     public DepartmentDivideTree departmentDivideTree;
-    public string RootName;
+    //public string RootName;
     public ChangeTreeView Tree;
     ObservableList<TreeNode<TreeViewItem>> nodes;
     /// <summary>
     /// 人员信息
     /// </summary>
-    public List<PersonNode> PersonList;
+    [System.NonSerialized] private List<PersonNode> PersonList;
+
+    public PersonNode FindPersonNode(int perId)
+    {
+        return PersonList.Find((item) => item.Id == perId);
+    }
+
     /// <summary>
     /// 部门划分
     /// </summary>
@@ -41,7 +47,12 @@ public class AreaDivideTree : MonoBehaviour
     /// 区域节点
     /// </summary>
     Dictionary<int, TreeNode<TreeViewItem>> AreaDic = new Dictionary<int, TreeNode<TreeViewItem>>();
+    /// <summary>
+    /// 根节点AreaNode,园区
+    /// </summary>
+    [System.NonSerialized] public AreaNode rootAreaNode;
     bool isRefresh;
+    
     //public Toggle DivideToggle;
     void Start()
     {
@@ -62,10 +73,6 @@ public class AreaDivideTree : MonoBehaviour
     }
     public void ShowAreaDivideTree(Action callback)
     {
-        //GetTopoTree();//todo:因为定时获取会导致卡顿，以协程方式创建节点
-        //Tree.Start();
-        //Tree.Nodes = nodes;
-        //SetListeners();
         GetTopoTree(() =>
         {
             Tree.Start();
@@ -77,24 +84,73 @@ public class AreaDivideTree : MonoBehaviour
             }
         });
     }
+
+    //public void RefreshShowAreaDivideTree()
+    //{
+    //    ShowAreaDivideTree(null);
+    //}
+
     /// <summary>
     /// 
     /// </summary>
     private int? FactoryNodeNum = 2;
     private int? InFactoryNodeNum = 100000;
+
+    //public int RefreshInterval = 5;
+
+    public void StartRefreshAreaPersonnel()
+    {
+        return;
+        ////注释：用于崩溃测试；
+        //if(!IsInvoking("RefreshPersonnel"))//不加这个判断，可能会出现多个Repeating
+        //{
+        //    Debug.LogError("Start refresh personnel tree...");
+        //    InvokeRepeating("RefreshPersonnel", 1, CommunicationObject.Instance.RefreshSetting.PersonTree);//todo:定时获取
+        //    //Invoke("RefreshPersonnel", 1);
+        //}
+    }
+    public void CloseeRefreshAreaPersonnel()
+    {
+        if (IsInvoking("RefreshPersonnel"))
+        {
+            Debug.LogError("Close Personnel Refresh....");
+            CancelInvoke("RefreshPersonnel");
+        }
+    }
+
+    /// <summary>
+    /// 用InvokeRepeating，不断刷新树内容
+    /// </summary>
     public void RefreshPersonnel()
     {
         if (isRefresh) return;
         isRefresh = true;
-        CommunicationObject.Instance.GetPersonTreeAsync((topoRoot) =>
+        CommunicationObject.Instance.GetPersonTree((topoRoot) =>
         {
-            PersonList = GetPersonNode(topoRoot);//获取数据库里面的数据
-            RefreshPersonnelTree();
-            isRefresh = false;
+            try
+            {
+                if (topoRoot == null)
+                {
+                    isRefresh = false;
+                    return;
+                }
+                else
+                {
+                    PersonList = GetPersonNode(topoRoot);//获取数据库里面的数据
+                    RefreshPersonnelTree();
+                    isRefresh = false;//放到后面
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error("AreaDivideTree.RefreshPersonnel", e.ToString());
+                isRefresh = false;
+            }
+
         });
     }
 
-    private void RefreshPersonnelTree()
+    public void RefreshPersonnelTree()
     {
         TreeNode<TreeViewItem> node = Tree.SelectedNode;
         foreach (var person in PersonList)
@@ -112,19 +168,32 @@ public class AreaDivideTree : MonoBehaviour
                         SetMinusParentNodepersonnelNum(personP.Parent);
                         personP.Parent = AreaDic[(int)person.ParentId];//把该人员移到现在所在的区域中
                         personNode.ParentId = person.ParentId;
-                        SetAddParentNodepersonnelNum(personP.Parent);
+                        UpdatePersonnelNumOfText(personP.Parent,1);
                     }
                 }
             }
             else
             {
-                TreeNode<TreeViewItem> newperson = CreatePersonnalNode(person); //添加人物节点 
-                if (AreaDic[(int)person.ParentId] != null)
-                {
-                    newperson.Parent = AreaDic[(int)person.ParentId];
-                    SetAddParentNodepersonnelNum(newperson.Parent);
-                }
+                Log.Info("RefreshPersonnelTree", "AddPerson:" + person.Name);
 
+                TreeNode<TreeViewItem> newperson = CreatePersonnalNode(person); //添加人物节点 
+                if (newperson != null)
+                {
+                    //if (AreaDic[(int)person.ParentId] != null)
+                    int CurrentParentID = (int)person.ParentId;
+                    if (AreaDic.ContainsKey(CurrentParentID) || CurrentParentID == FactoryNodeNum)//上面的写法有问题
+                    {
+                        if (CurrentParentID == FactoryNodeNum)
+                        {
+                            CurrentParentID = (int)InFactoryNodeNum;
+                        }
+                        TreeNode<TreeViewItem> ParentPersonnel = AreaDic[CurrentParentID];
+                        newperson.Parent = AreaDic[CurrentParentID];
+                        //ParentPersonnel.Nodes.Add(newperson);//这个和上面一句重复了，会导致增加两个相同的节点
+                        Log.Info("RefreshPersonnelTree", "SetAddParentNodepersonnelNum:" + person.Name);
+                        UpdatePersonnelNumOfText(newperson.Parent, 1);
+                    }
+                }
             }
         }
 
@@ -133,14 +202,13 @@ public class AreaDivideTree : MonoBehaviour
         {
             PersonNode per = node.Item.Tag as PersonNode;
             LocationObject currentLocationFocusObj = LocationManager.Instance.currentLocationFocusObj;
-            if (currentLocationFocusObj != null && currentLocationFocusObj.Tag.Id != per.Id)
+            if (currentLocationFocusObj != null && currentLocationFocusObj.personnel.Id != per.Id)
             {
                 Tree.FindSelectNode(node);
             }
         }
     }
 
-    List<PersonNode> romveNode = new List<PersonNode>();
     /// <summary>
     /// 删除电场中消失的人
     /// </summary>
@@ -148,24 +216,57 @@ public class AreaDivideTree : MonoBehaviour
     /// <param name="perList"></param>
     public void RomvePersonnelNode(Dictionary<int, TreeNode<TreeViewItem>> perDic, List<PersonNode> perList)
     {
-        romveNode.Clear();
-        foreach (var item in perDic.Keys)
+        var romveIds = GetRemovePersonList(perDic, perList);
+        foreach (var id in romveIds)
         {
-            PersonNode perNode = perList.Find(i => i.Id == item);
-            if (perNode == null)
-            {
-                romveNode.Add(perNode);
-            }
-        }
-        foreach (var per in romveNode)
-        {
-            if (per == null) continue;
-            TreeNode<TreeViewItem> personnelP = personDic[per.Id];
-            personDic.Remove(per.Id);
-            personnelP.Dispose();
+            RemovePersonNode(id);
         }
     }
 
+    //private void RemovePersonNode(PersonNode per)
+    //{
+    //    if (per == null) return;
+    //    RemovePersonNode(per.Id, (int)per.ParentId);
+    //}
+
+    private void RemovePersonNode(int personId)
+    {
+        TreeNode<TreeViewItem> personnelP = personDic[personId];
+        personnelP.Parent.Nodes.Remove(personnelP);//删除节点
+        personDic.Remove(personId);//删除缓存
+
+        UpdatePersonnelNumOfText(personnelP.Parent,-1);
+    }
+
+
+
+    //private void RemovePersonNode(int id,int pId)
+    //{
+    //    TreeNode<TreeViewItem> personnelP = personDic[id];
+    //    bool IsPer = personDic.ContainsKey(pId);
+    //    if (!IsPer) return;
+    //    TreeNode<TreeViewItem> ParentPerId = AreaDic[pId];
+    //    personDic.Remove(id);
+    //    ParentPerId.Nodes.Remove(personnelP);
+    //}
+
+    private static List<int> GetRemovePersonList(Dictionary<int, TreeNode<TreeViewItem>> perDic, List<PersonNode> perList)
+    {
+        //perList是从数据库获取的当前的人员列表
+        //perDic是当前树上的节点
+        //List<PersonNode> romveNode = new List<PersonNode>();
+        List<int> removeIds = new List<int>();
+        foreach (var id in perDic.Keys)
+        {
+            PersonNode perNode = perList.Find(i => i.Id == id);
+            if (perNode == null)//树上的人员id在列表中没有，说明该节点应该被删除
+            {
+                removeIds.Add(id);
+            }
+        }
+
+        return removeIds;
+    }
 
     private List<PersonNode> RandomPersonParent(List<PersonNode> lastPList)
     {
@@ -187,19 +288,15 @@ public class AreaDivideTree : MonoBehaviour
     /// </summary>
     public void GetTopoTree(Action callback)
     {
-
-        //AreaNode topoRoot = CommunicationObject.Instance.GetPersonTree();
-        //StructureTree(topoRoot);
-        //if (PersonList == null)
-        //{
-        //    PersonList = new List<PersonNode>();
-        //}
-        //PersonList = GetPersonNode(topoRoot);
         if (isRefresh) return;
         isRefresh = true;
 
-        CommunicationObject.Instance.GetPersonTreeAsync((topoRoot) =>
+        CommunicationObject.Instance.GetPersonTree((topoRoot) =>
         {
+            isRefresh = false;
+            if (topoRoot == null) return;
+
+            rootAreaNode = topoRoot;
             StructureTree(topoRoot);
             if (PersonList == null)
             {
@@ -210,7 +307,7 @@ public class AreaDivideTree : MonoBehaviour
             {
                 callback();
             }
-            isRefresh = false;
+            
         });
     }
     /// <summary>
@@ -248,14 +345,22 @@ public class AreaDivideTree : MonoBehaviour
                 var node = CreateTopoNode(child);
                 treeNode.Nodes.Add(node);
                 AddNodes(child, node);
+
+                if (IsExpandAll)
+                {
+                    node.IsExpanded = true;
+                }
             }
         }
         if (topoNode.Persons != null)//添加子节点的子节点
+        {
             foreach (var child in topoNode.Persons)
             {
                 var node = CreatePersonnalNode(child);
-                treeNode.Nodes.Add(node);
+                if (node != null)
+                    treeNode.Nodes.Add(node);
             }
+        }         
         if (topoNode.Persons != null)
         {
             SetParentNodepersonnelNum(treeNode.Parent, topoNode.Persons.Length);
@@ -277,6 +382,7 @@ public class AreaDivideTree : MonoBehaviour
                 nodeNum = parentNode.Item.Name;
             }
             var array = nodeNum.Split(new char[2] { '(', ')' });
+            //1.父节点原本就有人
             if (array != null && array.Length > 2)
             {
                 try
@@ -292,8 +398,17 @@ public class AreaDivideTree : MonoBehaviour
                 {
                     AreaNode anode = parentNode.Item.Tag as AreaNode;//取出区域的名称
                     parentNode.Item.Name = string.Format("{0} ({1})", anode.Name, currentNum + num);
-
                 }
+            }
+            else
+            {
+                //2.父节点原来没人，直接把子节点的加上
+                if (parentNode.Item.Tag is AreaNode)
+                {
+                    AreaNode anode = parentNode.Item.Tag as AreaNode;//取出区域的名称
+                    parentNode.Item.Name = string.Format("{0} ({1})", anode.Name, currentNum + num);
+                }
+
             }
             if (parentNode.Parent != null)
             {
@@ -367,43 +482,59 @@ public class AreaDivideTree : MonoBehaviour
     /// 添加一个人员后，父节点数量增加
     /// </summary>
     /// <param name="perNode"></param>
-    public void SetAddParentNodepersonnelNum(TreeNode<TreeViewItem> parentNode)
+    public void UpdatePersonnelNumOfText(TreeNode<TreeViewItem> parentNode,int changeNum)
     {
         if (parentNode != null)
         {
             int currentNum = 0;
-            
-          if (parentNode.Item!=null)
+
+            if (parentNode.Item != null)
             {
                 var nodeNum = parentNode.Item.Name;
                 var array = nodeNum.Split(new char[2] { '(', ')' });
 
-                if (array != null&& array.Length>2)
+                if (array != null)
                 {
-                    string parentName = array[array.Length - 2];
-                    currentNum = int.Parse(parentName);
-
-
-                    if (parentNode.Item.Tag is AreaNode)
+                    if (array.Length > 2)
                     {
-                        AreaNode anode = parentNode.Item.Tag as AreaNode;//取出区域的名称
-                        parentNode.Item.Name = string.Format("{0} ({1})", anode.Name, currentNum + 1);
+                        string temp = array[array.Length - 2];
+                        currentNum = int.Parse(temp);
+                        SetNumber(parentNode, currentNum, changeNum);
+                    }
+                    else if(array.Length==1)//原本就没有人在那里的
+                    {
+                        SetNumber(parentNode, currentNum, changeNum);
                     }
                 }
                 if (parentNode.Parent != null)
                 {
-
-                    SetAddParentNodepersonnelNum(parentNode.Parent);
-
-
+                    UpdatePersonnelNumOfText(parentNode.Parent, changeNum);
                 }
             }
         }
-         
-
     }
+
+    private static void SetNumber(TreeNode<TreeViewItem> parentNode, int currentNum, int changeNum)
+    {
+        if (parentNode.Item.Tag is AreaNode)
+        {
+            AreaNode anode = parentNode.Item.Tag as AreaNode; //取出区域的名称
+            var newNum = currentNum + changeNum;
+            if (newNum > 0)
+            {
+                parentNode.Item.Name = string.Format("{0} ({1})", anode.Name, newNum);
+            }
+            else
+            {
+                parentNode.Item.Name = string.Format("{0}", anode.Name);
+            }
+        }
+    }
+
     private TreeNode<TreeViewItem> CreatePersonnalNode(PersonNode personnal)
     {
+        if (personnal == null) return null;
+        Log.Info("CreatePersonnalNode", "p:" + personnal.Name);
         TreeViewItem item = null;
         if (Icons != null && Icons.Count > 0)
         {
@@ -417,11 +548,11 @@ public class AreaDivideTree : MonoBehaviour
         // item.Tag = personnal.Id;
         item.Tag = personnal;
         var node = new TreeNode<TreeViewItem>(item);
-       if (!personDic.ContainsKey(personnal.Id))
+        if (!personDic.ContainsKey(personnal.Id))
         {
             personDic.Add(personnal.Id, node);
         }
-       
+
         return node;
     }
     /// <summary>
@@ -474,9 +605,9 @@ public class AreaDivideTree : MonoBehaviour
             ParkInformationManage.Instance.ShowParkInfoUI(false);
             PersonNode personNodeT = (PersonNode)node.Item.Tag;
             LocationObject currentLocationFocusObj = LocationManager.Instance.currentLocationFocusObj;
-            if (currentLocationFocusObj == null || currentLocationFocusObj.Tag.Id != personNodeT.Id)
+            if (currentLocationFocusObj == null || currentLocationFocusObj.Tag.PersonId != personNodeT.Id)
             {
-                Personnel personnelT = PersonnelTreeManage.Instance.departmentDivideTree.personnels.Find((item) => item.Id == personNodeT.Id);
+                Personnel personnelT = PersonnelTreeManage.Instance.GetPerson(personNodeT.Id);
                 //Personnel personNode = personnels.Find((item) => item.TagId == num);
                 Debug.LogError(node.Item.Name + " selected_FocusPersonAndShowInfo");
                 //LocationManager.Instance.FocusPersonAndShowInfo(tagP.Id);
@@ -485,62 +616,74 @@ public class AreaDivideTree : MonoBehaviour
         }
         else
         {
-
-            AreaNode togR = (AreaNode)node.Item.Tag;
-            if (togR.Name == "厂区内")
+            if (LocationManager.Instance.IsFocus)
             {
-                RoomFactory.Instance.FocusNode(FactoryDepManager.Instance);
+                LocationManager.Instance.RecoverBeforeFocusAlign(() =>
+                {
+                    SelectAreaNode(node);
+                });
             }
             else
+            {
+                SelectAreaNode(node);
+            }
+        }
+    }
+
+    private void SelectAreaNode(TreeNode<TreeViewItem> node)
+    {
+        AreaNode togR = (AreaNode)node.Item.Tag;
+        if (togR.Name == "厂区内")
+        {
+            RoomFactory.Instance.FocusNode(FactoryDepManager.Instance);
+        }
+        else
+        {
+            try
             {
                 DepNode NodeRoom = RoomFactory.Instance.GetDepNodeById(togR.Id);
                 if (NodeRoom != null)
                 {
                     RoomFactory.Instance.FocusNode(NodeRoom);
                 }
+                else
+                {
+                    Debug.LogError("AreaDivideTree.SelectAreaNode NodeRoom==null");
+                }
             }
+            catch (Exception ex)
+            {
+                Debug.LogError("AreaDivideTree.NodeSelected:" + ex);
+            }
+
         }
     }
+
     /// <summary>
     /// 展示树信息
     /// </summary>
     /// <param name="root"></param>
     public void StructureTree(AreaNode root)
     {
+       
         if (root == null)
         {
-            Log.Error("StructureTree root == null");
+            Log.Error("AreaDeviceTree.StructureTree","root == null");
             return;
         }
+
+        Log.Info("AreaDeviceTree.StructureTree", "root:" + root.Name);
         personDic.Clear();
         AreaDic.Clear();
         nodes = new ObservableList<TreeNode<TreeViewItem>>();
-        //RootName = "四会热电厂";//先写死了
-        if (string.IsNullOrEmpty(RootName))
-        {
-            //不显示根节点，显示根节点下的第一级节点
-            ShowFirstLayerNodes(root);
-        }
-        else
-        {
-            AreaNode rootNode = root.Children.ToList().Find(i => i.Name == RootName);
-            if (rootNode != null)
-            {
-                ShowFirstLayerNodes(rootNode);//显示某一个一级节点下的内容
-            }
-            else
-            {
-                ShowFirstLayerNodes(root);
-            }
-
-        }
+        CreateTreeNodes(root);
 
     }
     /// <summary>
     /// 展示第一层的节点
     /// </summary>
     /// <param name="root"></param>
-    private void ShowFirstLayerNodes(AreaNode root)
+    private void CreateTreeNodes(AreaNode root)
     {
         if (root.Children == null) return;
         foreach (AreaNode child in root.Children)
@@ -552,9 +695,16 @@ public class AreaDivideTree : MonoBehaviour
             var rootNode = CreateTopoNode(child);
             nodes.Add(rootNode);
             AddNodes(child, rootNode);
-            //rootNode.IsExpanded = true;
+
+            if (IsExpandAll)
+            {
+                rootNode.IsExpanded = true;
+            }
         }
     }
+
+    public bool IsExpandAll = false;
+
     public void SetListeners()
     {
         Tree.NodeSelected.RemoveAllListeners();
@@ -569,12 +719,12 @@ public class AreaDivideTree : MonoBehaviour
     /// </summary>
     public void ShowAreaDivideWindow(bool b)
     {
+        PersonnelTreeManage.Instance.DepartAndJob_Bg.overrideSprite = Resources.Load("ChangeUI/treeview_border4", typeof(Sprite)) as Sprite; //切换图片
+
         if (b)
         {
             AreaWindow.SetActive(true);
-
-
-
+            StartRefreshAreaPersonnel();
             SelectedTextChange();
         }
         else
@@ -585,21 +735,7 @@ public class AreaDivideTree : MonoBehaviour
         }
     }
 
-    //public int RefreshInterval = 5;
-
-    public void StartRefreshAreaPersonnel()
-    {
-        //注释：用于崩溃测试；
-        InvokeRepeating("RefreshPersonnel", 1, CommunicationObject.Instance.PersonTreeRefreshInterval);//todo:定时获取
-        //Invoke("RefreshPersonnel", 1);
-    }
-    public void CloseeRefreshAreaPersonnel()
-    {
-        if (IsInvoking("RefreshPersonnel"))
-        {
-            CancelInvoke("RefreshPersonnel");
-        }
-    }
+ 
     /// <summary>
     /// 选中后字体颜色改变
     /// </summary>
@@ -615,7 +751,7 @@ public class AreaDivideTree : MonoBehaviour
         AreaText.color = new Color(109 / 255f, 236 / 255f, 254 / 255f, 100 / 255f);
     }
 
-    public Sprite GetRoomIcon(AreaNode roomNode)
+    private Sprite GetRoomIcon(AreaNode roomNode)
     {
         Sprite icon = null;
         int typeNum = (int)roomNode.Type - 1;
@@ -630,6 +766,107 @@ public class AreaDivideTree : MonoBehaviour
         return icon;
     }
 
+    /// <summary>
+    /// 编辑区域： 新增区域时，添加树子节点
+    /// </summary>
+    /// <param name="parentAreaid"></param>
+    /// <param name="childp"></param>
+    public void AddAreaChild(PhysicalTopology parentp, PhysicalTopology childp)
+    {
+        int parentAreaid = parentp.Id;
+        AreaNode childareaNode = PhysicalTopologyToAreaNode(childp);
+        var node = CreateTopoNode(childareaNode);
+        AreaNode parentNode;
+        if (parentp.Type == AreaTypes.园区)//当等于2时，就是四会电厂区域根节点
+        {
+            parentNode = rootAreaNode;
+            nodes.Add(node);
+        }
+        else
+        {
+            TreeNode<TreeViewItem> parentTreeNode = PersonnelTreeManage.Instance.FindAreaNode(parentAreaid);
+            parentTreeNode.Nodes.Add(node);
+            parentNode = (AreaNode)parentTreeNode.Item.Tag;
+        }
 
+        //AreaNode parentNode = (AreaNode)parentTreeNode.Item.Tag;
+        List<AreaNode> parentNodeChildrenList;
+        if (parentNode.Children != null)
+        {
+            parentNodeChildrenList = new List<AreaNode>(parentNode.Children);
+        }
+        else
+        {
+            parentNodeChildrenList = new List<AreaNode>();
+        }
+        parentNodeChildrenList.Add(childareaNode);
+
+        parentNode.Children = parentNodeChildrenList.ToArray();
+    }
+
+    /// <summary>
+    /// 编辑区域： 新增区域时，添加树子节点
+    /// </summary>
+    /// <param name="areaid"></param>
+    /// <param name="childp"></param>
+    public void RemoveAreaChild(int areaid)
+    {
+        TreeNode<TreeViewItem> treeNode = PersonnelTreeManage.Instance.FindAreaNode(areaid);
+
+        AreaNode areaNode = (AreaNode)treeNode.Item.Tag;
+        AreaNode parentAreaNode=null;
+        if (areaNode.ParentId == 2)//当等于2时，就是四会电厂区域根节点
+        {
+            parentAreaNode = rootAreaNode;
+        }
+        else
+        {
+            if (treeNode.Parent.Item != null && treeNode.Parent.Item.Tag != null)
+            {
+                parentAreaNode = (AreaNode)treeNode.Parent.Item.Tag;
+            }
+        }
+        if (parentAreaNode != null)
+        {
+            List<AreaNode> areaNodeChildrenList = new List<AreaNode>(parentAreaNode.Children);
+
+            //if(areaNodeChildrenList.)
+            AreaNode areaNodeT = areaNodeChildrenList.Find((i) => i.Id == areaid);
+            if (areaNodeT != null)
+            {
+                areaNodeChildrenList.Remove(areaNodeT);
+            }
+            parentAreaNode.Children = areaNodeChildrenList.ToArray();
+        }
+        treeNode.Parent.Nodes.Remove(treeNode);
+    }
+
+    private static AreaNode PhysicalTopologyToAreaNode(PhysicalTopology item1)
+    {
+        if (item1 == null) return null;
+        var item2 = new AreaNode();
+        item2.Id = item1.Id;
+        item2.Name = item1.Name;
+        item2.ParentId = item1.ParentId;
+        //item2.Parent = item1.Parent;
+        item2.Type = item1.Type;
+        //item2.Children = item1.Children.ToTModelS();
+        //item2.LeafNodes = item1.LeafNodes.ToTModelS();
+        item2.KKS = item1.KKS;
+
+        return item2;
+    }
+
+
+    //public static AreaNode[] PhysicalTopologytoAreaNode(PhysicalTopology[] list1)
+    //{
+    //    if (list1 == null) return null;
+    //    var list2 = new List<AreaNode>();
+    //    foreach (var item1 in list1)
+    //    {
+    //        list2.Add(PhysicalTopologyToAreaNode(item1));
+    //    }
+    //    return list2.ToArray();
+    //}
 
 }

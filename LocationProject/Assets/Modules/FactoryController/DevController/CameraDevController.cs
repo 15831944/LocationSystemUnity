@@ -9,8 +9,34 @@ public class CameraDevController : DevNode {
     /// 摄像头信息
     /// </summary>
     private Dev_CameraInfo CameraInfo;
-
-	/// <summary>
+    public override void Start()
+    {
+        base.Start();
+        InitRoamCameraInfo();
+        if (transform.GetComponent<Collider>() != null)
+        {
+            DoubleClickEventTrigger_u3d trigger = DoubleClickEventTrigger_u3d.Get(gameObject);
+            trigger.onClick = OnClick;
+            trigger.onDoubleClick = OnDoubleClick;
+        }
+    }
+    public void OnClick()
+    {
+        
+    }
+    public void OnDoubleClick()
+    {
+        //if (DevSubsystemManage.IsRoamState || Info == null) return;
+        
+    }
+    private void InitRoamCameraInfo()
+    {
+        if(RoamFollowMange.Instance)
+        {
+            RoamFollowMange.Instance.CreateCameraUI(gameObject,ParentDepNode,this);
+        }
+    }
+    /// <summary>
     /// 显示摄像头数据
     /// </summary>
     /// <param name="dev"></param>
@@ -52,4 +78,8 @@ public class CameraDevController : DevNode {
         }
         return CameraInfo;
     }
+    //private void OnDestroy()
+    //{
+    //    Debug.LogError("camera has been destroy."+transform.name);
+    //}
 }

@@ -8,9 +8,7 @@
 *             Thanks!
 ==========================================*/
 
-using UnityEditor;
 using UnityEditor.UI;
-using UnityEngine;
 
 namespace SpringGUI
 {
@@ -18,12 +16,12 @@ namespace SpringGUI
     //[CanEditMultipleObjects]
     internal class ColoredTapeEditor : GraphicEditor
     {
-        private SerializedProperty m_tapeDirection = null;
-        private SerializedProperty m_ouline = null;
-        private SerializedProperty m_outlineWidth = null;
-        private SerializedProperty m_outlineColor = null;
-        private SerializedProperty m_colors = null;
-        private SerializedProperty _colors = null;
+        //private SerializedProperty m_tapeDirection = null;
+        //private SerializedProperty m_ouline = null;
+        //private SerializedProperty m_outlineWidth = null;
+        //private SerializedProperty m_outlineColor = null;
+        //private SerializedProperty m_colors = null;
+        //private SerializedProperty _colors = null;
 
         protected override void OnEnable()
         {

@@ -27,6 +27,8 @@ public class ShowModelInfo : MonoBehaviour {
         MeshFilter[] mrs = gameObject.GetComponentsInChildren<MeshFilter>(true);
         for (int i = 0; i < mrs.Length; i++)
         {
+            if (mrs[i] == null) continue;
+            if (mrs[i].sharedMesh == null) continue;
             Vertexs += mrs[i].sharedMesh.vertexCount;
         }
         Debug.Log("Vertexs:" + Vertexs);

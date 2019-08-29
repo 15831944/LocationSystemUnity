@@ -37,8 +37,8 @@ public class CameraManage : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            mouseTranslatePro.SetTranslatePosition(mouseTranslatePro.areaSettings.center.position);
-            aroundAlignCamera.AlignVeiwToTarget(aroundAlignCamera.target, angles, distance);
+            mouseTranslatePro.SetTranslatePosition(mouseTranslatePro.areaSettings.GetPos());
+            aroundAlignCamera.AlignVeiwToTarget(aroundAlignCamera.GetTarget(), angles, distance);
             //aroundAlignCamera.CurrentAngles = angles;
             //aroundAlignCamera.
             //CurrentOffset = Vector3.Lerp(CurrentOffset, targetOffset, damper * Time.deltaTime);

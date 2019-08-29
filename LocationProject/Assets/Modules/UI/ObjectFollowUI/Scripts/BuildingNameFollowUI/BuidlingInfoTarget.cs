@@ -25,11 +25,7 @@ public class BuidlingInfoTarget : MonoBehaviour {
 	void Start () {
         CreateFollowUI();
     }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
     /// <summary>
     /// 设置楼层信息
     /// </summary>
@@ -65,20 +61,27 @@ public class BuidlingInfoTarget : MonoBehaviour {
                 return;
             }
             Camera mainCamera = GetMainCamera();
-            if (mainCamera == null) return;
+            if (mainCamera == null) return;          
+
             GameObject name = UGUIFollowManage.Instance.CreateItem(controller.BuildingNameUIPrefab, targetTagObj, controller.BuildingListName,null,false,true);
             BuildingFollowUI followUI = name.GetComponentInChildren<BuildingFollowUI>(false);
-            if(followUI)
+
+            DisposeFollowTarget dispostTarget = targetTagObj.AddMissingComponent<DisposeFollowTarget>();
+            dispostTarget.SetInfo(controller.BuildingListName,name);
+
+            if (followUI)
             {
                 followUI.SetUIInfo(Name, Area, Height, FloorNum);               
             }
-            //Transform Parent = name.transform.parent;
-            ////创建完成后，整体隐藏
-            //if (Parent!=null)
-            //{
-            //    if (Parent.gameObject.activeInHierarchy) Parent.gameObject.SetActive(false);
-            //}           
-            UGUIFollowManage.Instance.SetGroupUIbyName(controller.BuildingListName, false);
+
+            if(FunctionSwitchBarManage.Instance)
+            {
+                ToggleButton3 toggle = FunctionSwitchBarManage.Instance.BuildingToggle;
+                if(!toggle.ison||FactoryDepManager.currentDep!=FactoryDepManager.Instance)
+                {
+                    UGUIFollowManage.Instance.SetGroupUIbyName(controller.BuildingListName, false);
+                }
+            }                   
         }       
     }
     /// <summary>

@@ -1,11 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Base.Common;
-
 
 
 public class AssetbundleTool : MonoBehaviour {
@@ -72,7 +69,8 @@ public class AssetbundleTool : MonoBehaviour {
 //        BuildPipeline.BuildAssetBundles(path);
 //        //#elif UNITY_5_4
 //#else
-        BuildPipeline.BuildAssetBundles(path, BuildAssetBundleOptions.None, EditorUserBuildSettings.activeBuildTarget);
+        //BuildPipeline.BuildAssetBundles(path, BuildAssetBundleOptions.None, EditorUserBuildSettings.activeBuildTarget);
+        BuildPipeline.BuildAssetBundles(path, BuildAssetBundleOptions.ChunkBasedCompression, EditorUserBuildSettings.activeBuildTarget);
 //#endif
         AssetDatabase.Refresh();
 
@@ -124,7 +122,7 @@ public class AssetbundleTool : MonoBehaviour {
         foreach (FileInfo file in files)
         {
             string filePath = file.FullName;
-            int index = filePath.IndexOf(Application.dataPath);
+            //int index = filePath.IndexOf(Application.dataPath);
             string relativePath = filePath.Substring(Application.dataPath.Length + 1);
             relativePath = "Assets\\" + relativePath;
             //List<Object> subs = new List<Object>();
@@ -167,7 +165,7 @@ public class AssetbundleTool : MonoBehaviour {
         bundle.assetBundleName = assetName;
         bundle.assetNames = assets.ToArray();
         builds.Add(bundle);
-        string path = GetStreamingAssetsDir();
+        //string path = GetStreamingAssetsDir();
 
         //#if UNITY_5_3
         //        BuildPipeline.BuildAssetBundles(path, builds.ToArray());

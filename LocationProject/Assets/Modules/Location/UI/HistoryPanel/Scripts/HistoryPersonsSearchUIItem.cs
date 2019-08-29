@@ -17,6 +17,8 @@ public class HistoryPersonsSearchUIItem : MonoBehaviour {
 
     //[HideInInspector]
     public Toggle toggle;//Toggle
+
+    [System.NonSerialized]
     [HideInInspector]
     public Personnel personnel;// 人员信息数据
 
@@ -74,7 +76,7 @@ public class HistoryPersonsSearchUIItem : MonoBehaviour {
         //}
         //else
         //{
-            txtWorkNum.text = personnel.WorkNumber.ToString();
+            txtWorkNum.text = personnel.WorkNumber;
         //}
 
         if (personnel.Parent != null)
@@ -116,7 +118,7 @@ public class HistoryPersonsSearchUIItem : MonoBehaviour {
         if (b)
         {
             toggle.isOn = false;
-            UGUIMessageBox.Show("显示历史轨迹不能超过" + MultHistoryPlayUI.Instance.limitPersonNum + "人！");
+            UGUIMessageBox.Show("显示历史轨迹不能超过" + LocationHistoryUITool.GetLimitPersonNum() + "人！");
         }
 
     }

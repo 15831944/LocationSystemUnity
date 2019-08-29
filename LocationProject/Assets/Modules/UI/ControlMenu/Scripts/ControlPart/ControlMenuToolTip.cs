@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-public class ControlMenuToolTip : MonoBehaviour,IPointerEnterHandler,IPointerExitHandler {
+public class ControlMenuToolTip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
     /// <summary>
     /// ToolTip内容
     /// </summary>
@@ -10,10 +11,22 @@ public class ControlMenuToolTip : MonoBehaviour,IPointerEnterHandler,IPointerExi
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if(UGUITooltip.Instance)
-        UGUITooltip.Instance.ShowTooltip(TipContent);
+        if (UGUITooltip.Instance)
+            UGUITooltip.Instance.ShowTooltip(TipContent);
     }
     public void OnPointerExit(PointerEventData eventData)
+    {
+        if (UGUITooltip.Instance)
+            UGUITooltip.Instance.Hide();
+    }
+
+    //public void OnPointerDown(PointerEventData eventData)
+    //{
+    //    if (UGUITooltip.Instance)
+    //        UGUITooltip.Instance.Hide();
+    //}
+
+    private void OnDisable()
     {
         if (UGUITooltip.Instance)
             UGUITooltip.Instance.Hide();

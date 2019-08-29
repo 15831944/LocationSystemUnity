@@ -2,6 +2,7 @@
 using Location.WCFServiceReferences.LocationServices;
 using System;
 using Mogoson.CameraExtension;
+using System.Collections.Generic;
 
 public class FloorController : DepNode
 {
@@ -24,11 +25,7 @@ public class FloorController : DepNode
             }
             return _roomDevContainer;
         }
-    }
-    /// <summary>
-    /// 静态设备存放处
-    /// </summary>
-    public GameObject StaticDevContainer;
+    }    
     /// <summary>
     /// 楼层的父物体（大楼）
     /// </summary>
@@ -46,19 +43,64 @@ public class FloorController : DepNode
     /// </summary>
     private bool IsDevContainerInit;
 
+    //设备的AssetBundle
+    public string devAssetBundle;
+    public string devAssetScene;
+
+    public bool ShowUnderFloors;
+    /// <summary>
+    /// 该楼层下方的楼层
+    /// </summary>
+    public List<FloorController> UnderFloors = new List<FloorController>();
+
+    /// <summary>
+    /// 载入生产设备
+    /// </summary>
+    /// <param name="action"></param>
+    public void LoadDeviceAsset(Action<DepNode> action =null)
+    {
+        DeviceAssetInfo assetInfo = transform.GetComponent<DeviceAssetInfo>();
+        if(assetInfo&&!assetInfo.IsLoaded)
+        {
+            assetInfo.LoadAsset(action);
+        }
+        else
+        {
+            if (action != null) action(null);
+        }
+    }
+
     // Use this for initialization
     void Awake()
     {
-        depType = DepType.Room;
+        depType = DepType.Floor;
     }
 
     protected override void Start()
     {
+        base.Start();
         CreateFloorCube();
         DoubleClickEventTrigger_u3d trigger = DoubleClickEventTrigger_u3d.Get(gameObject);
         trigger.onClick = OnClick;
         trigger.onDoubleClick = OnDoubleClick;
+
+        AddCollier();
     }
+
+    private void AddCollier()
+    {
+        BoxCollider collider = gameObject.GetComponent<BoxCollider>();
+        if(collider==null)
+        {
+            collider = gameObject.AddCollider(false);
+        }
+        if (collider)
+        {
+            collider.enabled = false;//为了不妨碍点击大楼，默认关闭露出的BoxCollider。
+            collider.isTrigger = true;//为了漫游时能够进入
+        }
+    }
+
     private void OnClick()
     {
         //if (IsClickUGUIorNGUI.Instance && IsClickUGUIorNGUI.Instance.isOverUI) return;
@@ -227,25 +269,50 @@ public class FloorController : DepNode
         if (z != 0) z = 1 / z;
         return new Vector3(x, y, z);
     }
+
+    /// <summary>
+    /// 单独展示楼层
+    /// </summary>
+    /// <param name="roomObject"></param>
+    public void SetTransform(Transform newParent)
+    {
+        this.RecordPosInBuilding(null);  //记录在大楼中的位置信息
+        //this.SetColliderState(false);
+
+        gameObject.transform.parent = newParent;
+        gameObject.transform.localScale = gameObject.transform.lossyScale;
+        //float posY = roomObject.GetSize().y/2;
+        Vector3 lastPos = gameObject.transform.position;
+        gameObject.transform.position = lastPos;
+    }
+
+    private bool isRecordedPos = false;
+
     /// <summary>
     /// 记录楼层在大楼中的位置
     /// </summary>
     public void RecordPosInBuilding(DepNode dep)
     {
-        if (FactoryDepManager.currentDep == dep) return;
+        if (isRecordedPos) return;//在大楼中的位置不需要每次都记录，固定的。
+        isRecordedPos = true;
+        //if (FactoryDepManager.currentDep == dep) return;
         FloorParent = transform.parent;
         FloorPos = transform.position;
-        //FloorLossyScale = transform.lossyScale;
         FloorLossyScale = transform.localScale;
     }
     /// <summary>
     /// 恢复楼层在大楼中的位置
     /// </summary>
-    private void RecoverPosInBuilding()
+    public void RecoverPosInBuilding()
     {
+        if (transform.parent == FloorParent) return;//避免重复
         transform.parent = FloorParent;
         transform.position = FloorPos;
         transform.localScale = FloorLossyScale;
+
+        BuildingController buildingController = ParentNode as BuildingController;
+        if(buildingController)
+            buildingController.RecoverFloorsTransform();
     }
     /// <summary>
     /// 隐藏楼层设备
@@ -303,7 +370,10 @@ public class FloorController : DepNode
         }
         IsDevCreate = true;
         InitContainer();
-        RoomFactory.Instance.CreateDepDev(this, onDevCreateComplete);
+        LoadDeviceAsset((nNode)=> 
+        {
+            RoomFactory.Instance.CreateDepDev(this, onDevCreateComplete);
+        });
         //CreateRoomDev();
     }
     /// <summary>
@@ -360,21 +430,59 @@ public class FloorController : DepNode
     [ContextMenu("CreateFloorCube")]
     public void CreateFloorCube()
     {
+
         if (floorCube == null)
         {
-            floorCube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
+            int count = transform.childCount;
+            for (int i = 0; i < count; i++)
+            {
+                Transform tran = transform.GetChild(i);
+                if (tran.name == "FloorCube")
+                {
+                    floorCube = tran.gameObject.AddMissingComponent<FloorCubeInfo>();
+                    floorCube.gameObject.SetActive(true);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            floorCube.gameObject.SetActive(true);
+        }
+
+        if (floorCube == null)
+        {
+            GameObject o = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            floorCube = o.AddMissingComponent<FloorCubeInfo>();
             Vector3 sizeT = gameObject.GetSize();
-            floorCube.localScale = new Vector3(sizeT.x, 0.01f, sizeT.z);
-            floorCube.position = new Vector3(transform.position.x, transform.position.y - sizeT.y / 2 + 0.09f, transform.position.z);//0.09f为高度偏移系数
+            floorCube.transform.localScale = new Vector3(sizeT.x, 0.01f, sizeT.z);
+            floorCube.transform.position = new Vector3(transform.position.x, transform.position.y - sizeT.y / 2 + 0.09f, transform.position.z);//0.09f为高度偏移系数
             floorCube.transform.SetParent(transform);
             floorCube.GetComponent<Renderer>().enabled = false;
             //floorCube.gameObject.layer = LayerMask.NameToLayer("Floor");
             floorCube.name = "FloorCube";
-            Collider collider = floorCube.GetComponent<Collider>();
-            if (collider) collider.isTrigger = true;
+
             //Debug.LogFormat("floorCube位置:{0}", floorCube.transform.position);
         }
+        if (floorCube != null)
+        {
+            var colliders = floorCube.GetComponents<Collider>();
+            foreach (var collider in colliders)
+            {
+                collider.enabled = false;
+                if(collider is MeshCollider)
+                {
+                    //(collider as MeshCollider).convex = true;
+                    //collider.isTrigger = true;
 
+                    GameObject.Destroy(collider);//FloorCube上面不应该有MeshCollider
+                }
+                else
+                {
+                    collider.isTrigger = true;
+                }
+            }
+        }
     }
 
     void OnMouseEnter()
@@ -384,7 +492,8 @@ public class FloorController : DepNode
             BuildingController controller = ParentNode as BuildingController;
             if (!controller.IsFloorExpand || BuildingController.isTweening) return;
             HighlightOn();
-            DepNameUI.Instance.Show(NodeName);
+            if(DepNameUI.Instance)
+                DepNameUI.Instance.Show(NodeName);
         }
     }
     void OnMouseExit()
@@ -394,7 +503,8 @@ public class FloorController : DepNode
             BuildingController controller = ParentNode as BuildingController;
             if (!controller.IsFloorExpand) return;
             HighLightOff();
-            DepNameUI.Instance.Close();
+            if (DepNameUI.Instance)
+                DepNameUI.Instance.Close();
         }
     }
     #region 摄像头移动模块
@@ -402,7 +512,7 @@ public class FloorController : DepNode
     public float camDistance = 30;
     [HideInInspector]
     public Range angleRange = new Range(0, 90);
-    public Range disRange = new Range(2, 30);
+    public Range disRange = new Range(2, 100);
     //拖动区域大小
     public Vector2 AreaSize = new Vector2(2, 40);
     /// <summary>

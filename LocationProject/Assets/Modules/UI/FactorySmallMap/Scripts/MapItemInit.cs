@@ -52,11 +52,27 @@ public class MapItemInit : MonoBehaviour {
     /// </summary>
     public void BackToMainFactory()
     {
-        FactoryDepManager Manager = FactoryDepManager.Instance;
-        if(Manager)
+        if (LocationManager.Instance.IsFocus)
         {
-            AddItems(FactoryDepManager.Instance);
-            RoomFactory.Instance.FocusNode(Manager);
+            LocationManager.Instance.RecoverBeforeFocusAlign(()=>
+            {
+                Debug.LogError("BackToMainFactory");
+                FactoryDepManager Manager = FactoryDepManager.Instance;
+                if (Manager)
+                {
+                    AddItems(FactoryDepManager.Instance);
+                    RoomFactory.Instance.FocusNode(Manager);
+                }
+            },false);
+        }
+        else
+        {
+            FactoryDepManager Manager = FactoryDepManager.Instance;
+            if (Manager)
+            {
+                AddItems(FactoryDepManager.Instance);
+                RoomFactory.Instance.FocusNode(Manager);
+            }
         }
     }
 

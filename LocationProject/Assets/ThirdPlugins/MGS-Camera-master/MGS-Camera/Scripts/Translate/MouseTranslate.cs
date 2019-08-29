@@ -20,6 +20,8 @@ namespace Mogoson.CameraExtension
     [AddComponentMenu("Mogoson/CameraExtension/MouseTranslate")]
     public class MouseTranslate : MonoBehaviour
     {
+        public static MouseTranslate Instance;
+
         #region Field and Property
         /// <summary>
         /// Target camera for translate direction.
@@ -59,9 +61,15 @@ namespace Mogoson.CameraExtension
         #endregion
 
         #region Protected Method
+
+        void Awake()
+        {
+            Instance = this;
+        }
+
         protected virtual void Start()
         {
-            CurrentOffset = targetOffset = transform.position - areaSettings.center.position;
+            CurrentOffset = targetOffset = transform.position - areaSettings.GetPos();
         }
 
         protected virtual void Update()
@@ -99,7 +107,17 @@ namespace Mogoson.CameraExtension
 
             //Lerp and update transform position.
             CurrentOffset = Vector3.Lerp(CurrentOffset, targetOffset, damper * Time.deltaTime);
-            transform.position = areaSettings.center.position + CurrentOffset;
+            
+            try
+            {
+                Vector3 pos = areaSettings.GetPos() + CurrentOffset;
+                transform.position = pos;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("MouseTranslate.TranslateByMouseInput:"+ex);
+            }
+            
         }
 
         /// <summary>

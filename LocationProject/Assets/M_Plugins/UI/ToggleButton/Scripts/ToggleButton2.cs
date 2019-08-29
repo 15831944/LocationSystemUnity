@@ -85,4 +85,9 @@ public class ToggleButton2 : MonoBehaviour {
             image.sprite = normalSprite;
         }
     }
+    public void RReset()
+    {
+        ison = false;
+        SetImage(false);
+    }
 }

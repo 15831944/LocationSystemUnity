@@ -56,7 +56,7 @@ namespace TwoTicketSystem
         /// </summary>
         public void UpdateData()
         {
-            TxtNumber.text = "操作票详情—"+info.No;
+            TxtNumber.text = info.No;
             TxtOperationTask.text = info.OperationTask;
             TxtPlanTimeStart.text = info.OperationStartTime.ToString("yyyy/MM/dd HH:mm");
             TxtPlanTimeEnd.text = info.OperationEndTime.ToString("yyyy/MM/dd HH:mm");

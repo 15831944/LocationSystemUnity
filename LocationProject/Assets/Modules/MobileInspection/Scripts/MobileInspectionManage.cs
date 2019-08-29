@@ -23,6 +23,7 @@ public class MobileInspectionManage : MonoBehaviour
     public Transform item12;
     public Transform item13;
 
+    [System.NonSerialized]
     public List<Personnel> personnels;//人员信息列表
     public MobileInspectionFollowUI followUI;//移动巡检飘浮UI
 
@@ -39,7 +40,7 @@ public class MobileInspectionManage : MonoBehaviour
     {
         if (personnels == null && PersonnelTreeManage.Instance)
         {
-            personnels = PersonnelTreeManage.Instance.departmentDivideTree.personnels;
+            personnels = PersonnelTreeManage.Instance.GetAllPersonnels();
         }
     }
 

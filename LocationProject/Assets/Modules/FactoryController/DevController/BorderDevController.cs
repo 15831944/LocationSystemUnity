@@ -37,8 +37,7 @@ public class BorderDevController : DevNode, IRTEditorEventListener
     /// </summary>
     public void SetRendererEnable(bool isEnable,bool isAlarmOff=false)
     {
-        bool isSameArea = false;
-        if (ParentDepNode != null) isSameArea = ParentDepNode == FactoryDepManager.currentDep;
+        var isSameArea = GetIsSameArea();
         if (ObjectAddListManage.IsEditMode && isAlarmOff && isSameArea)
         {
             SetFollowNameUIEnable(true);
@@ -51,6 +50,14 @@ public class BorderDevController : DevNode, IRTEditorEventListener
         SetFollowNameUIEnable(isEnable);
         SetSelectedUI(isEnable);
     }
+
+    private bool GetIsSameArea()
+    {
+        bool isSameArea = false;
+        if (ParentDepNode != null) isSameArea = ParentDepNode == FactoryDepManager.currentDep;
+        return isSameArea;
+    }
+
     /// <summary>
     /// 告警闪烁开启
     /// </summary>
@@ -156,8 +163,7 @@ public class BorderDevController : DevNode, IRTEditorEventListener
     /// </summary>
     public void OnDeselected(ObjectDeselectEventArgs deselectEventArgs)
     {
-        bool isSameArea = false;
-        if (ParentDepNode != null) isSameArea = ParentDepNode == FactoryDepManager.currentDep;
+        var isSameArea = GetIsSameArea();
         if (ObjectAddListManage.IsEditMode&&isSameArea)
         {
             SetFollowNameUIEnable(true);

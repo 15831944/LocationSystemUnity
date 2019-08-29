@@ -69,7 +69,7 @@ public class FVIntroduce : MonoBehaviour {
         {
             if (!IsInvoking("TryGetAreaInfo"))
             {
-                InvokeRepeating("TryGetAreaInfo", 0, CommunicationObject.Instance.AreaStatisticsRefreshInterval);
+                InvokeRepeating("TryGetAreaInfo", 0, CommunicationObject.Instance.RefreshSetting.AreaStatistics);
             }
         }
         else
@@ -84,23 +84,18 @@ public class FVIntroduce : MonoBehaviour {
     private void TryGetAreaInfo()
     {
         FactoryDepManager dep = FactoryDepManager.Instance;
-        if (dep == null ||isRefresh) return;
+        if (dep == null)
+        {
+            Debug.LogError("FVIntroduce.TryGetAreaInfo dep == null");
+            return;
+        }
+        if (isRefresh)
+        {
+            Debug.Log("FVIntroduce.TryGetAreaInfo isRefresh:"+ isRefresh);
+            return;
+        }
         isRefresh = true;
-
-        //Log.Error("FVIntroduce.TryGetAreaInfo");
-        //if (!CommunicationObject.Instance.isAsync)
-        //{
-        //    ThreadManager.Run(() =>
-        //    {
-        //         return CommunicationObject.Instance.GetAreaStatistics(dep.NodeID);
-        //    }, AfterGetAreaInfo, "TryGetAreaInfo");
-        //}
-        //else
-        //{
-        //    CommunicationObject.Instance.GetAreaStatisticsAsync(dep.NodeID, AfterGetAreaInfo);
-        //}
-
-        CommunicationObject.Instance.GetAreaStatisticsAsync(dep.NodeID, AfterGetAreaInfo);
+        CommunicationObject.Instance.GetAreaStatistics(dep.NodeID, AfterGetAreaInfo);
     }
 
     private void AfterGetAreaInfo(AreaStatistics areaStatistics)
@@ -168,6 +163,7 @@ public class FVIntroduce : MonoBehaviour {
     {
         UGUIMessageBox.Show("是否确定退出软件？", () =>
         {
+            Log.Info("FVIntroduce.Application.Quit->退出程序");
             Application.Quit();
         }, () =>
         {

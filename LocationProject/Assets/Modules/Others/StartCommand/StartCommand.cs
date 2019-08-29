@@ -43,6 +43,7 @@ public class StartCommand : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        Debug.Log("StartCommand: 001");
         DefaultIp = SystemSettingHelper.systemSetting.CommunicationSetting.Ip1;
         DefaultPort = SystemSettingHelper.systemSetting.CommunicationSetting.Port1;
         if (login == null)
@@ -80,7 +81,19 @@ public class StartCommand : MonoBehaviour
             (a, b) => a + "|" + b);
         CommandLineText.text = text1;
         CommandLineArgsText.text = text2;
+        Debug.Log(text1+","+ text2);
         string[] abs = text2.Split(new string[] { "|", "%7C" }, StringSplitOptions.None);//这里分隔加%7C，是因为谷歌浏览器传过来的数据会把"|"转化为 "%7C"。
+        if (abs!=null&&abs.Length>0)
+        {
+            string value = "";
+            foreach (string item in abs)
+            {
+                value += item + "\n";
+                Debug.Log("item:"+item);
+            }
+            Debug.LogError("Recieve form browser:"+value);
+        }
+        
 
         string ipstr = "";
         string portstr = "";
@@ -158,7 +171,7 @@ public class StartCommand : MonoBehaviour
             {
                 //Passward.text = "";
                 Passward.text = "";
-                passwardstr = "Admin";
+                passwardstr = "Admin@123456";
             }
 
         }
@@ -167,12 +180,14 @@ public class StartCommand : MonoBehaviour
         if (isEnableSetLogin)
         {
             //login.SetInfo(IpText.text.Trim(), PortText.text.Trim(), UserNameText.text.Trim(), Passward.text.Trim());
+            Debug.LogErrorFormat("SetInfo:{0} {1} {2} {3}", ipstr, portstr, userNamestr, passwardstr);
             login.SetInfo(ipstr, portstr, userNamestr, passwardstr);
             
         }
 
         if (abs.Length>2)
         {
+            Debug.Log("进入设置登录");
             login.Login_Click();//设置并登陆
         }
 

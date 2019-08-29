@@ -10,8 +10,11 @@ using UnityEngine.UI;
 
 public class MultHistoryPlayUI : MonoBehaviour
 {
+    //public enum Mode { Normal, Drawing }
 
     public static MultHistoryPlayUI Instance;
+    private bool isShowHistoryPathMode = true;//是否显示历史轨迹模式
+    public HistoryMode mode = HistoryMode.Normal;//是否显示历史轨迹模式
     /// <summary>
     /// 窗体
     /// </summary>
@@ -38,6 +41,8 @@ public class MultHistoryPlayUI : MonoBehaviour
     public DateTime datetimeStart;    //时间起始播放值
     public double timeLength;    //播放时间,单位秒
     public double timeSum;//时间和
+
+    [System.NonSerialized]
     /// <summary>
     /// 人员信息数据
     /// </summary>
@@ -52,7 +57,11 @@ public class MultHistoryPlayUI : MonoBehaviour
 
     private float progressbarLoadValue = 0;//数据加载进度条
 
+    [System.NonSerialized]
     Dictionary<Personnel, List<Position>> personnel_Points;
+
+    public Button modeSwithBtn;//轨迹模式转换按钮
+    public Text modeName;//轨迹模式名称
 
     // Use this for initialization
     void Start()
@@ -68,7 +77,21 @@ public class MultHistoryPlayUI : MonoBehaviour
         slider.OnValuesChange.AddListener(RangeSliderChanged);
         processSlider.onValueChanged.AddListener(ProcessSlider_ValueChanged);
 
+        if (processHistoryPlaySlider == null)
+        {
+            processHistoryPlaySlider = processSlider.GetComponent<HistoryPlaySlider>();
+        }
+        processHistoryPlaySlider.onPointerDown = ProcessSliderHandle_onPointerDown;
+        processHistoryPlaySlider.onPointerUp = ProcessSliderHandle_onPointerUp;
+
         editPersonBtn.onClick.AddListener(EditPersonBtn_OnClick);
+
+        if(modeSwithBtn!=null)
+            modeSwithBtn.onClick.AddListener(Mode_Changed);
+
+        //EventTriggerListener lis = EventTriggerListener.Get(ProcessSliderHandle.gameObject);
+        //lis.onBeginDrag = ProcessSliderHandle_OnBeginDrag;
+        //lis.onEndDrag = ProcessSliderHandle_OnEndDrag;
     }
 
     float m;
@@ -76,27 +99,27 @@ public class MultHistoryPlayUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //UGUI类似按钮的控件才能被选中
-        if (EventSystem.current.currentSelectedGameObject != null && Input.GetMouseButton(0))
-        {
-            //print("currentSelectedGameObject:" + EventSystem.current.currentSelectedGameObject.name);
-            if (!isStop)
-            {
-                Slider selectSlider = EventSystem.current.currentSelectedGameObject.GetComponentInParent<Slider>();
-                if (selectSlider == processSlider)
-                {
-                    IsMouseDragSlider = true;
-                }
-                else
-                {
-                    IsMouseDragSlider = false;
-                }
-            }
-        }
-        else
-        {
-            IsMouseDragSlider = false;
-        }
+        ////UGUI类似按钮的控件才能被选中
+        //if (EventSystem.current.currentSelectedGameObject != null && Input.GetMouseButton(0))
+        //{
+        //    //print("currentSelectedGameObject:" + EventSystem.current.currentSelectedGameObject.name);
+        //    if (!isStop)
+        //    {
+        //        Slider selectSlider = EventSystem.current.currentSelectedGameObject.GetComponentInParent<Slider>();
+        //        if (selectSlider == processSlider)
+        //        {
+        //            SetIsMouseDragSlider(true);
+        //        }
+        //        else
+        //        {
+        //            SetIsMouseDragSlider(false);
+        //        }
+        //    }
+        //}
+        //else
+        //{
+        //    SetIsMouseDragSlider(false);
+        //}
 
         m += Time.deltaTime;
         //if (isPlay && isLoadDataSuccessed)
@@ -130,6 +153,25 @@ public class MultHistoryPlayUI : MonoBehaviour
         }
 
 
+    }
+
+
+    private void SetIsMouseDragSlider(bool b)
+    {
+        if (IsMouseDragSlider != b)
+        {
+            IsMouseDragSlider = b;
+
+            if (!IsMouseDragSlider)
+            {
+                SetHistoryLineDrawing(!IsMouseDragSlider, true);//拖动进度条后，需要新创建一条轨迹绘制线，防止前一个点和后一个点连在一起
+            }
+            else
+            {
+                SetHistoryLineDrawing(!IsMouseDragSlider);
+            }
+
+        }
     }
 
     /// <summary>
@@ -172,7 +214,7 @@ public class MultHistoryPlayUI : MonoBehaviour
         LocationManager.Instance.HideLocation();
         StartOutManage.Instance.Hide();
         LocationManager.Instance.RecoverBeforeFocusAlign();
-        FactoryDepManager.Instance.SetAllColliderIgnoreRaycast(true);
+        FactoryDepManager.Instance.SetAllColliderIgnoreRaycastOP(true);
         SetWindowActive(true);
     }
 
@@ -239,6 +281,37 @@ public class MultHistoryPlayUI : MonoBehaviour
             //}
             FunctionSwitchBarManage.Instance.SetlightToggle(false);
         }
+
+
+        SetHistoryLineDrawing(isPlay);
+
+    }
+
+    /// <summary>
+    /// 是否开启历史轨迹实时绘制
+    /// </summary>
+    public void SetHistoryLineDrawing(bool isDrawing, bool isAddLine = false)
+    {
+        //foreach (LocationHistoryPath_M h in LocationHistoryManager.Instance.historyPath_Ms)
+        //{
+        //    if (isDrawing)
+        //    {
+        //        if (mode == Mode.Drawing)
+        //        {
+        //            h.historyPathDrawing.Drawing();
+        //            if (isAddLine)
+        //            {
+        //                h.historyPathDrawing.AddLine();
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        h.historyPathDrawing.PauseDraw();
+        //    }
+        //}
+
+        LocationHistoryManager.Instance.PathList.SetHistoryLineDrawing(mode, isDrawing, isAddLine);
     }
 
     ///// <summary>
@@ -339,17 +412,11 @@ public class MultHistoryPlayUI : MonoBehaviour
                     List<Position> ps = personnel_Points[p];
                     Debug.LogError("点数：" + ps.Count);
                     if (ps.Count < 2) continue;
-                    List<Vector3> pointlist = new List<Vector3>();
-                    List<DateTime> timelist = new List<DateTime>();
+                    var posInfoList = new PositionInfoList();
                     for (int i = 0; i < ps.Count; i++)
                     {
-                        Position pointT = ps[i];
-                        Vector3 tempVector3 = new Vector3((float)pointT.X, (float)pointT.Y, (float)pointT.Z);
-                        tempVector3 = LocationManager.GetRealVector(tempVector3);
-                        pointlist.Add(tempVector3);
-                        DateTime t = LocationManager.GetTimestampToDateTime(pointT.Time);
-                        //DateTime t = pointT.DateTime;
-                        timelist.Add(t);
+                        var posInfo = new PositionInfo(ps[i], start);
+                        posInfoList.Add(posInfo);
                     }
 
                     Color colorT = colors[k % colors.Count];
@@ -359,8 +426,14 @@ public class MultHistoryPlayUI : MonoBehaviour
                         colorT = item.color;
                     }
 
-                    LocationHistoryPath_M histoyObj = LocationHistoryManager.Instance.ShowLocationHistoryPath_M(p, pointlist, pointlist.Count, colorT);
-                    histoyObj.InitData(timeLength, timelist);
+                    PathInfo pathInfo = new PathInfo();
+                    pathInfo.personnelT = p;
+                    pathInfo.color = colorT;
+                    pathInfo.posList = posInfoList;
+                    pathInfo.timeLength = timeLength;
+
+                    LocationHistoryPath_M histoyObj = LocationHistoryManager.Instance.ShowLocationHistoryPath_M(pathInfo);
+                    //histoyObj.InitData(timeLength, timelist);
                     HistoryManController historyManController = histoyObj.gameObject.AddComponent<HistoryManController>();
                     histoyObj.historyManController = historyManController;
                     historyManController.Init(colorT, histoyObj);
@@ -530,6 +603,10 @@ public class MultHistoryPlayUI : MonoBehaviour
     public Button playBtn;
     //播放进度条
     public Slider processSlider;
+
+    private HistoryPlaySlider processHistoryPlaySlider;
+    ////播放进度条的滑块
+    //public Image ProcessSliderHandle;
     //进度当前时间
     public Text processCurrentTime;
     //进度结束时间
@@ -634,6 +711,21 @@ public class MultHistoryPlayUI : MonoBehaviour
         }
     }
 
+
+    public void ProcessSliderHandle_onPointerDown()
+    {
+        Debug.LogError("ProcessSliderHandle_onPointerDown!");
+
+
+        SetIsMouseDragSlider(true);
+    }
+
+    public void ProcessSliderHandle_onPointerUp()
+    {
+        Debug.LogError("ProcessSliderHandle_onPointerUp!");
+        SetIsMouseDragSlider(false);
+    }
+
     #endregion
 
     /// <summary>
@@ -671,6 +763,8 @@ public class MultHistoryPlayUI : MonoBehaviour
         rateBtn.image.sprite = rateButtonEtys[rateIndex].sprite;
         CurrentSpeed = rateButtonEtys[rateIndex].speed;
         SetButtonHighlightSprite(rateBtn, rateButtonEtys[rateIndex].highlightedSprite);
+
+        LocationHistoryManager.Instance.SetRateChanged(true);
     }
 
     #endregion
@@ -682,6 +776,7 @@ public class MultHistoryPlayUI : MonoBehaviour
     public VerticalLayoutGroup personsGrid;
     public List<Color> colors = new List<Color>() { Color.red, Color.green, Color.blue, Color.yellow };
     public int limitPersonNum = 4;//限制显示历史轨迹人员数量
+    [System.NonSerialized]
     public List<Personnel> currentPersonnels;//当前显示历史轨迹的人员信息
     public List<HistoryPersonUIItem> items;
 
@@ -706,7 +801,7 @@ public class MultHistoryPlayUI : MonoBehaviour
     public void ShowPersons(List<Personnel> personnelsT)
     {
         //如果在播放就让它终止
-        ExecuteEvents.Execute<IPointerClickHandler>(MultHistoryPlayUI.Instance.StopBtn.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+        ExecuteEvents.Execute<IPointerClickHandler>(StopBtn.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
         CreatePersons(personnelsT);
         items = new List<HistoryPersonUIItem>(personsGrid.GetComponentsInChildren<HistoryPersonUIItem>());
     }
@@ -785,5 +880,34 @@ public class MultHistoryPlayUI : MonoBehaviour
     {
         isStop = isBool;
         processSlider.interactable = !isBool;
+    }
+
+    /// <summary>
+    /// 模式切换
+    /// </summary>
+    public void Mode_Changed()
+    {
+        Stop();
+        isShowHistoryPathMode = !isShowHistoryPathMode;
+        if (isShowHistoryPathMode)
+        {
+            SwithMode(HistoryMode.Normal);
+            modeName.text = "轨道模式";
+            SetHistoryLineDrawing(false);
+        }
+        else
+        {
+            SwithMode(HistoryMode.Drawing);
+            modeName.text = "涎线模式";
+            SetHistoryLineDrawing(true, true);
+        }
+    }
+
+    /// <summary>
+    /// 切换轨迹模式
+    /// </summary>
+    public void SwithMode(HistoryMode modeT)
+    {
+        mode = modeT;
     }
 }

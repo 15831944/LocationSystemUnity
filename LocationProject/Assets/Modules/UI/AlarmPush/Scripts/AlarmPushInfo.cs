@@ -18,6 +18,10 @@ public class AlarmPushInfo
     /// </summary>
     public LocationAlarm locationAlarmInfo;
     /// <summary>
+    /// 摄像头告警信息
+    /// </summary>
+    public CameraAlarmInfo CameraAlarmInfor;
+    /// <summary>
     /// 设备信息
     /// </summary>
     /// <param name="alarm"></param>
@@ -35,6 +39,11 @@ public class AlarmPushInfo
         AlarmType = AlarmPushInfoType.locationAlarm;
         locationAlarmInfo = alarm;
     }
+    public void SetAlarmInfo(CameraAlarmInfo alaem)
+    {
+        AlarmType = AlarmPushInfoType.CameraAlarmInfo;
+        CameraAlarmInfor = alaem;
+    }
 }
 /// <summary>
 /// 告警类型
@@ -42,5 +51,6 @@ public class AlarmPushInfo
 public enum AlarmPushInfoType
 {
     devAlarm,
-    locationAlarm
+    locationAlarm,
+    CameraAlarmInfo
 }

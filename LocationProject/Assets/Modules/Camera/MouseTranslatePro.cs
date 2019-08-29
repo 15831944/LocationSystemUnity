@@ -10,7 +10,7 @@ public class MouseTranslatePro : MouseTranslate
     /// </summary>
     public void SetTranslatePosition(Vector3 pos)
     {
-        targetOffset= pos - areaSettings.center.position;
+        targetOffset = pos - areaSettings.GetPos();
     }
     public void ResetTranslateOffset()
     {

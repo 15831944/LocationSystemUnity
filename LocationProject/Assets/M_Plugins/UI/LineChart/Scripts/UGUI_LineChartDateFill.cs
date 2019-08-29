@@ -10,12 +10,82 @@ public class UGUI_LineChartDateFill : MonoBehaviour {
         Day,
         Week,
         Month,
-        Hour
+        Hour,
+        ThreeMonths,
+        HalfAYear,
+        year//蔡露露加的年
     }
 	// Use this for initialization
 	void Start () {
         
-    }    
+    }
+    /// <summary>
+    /// 填充表格日期(蔡露露写的)
+    /// </summary>
+    /// <param name="Type">时间类型</param>
+    /// <param name="Count">时间分段</param>
+    /// <param name="CurrentTime">当前时间</param>
+    public void DateFillT(DateType Type, int Count, DateTime CurrentTime)
+    {
+       long TimeStamps = ConvertDateTimeLong(CurrentTime);
+     
+        List<DateTime> TimeList = GetTimeT(Type, Count, TimeStamps);
+        ShowDateT(TimeList, Type);
+    }
+    private void ShowDateT(List<DateTime> DateTimes, DateType type)
+    {
+        string format = GetDateStringFormatT(type);
+        int TextCount = transform.childCount;
+        if (TextCount == 0)
+        {
+            Debug.LogError("Date Text is null..");
+            return;
+        }
+        int TimeListCount = 0;
+        for (int i = TextCount; i > 0; i--)
+        {
+            if (TimeListCount >= DateTimes.Count) break;
+            Text t = transform.GetChild(i - 1).GetComponentInChildren<Text>();
+            t.text = DateTimes[TimeListCount].ToString(format);
+            TimeListCount++;
+        }
+    }
+    /// <summary>
+    /// 获取时间显示格式
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private string GetDateStringFormatT(DateType type)
+    {
+        if (type == DateType.Hour)
+        {
+            return "HH:mm";
+        }
+        else if (type == DateType.Day)
+        {
+            return "HH";
+        }
+        else if (type == DateType.Week)
+        {
+            return "MM月dd日";
+        }
+        else if (type == DateType.year)
+        {
+            return "yyyy年MM月dd日";
+        }
+        else if (type == DateType.ThreeMonths)
+        {
+            return "yyyy年MM月dd日";
+        }
+        else if (type == DateType.HalfAYear)
+        {
+            return "yyyy-MM-dd";
+        }
+        else
+        {
+            return "yyyy-MM-dd";
+        }
+    }
     /// <summary>
     /// 填充表格日期
     /// </summary>
@@ -80,15 +150,28 @@ public class UGUI_LineChartDateFill : MonoBehaviour {
         {
             return "MM月dd日";
         }
+        else if (type == DateType.year)
+        {
+            return "yyyy年MM月dd日";
+        }
+        else if (type == DateType.ThreeMonths)
+        {
+            return "yyyy年MM月dd日";
+        }
+        else if (type == DateType.HalfAYear)
+        {
+            return "yyyy年MM月dd日";
+        }
         else
         {
-            return "yyyy/MM/dd";
+            return "yyyy年MM月dd日";
         }
     }
     private long HourSecond = 3600;
     private long DaySecond = 86400;
     private long WeekSecond = 604800;
     private long MonthSecond = 2592000;
+    private long YearSecond = 31104000;
     /// <summary>
     /// 填充时间（日）
     /// </summary>
@@ -104,19 +187,66 @@ public class UGUI_LineChartDateFill : MonoBehaviour {
         }
         else if (Type==DateType.Day)
         {
-            TimeInterval = DaySecond / Count;
+            TimeInterval = DaySecond /Count ;
         }
         else if(Type==DateType.Week)
         {
             TimeInterval = WeekSecond / Count;
         }
-        else
+        else 
         {
-            TimeInterval = MonthSecond / Count;
-        }        
+            TimeInterval = MonthSecond /Count ;
+        }  
         List<DateTime> Times = new List<DateTime>();
         Times.Add(NormalizeTimpstamp(TimeStamp));
         for(int i=0;i<Count;i++)
+        {
+            TimeStamp -= TimeInterval;
+            Times.Add(NormalizeTimpstamp(TimeStamp));
+        }
+        return Times;
+    }
+    /// <summary>
+    /// 填充时间（日）
+    /// </summary>
+    /// <param name="Type">时间类型</param>
+    /// <param name="Count">时间分段</param>
+    /// <param name="TimeStamp">时间戳</param>
+    public List<DateTime> GetTimeT(DateType Type, int Count, long TimeStamp)
+    {
+        long TimeInterval;
+     
+        if (Type == DateType.Hour)
+        {
+            TimeInterval = HourSecond / Count;
+        }
+        else if (Type == DateType.Day)
+        {
+            TimeInterval = HourSecond;
+        }
+        else if (Type == DateType.Week)
+        {
+            TimeInterval = WeekSecond / Count;
+        }
+        else if (Type == DateType.Month)
+        {
+            TimeInterval = DaySecond;
+        }
+        else if (Type == DateType.ThreeMonths)
+        {
+            TimeInterval = MonthSecond * 3/Count ;
+        }
+        else if (Type == DateType.HalfAYear)
+        {
+            TimeInterval = MonthSecond * 6/Count  ;
+        }
+        else
+        {
+            TimeInterval = MonthSecond*12/ Count;
+        }
+        List<DateTime> Times = new List<DateTime>();
+        Times.Add(NormalizeTimpstamp(TimeStamp));
+        for (int i = 0; i < Count; i++)
         {
             TimeStamp -= TimeInterval;
             Times.Add(NormalizeTimpstamp(TimeStamp));

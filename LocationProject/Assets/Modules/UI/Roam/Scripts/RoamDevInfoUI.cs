@@ -19,10 +19,31 @@ public class RoamDevInfoUI : MonoBehaviour {
     public List<DeviceTemperatureItem> ItemList;
 
     public RoamRaycastCheck RoamDevRaycastCheck;//漫游射线检测
+
+    public Button DevInfoButton;
+
+    private DevInfo currentDev;
 	// Use this for initialization
 	void Start () {
         Instance = this;
+        if (DevInfoButton != null) DevInfoButton.onClick.AddListener(OnDevInfoButtonClick);
     }
+    /// <summary>
+    /// 查看设备信息
+    /// </summary>
+    public void OnDevInfoButtonClick()
+    {
+        FacilityDevManage manager = FacilityDevManage.Instance;
+        if(currentDev!=null&& manager)
+        {
+            if(manager.transform.parent!=transform.parent)
+            {
+                manager.SetNewParent(transform.parent);
+            }
+            manager.Show(currentDev);
+        }
+    }
+
     /// <summary>
     /// 是否打开设备射线检测（以前鼠标固定中间，直接用OnMouseEnter）
     /// </summary>
@@ -43,6 +64,7 @@ public class RoamDevInfoUI : MonoBehaviour {
     public void ShowDevInfo(DevInfo devInfo)
     {
         Window.SetActive(true);
+        currentDev = devInfo;
         if (devInfo == null||string.IsNullOrEmpty(devInfo.Name)) DevNameText.text = "设备";
         else DevNameText.text = devInfo.Name;
         for(int i=0;i<ItemList.Count;i++)

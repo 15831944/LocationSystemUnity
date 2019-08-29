@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Assets\Plugins\</OutputPath>
+    <OutputPath>..\..\Assets\Plugins\Lib\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>1</WarningLevel>
@@ -44,11 +44,6 @@
     <Compile Include="LocationCallbackClient.cs" />
     <Compile Include="LocationClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service References\LocationCallbackServices\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
     <Compile Include="Service References\LocationServices\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -80,43 +75,19 @@
     <None Include="Properties\DataSources\Location.TModel.LocationHistory.Data.Position.datasource" />
     <None Include="Properties\DataSources\Location.TModel.LocationHistory.Data.U3DPosition.datasource" />
     <None Include="Properties\DataSources\Location.TModel.TPost.datasource" />
-    <None Include="Service References\LocationCallbackServices\DbModel.Tools1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\Location.Model.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\Location.Model1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\Location.TModel.Location.Alarm1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\Location.TModel.Location.AreaAndDev1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\Location.TModel.Location.Person1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\service.wsdl" />
-    <None Include="Service References\LocationCallbackServices\service.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\service1.wsdl" />
-    <None Include="Service References\LocationCallbackServices\service1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\service2.wsdl" />
-    <None Include="Service References\LocationCallbackServices\service2.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LocationCallbackServices\service3.xsd">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Service References\LocationServices\Arrays1.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\LocationServices\DbModel.Location.AreaAndDev.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\DbModel.Location.AreaAndDev1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\DbModel.Location.Authorizations.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\DbModel.Location.Authorizations1.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\LocationServices\DbModel.Tools1.xsd">
@@ -158,6 +129,12 @@
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.AreaStatistics.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.CameraAlarmInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.CardRole.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.ConfigArg.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -167,10 +144,16 @@
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DeviceAlarm.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DeviceAlarmInformation.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DevInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DevModel.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DevMonitorNode.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DevPos.datasource">
@@ -185,7 +168,16 @@
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.Dev_Monitor.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DownloadInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.DownloadProgress.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.EntranceGuardActionInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.EntranceGuardCard.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.InspectionTrack.datasource">
@@ -224,6 +216,15 @@
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.OperationTicketHistory.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.PageOfDeviceAlarmys9JVgtW.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.PatrolPoint.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.PatrolPointItem.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.Personnel.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -239,7 +240,13 @@
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.Picture.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.Pos.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.Position.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.PositionList.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.Post.datasource">
@@ -272,6 +279,9 @@
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.WorkTicketHistory.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\LocationServices\LocationServices.Locations.Plugins.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Service References\LocationServices\service1.wsdl" />
     <None Include="Service References\LocationServices\service2.xsd">
       <SubType>Designer</SubType>
@@ -294,10 +304,16 @@
     <None Include="Service References\LocationServices\TModel.Location.Person.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Service References\LocationServices\TModel.Location.Person1.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Service References\LocationServices\TModel.Location.Work.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\LocationServices\TModel.LocationHistory.AreaAndDev.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\TModel.LocationHistory.AreaAndDev1.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\LocationServices\TModel.LocationHistory.Work.xsd">
@@ -306,22 +322,18 @@
     <None Include="Service References\LocationServices\TModel.Models.Settings.xsd">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\LocationCallbackServices\" />
-    <WCFMetadataStorage Include="Service References\LocationServices\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\LocationCallbackServices\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\LocationCallbackServices\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\LocationCallbackServices\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
+    <None Include="Service References\LocationServices\TModel.Models.Settings1.xsd">
+      <SubType>Designer</SubType>
     </None>
+    <None Include="Service References\LocationServices\WebApiCommunication.ExtremeVision.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\WebApiCommunication.ExtremeVision1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\LocationServices\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Service References\LocationServices\configuration91.svcinfo" />

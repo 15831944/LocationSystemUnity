@@ -27,7 +27,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
-
+       
+        
         private Camera m_Camera;
         private bool m_Jump;
         private float m_YRotation;
@@ -42,7 +43,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
         public  bool IsSpaceState;
+        public bool IsLoadBuildAndDev;
 
+        public bool IsCursorLock=true;//鼠标是否固定在中心
+
+        private Action<bool> CursorLockAction;//鼠标固定和解锁的回调
         // Use this for initialization
         private void Start()
         {
@@ -56,9 +61,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_Jumping = false;
             m_AudioSource = GetComponent<AudioSource>();
 			m_MouseLook.Init(transform , m_Camera.transform);
-            m_MouseLook.onlyLockCursor = true;//远程，只隐藏鼠标，不锁定
+            IsLoadBuildAndDev = false;
+            //m_MouseLook.onlyLockCursor = false;//远程，只隐藏鼠标，不锁定
         }
-        
+        /// <summary>
+        /// 是否远程控制模式
+        /// </summary>
+        /// <param name="isRemote"></param>
+        public void SetRemoteState(bool isRemote)
+        {
+            m_MouseLook.onlyLockCursor = isRemote;
+        }
         /// <summary>
         /// 进入各种模式下的重力改变
         /// </summary>
@@ -74,11 +87,20 @@ namespace UnityStandardAssets.Characters.FirstPerson
         /// <param name="b"></param>
        public void ChangeWalkSpeed(float b)
         {
-            m_WalkSpeed = b;
+            if (m_GravityMultiplier == 0)
+            {
+                m_WalkSpeed = 25;
+            }else
+            {
+                m_WalkSpeed = b;
+            }
+            
         }
     // Update is called once per frame
     private void Update()
         {
+            CheckCtrlClick();
+            if (IsLoadBuildAndDev|| !IsCursorLock) return;
             RotateView();
             // the jump state needs to read here to make sure it is not missed
             if (!m_Jump&& IsSpaceState)
@@ -110,9 +132,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
         }
 
 
+
         private void FixedUpdate()
         {
-            if (IsMouseOutRange()) return;
+            if (IsLoadBuildAndDev|| !IsCursorLock) return;
+            //Jacovone.AssetBundleMagic.LoadingIndicatorScript.Instance.IsBuildingAndIsDev();
             float speed;
             GetInput(out speed);
             // always move along the camera forward as it is the direction that it being aimed at
@@ -152,6 +176,40 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_MouseLook.UpdateCursorLock();
         }
 
+        /// <summary>
+        /// 绑定鼠标解锁/锁定
+        /// </summary>
+        /// <param name="action"></param>
+        public void BindingCursorAction(Action<bool> action)
+        {
+            CursorLockAction += action;
+        }
+
+        /// <summary>
+        /// 重置鼠标状态
+        /// </summary>
+        public void ResetCursorState()
+        {
+            IsCursorLock = true;
+            //IsLoadBuildAndDev = false;
+            m_MouseLook.SetCursorState(false);
+            if (CursorLockAction != null) CursorLockAction(IsCursorLock);
+        }
+
+        /// <summary>
+        /// 是否按下Ctrl
+        /// </summary>
+        /// <returns></returns>
+        private void CheckCtrlClick()
+        {
+            if(Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                m_MouseLook.SetCursorState(IsCursorLock);
+                IsCursorLock = !IsCursorLock;
+                if (CursorLockAction != null) CursorLockAction(IsCursorLock);
+                //IsLoadBuildAndDev = !IsCursorLock;           
+            }      
+        }
 
         private void PlayJumpSound()
         {
@@ -177,6 +235,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             PlayFootStepAudio();
         }
+
 
 
         private void PlayFootStepAudio()

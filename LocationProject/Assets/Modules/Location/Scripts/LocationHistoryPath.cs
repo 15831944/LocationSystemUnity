@@ -31,16 +31,16 @@ public class LocationHistoryPath : LocationHistoryPathBase
             double timesum = HistoryPlayUI.Instance.timeSum;
             DateTime showPointTime = HistoryPlayUI.Instance.GetStartTime().AddSeconds(timesum);
 
-            if (currentPointIndex < timelist.Count)
+            if (currentPointIndex < PosCount)
             {
-                if (timelist[currentPointIndex] < showPointTime)
+                if (PosInfoList[currentPointIndex].Time < showPointTime)
                 {
                     //double timesum2 = (timelist[currentPointIndex] - HistoryPlayUI.Instance.GetStartTime()).TotalSeconds;
                     //Debug.Log("timesum2:" + timesum2);
                     //progressTargetValue = (double)timesum2 / HistoryPlayUI.Instance.timeLength;
                     if (currentPointIndex - 1 >= 0)
                     {
-                        double temp = (timelist[currentPointIndex] - timelist[currentPointIndex - 1]).TotalSeconds;
+                        double temp = (PosInfoList[currentPointIndex].Time - PosInfoList[currentPointIndex - 1].Time).TotalSeconds;
                         if (temp > 2f)//如果当前点的时间超过了上个点时间2秒，这中间就存在卡信号丢失问题，人立马移动到当前点，不需要缓动
                         {
                             //ExcuteHistoryPath(currentPointIndex,1f, false);
@@ -72,7 +72,7 @@ public class LocationHistoryPath : LocationHistoryPathBase
 
                     if (currentPointIndex - 1 >= 0)
                     {
-                        double temp = (timelist[currentPointIndex] - timelist[currentPointIndex - 1]).TotalSeconds;
+                        double temp = (PosInfoList[currentPointIndex].Time - PosInfoList[currentPointIndex - 1].Time).TotalSeconds;
                         if (temp > 2f)//如果当前要执行历史点的值，超过播放时间值5秒，就认为这超过5秒时间里，没历史轨迹数据，则让人员消失
                         {
                             //Hide();
@@ -114,15 +114,14 @@ public class LocationHistoryPath : LocationHistoryPathBase
     protected override void StartInit()
     {
         lines = new List<VectorLine>();
-        dottedlines = new List<VectorLine>();
-        splinePointsList = new List<List<Vector3>>();        timelistLsit = new List<List<DateTime>>();        CreatePathParent();        //LocationHistoryManager.Instance.AddHistoryPath(this as LocationHistoryPath);
-        transform.SetParent(pathParent);        if (splinePoints.Count <= 1) return;
+        dottedlines = new List<VectorLine>();        CreatePathParent();        //LocationHistoryManager.Instance.AddHistoryPath(this as LocationHistoryPath);
+        transform.SetParent(pathParent);        if (PosCount <= 1) return;
         render = gameObject.GetComponent<Renderer>();
         renders = gameObject.GetComponentsInChildren<Renderer>();
         collider = gameObject.GetComponent<Collider>();
 
         GameObject targetTagObj = UGUIFollowTarget.CreateTitleTag(gameObject, new Vector3(0, 0.1f, 0));
-        followUI = UGUIFollowManage.Instance.CreateItem(LocationHistoryManager.Instance.NameUIPrefab, targetTagObj, "LocationNameUI");
+        followUI = UGUIFollowManage.Instance.CreateItem(LocationHistoryManager.Instance.NameUIPrefab, targetTagObj, "LocationNameUI",null,true);
         Text nametxt = followUI.GetComponentInChildren<Text>();
         nametxt.text = name;
         if (historyManController)
@@ -141,9 +140,9 @@ public class LocationHistoryPath : LocationHistoryPathBase
         DateTime startTimeT = HistoryPlayUI.Instance.GetStartTime();
         double f = timeLength * value;
         //相匹配的第一个元素,结果为-1表示没找到
-        return timelist.FindIndex((item) =>
+        return PosInfoList.FindIndex((item) =>
         {
-            double timeT = (item - startTimeT).TotalSeconds;
+            double timeT = (item.Time - startTimeT).TotalSeconds;
             if (timeT > f)
             {
                 return true;
@@ -161,22 +160,11 @@ public class LocationHistoryPath : LocationHistoryPathBase
     /// </summary>
     /// <param name="f"></param>
     /// <param name="accuracy">精确度：时间相差accuracy秒</param>
-    protected override int GetCompareTime(double f, float accuracy = 0.1f)
+    public override int GetCompareTime(double f, float accuracy = 0.1f)
     {
         DateTime startTimeT = HistoryPlayUI.Instance.GetStartTime();
         //相匹配的第一个元素,结果为-1表示没找到
-        return timelist.FindIndex((item) =>
-        {
-            double timeT = (item - startTimeT).TotalSeconds;
-            if (Math.Abs(f - timeT) < accuracy)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        });
+        return PosInfoList.FindIndexByTime(startTimeT, f, accuracy);
     }
 
 

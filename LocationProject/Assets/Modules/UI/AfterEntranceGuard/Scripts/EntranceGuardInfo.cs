@@ -41,7 +41,7 @@ public class EntranceGuardInfo : MonoBehaviour
     /// <param name="devId"></param>
     public void DevBut_Click(int devId, int DepID)
     {
-        RoomFactory.Instance.FocusDev(devId, DepID);
+        RoomFactory.Instance.FocusDev(devId.ToString(), DepID);
         AfterEntranceGuardManage.Instance.CloseWindow();
 
     }

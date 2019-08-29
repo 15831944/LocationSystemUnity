@@ -50,16 +50,24 @@ public class CommunicationCallbackClient : MonoSingletonBase<CommunicationCallba
     /// 移动巡检Hub
     /// </summary>
     public InspectionTrackHub inspectionTrackHub = new InspectionTrackHub();
+
+    /// <summary>
+    /// 告警Hub
+    /// </summary>
+    public CameraAlarmHub cameraAlarmHub = new CameraAlarmHub();
+
     // Use this for initialization
     void Start () {
-               
+        Login(CommunicationObject.Instance.ip);
+        Debug.Log("CommunicationCallbackClient_ip:" + CommunicationObject.Instance.ip);
+        SceneEvents.ConnectStateChange += ReConnectByHeartBeat;
     }
     /// <summary>
     /// 连接SignalR服务端
     /// </summary>
     /// <param name="IpTemp"></param>
     /// <param name="portTemp"></param>
-    public void Login(string IpTemp,string portTemp)
+    public void Login(string IpTemp,string portTemp= "8735")
     {
         if(string.IsNullOrEmpty(IpTemp))
         {
@@ -77,7 +85,7 @@ public class CommunicationCallbackClient : MonoSingletonBase<CommunicationCallba
         InitIpArgs(IpTemp,portTemp);
         URI = new Uri(string.Format("http://{0}:{1}/realtime", IpTemp, portTemp));
         // Create the SignalR connection, passing all the three hubs to it
-        signalRConnection = new Connection(URI, alarmHub, echoHub, doorAccessHub,inspectionTrackHub);
+        signalRConnection = new Connection(URI, alarmHub, echoHub, doorAccessHub,inspectionTrackHub, cameraAlarmHub);//Hub要加到这个列表中，才能收到消息。
         signalRConnection.JsonEncoder = new LitJsonEncoder();
         signalRConnection.OnStateChanged += signalRConnection_OnStateChanged;
         signalRConnection.OnError += signalRConnection_OnError;
@@ -89,8 +97,39 @@ public class CommunicationCallbackClient : MonoSingletonBase<CommunicationCallba
         };
 
         // Start opening the signalR connection
-        signalRConnection.Open();
+        signalRConnection.Open();        
     }
+
+    /// <summary>
+    /// 通过心跳检测，重连SignalR
+    /// </summary>
+    public void ReConnectByHeartBeat(SceneEvents.ServerConnectState state)
+    {
+        if(state==SceneEvents.ServerConnectState.reConnect)
+        {
+            if (!IsInvoking("ReConnect")) InvokeRepeating("ReConnect", 0, 1);
+        }
+    }
+    /// <summary>
+    /// 重连
+    /// </summary>
+    private void ReConnect()
+    {
+        if(signalRConnection.State==ConnectionStates.Closed)
+        {
+            signalRConnection.Open();
+            Debug.Log("Reconnect Singnal...");
+        }
+        else if(signalRConnection.State==ConnectionStates.Connected)
+        {
+            if(IsInvoking("ReConnect"))
+            {
+                CancelInvoke("ReConnect");
+                Debug.Log("Reconnect Singnal success...");
+            }
+        }
+    }
+
     /// <summary>
     /// 初始化参数
     /// </summary>

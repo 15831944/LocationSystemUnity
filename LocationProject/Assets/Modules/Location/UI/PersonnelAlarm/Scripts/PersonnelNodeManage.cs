@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class PersonnelNodeManage : MonoBehaviour
 {
 
@@ -21,6 +22,10 @@ public class PersonnelNodeManage : MonoBehaviour
     public PersonnelNormalNode personnelNormalNode;
 
     PersonInfoUI infoUi;
+
+    bool isLocationAlarm;//是否定位告警
+    bool isLowBatteryAlarm;//是否低电告警
+    
 
     void Start()
     {
@@ -40,8 +45,10 @@ public class PersonnelNodeManage : MonoBehaviour
     /// 显示告警界面
     /// </summary>
     [ContextMenu("ShowAlarm")]
-    public void ShowAlarm()
+    public void ShowAlarm(bool locationAlarm = true)
     {
+        if (locationAlarm) isLocationAlarm = true;
+        else isLowBatteryAlarm = true;
         HideNormal();
         InitSprites();
         CanvasGroup canvasGroup = personnelAlarmNode.GetComponent<CanvasGroup>();
@@ -49,7 +56,7 @@ public class PersonnelNodeManage : MonoBehaviour
     }
 
     public void HideAlam()
-    {
+    {        
         CanvasGroup canvasGroup = personnelAlarmNode.GetComponent<CanvasGroup>();
         SetCanvasGroup(canvasGroup, false);
     }
@@ -58,8 +65,11 @@ public class PersonnelNodeManage : MonoBehaviour
     /// 显示界面
     /// </summary>
     [ContextMenu("ShowNormal")]
-    public void ShowNormal()
+    public void ShowNormal(bool isLocation = true)
     {
+        if (isLocation) isLocationAlarm = false;
+        else isLowBatteryAlarm = false;
+        if (isLocationAlarm || isLowBatteryAlarm) return; //存在一种告警，则不能换成非告警图标
         HideAlam();
         InitSprites();
         CanvasGroup canvasGroup = personnelNormalNode.GetComponent<CanvasGroup>();
@@ -206,12 +216,13 @@ public class PersonnelNodeManage : MonoBehaviour
     public void SetLowBattery()
     {
         b = !b;
-        //SwitchStateSprite(PersonInfoUIState.LOWBATTERY);
+        //SwitchStateSprite(PersonInfoUIState.LowBattery);
         SetLowBatteryActive(b);
     }
     public void SetLowBatteryActive(bool isActive)
     {
-        txtLowBattery.gameObject.SetActive(isActive);
+        //SwitchStateSprite(PersonInfoUIState.LowBattery)
+        if (txtLowBattery!=null)txtLowBattery.gameObject.SetActive(isActive);
     }
 }
 

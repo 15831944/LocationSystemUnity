@@ -258,11 +258,11 @@ public class ObjectListModelItem : MonoBehaviour, IPointerEnterHandler, IPointer
         }else if(TypeCodeHelper.IsCamera(devInfo.TypeCode.ToString()))
         {
             Dev_CameraInfo cameraInfo = new Dev_CameraInfo();
-            cameraInfo.Ip = "127.0.0.1";
+            cameraInfo.Ip = "";
             cameraInfo.DevInfoId = devInfo.Id;
-            cameraInfo.UserName = "admin";
-            cameraInfo.PassWord = "12345";
-            cameraInfo.Port = 80;
+            cameraInfo.UserName = "";
+            cameraInfo.PassWord = "";
+            cameraInfo.Port = 0;
             cameraInfo.CameraIndex = 0;
             cameraInfo.Local_DevID = devInfo.Abutment_DevID;
             cameraInfo.ParentId = devInfo.ParentId;
@@ -312,6 +312,7 @@ public class ObjectListModelItem : MonoBehaviour, IPointerEnterHandler, IPointer
         DevInfo dev = new DevInfo();
         dev.DevID = Guid.NewGuid().ToString();
         dev.IP = "";
+        dev.KKSCode = "";
         dev.CreateTime = DateTime.Now;
         dev.ModifyTime = DateTime.Now;
         dev.Name = ModelName;
@@ -527,7 +528,7 @@ public class ObjectListModelItem : MonoBehaviour, IPointerEnterHandler, IPointer
     public Vector3 UnityPosToCad(Transform dev, DevNode devNode)
     {
         Vector3 pos;
-        if (devNode.ParentDepNode==FactoryDepManager.Instance||devNode is DepDevController)
+        if (devNode.IsInPark())
         {
             pos = LocationManager.GetCadVector(dev.position);
         }

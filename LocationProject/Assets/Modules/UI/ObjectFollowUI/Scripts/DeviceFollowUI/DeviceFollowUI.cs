@@ -39,12 +39,74 @@ public class DeviceFollowUI : MonoBehaviour {
     /// 温度信息模块
     /// </summary>
     public DeviceTemperatureInfo TemperatureInfo;
+    private bool isInit=false;
     // Use this for initialization
     void Start()
     {
+
+    }
+    private void Update()
+    {
+        HideUIByRaycast();
+    }
+
+    /// <summary>
+    /// 通过检测点击，关闭UI 
+    /// </summary>
+    private void HideUIByRaycast()
+    {
+        if (gameObject.activeInHierarchy)
+        {
+            if (IsClickUGUIorNGUI.Instance&&IsClickUGUIorNGUI.Instance.isOverUI) return;
+            if(Input.GetMouseButtonDown(0))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                if(Physics.Raycast(ray,out hit,float.MaxValue))
+                {
+                    FacilityDevController dev = hit.transform.GetComponent<FacilityDevController>();
+                    if(dev==null&&CurrentMonitor!=null)
+                    {
+                        CurrentMonitor.CloseUI();
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 显示界面
+    /// </summary>
+    public void ShowUI()
+    {
+        if (CurrentMonitor != null && CurrentMonitor != this)
+        {
+            CurrentMonitor.CloseUI();
+        }
+        CurrentMonitor = this;
+        BgToggle.isOn = true;
+        gameObject.SetActive(true);
+    }
+    /// <summary>
+    /// 隐藏界面
+    /// </summary>
+    public void CloseUI()
+    {
+        BgToggle.isOn = false;
+        gameObject.SetActive(false);
+        CurrentMonitor = null;
+        if (devNode != null) devNode.HighLightOff();
+    }
+    /// <summary>
+    /// 按钮绑定方法
+    /// </summary>
+    private void InitMethod()
+    {
+        CloseUI();
+        if (isInit) return;
+        isInit = true;
         DevInfoButton.onClick.AddListener(ShowMonitor);
         BgToggle.onValueChanged.AddListener(ShowBg);
-
     }
     /// <summary>
     /// 显示/关闭 窗体
@@ -57,35 +119,51 @@ public class DeviceFollowUI : MonoBehaviour {
     /// <summary>
     /// 显示背景
     /// </summary>
-    public void Show()
-    {
-        if (CurrentMonitor != null && CurrentMonitor != this) CurrentMonitor.BgToggle.isOn=false;
-        CurrentMonitor = this;
+    private void Show()
+    {       
         devNode.HighlightOn();
         InfoBg.SetActive(true);
-        if (TitleText.text != devNode.Info.Name) TitleText.text = devNode.Info.Name;
+        var info = devNode.Info;
+        if (info == null)
+        {
+            Log.Error("DeviceFollowUI.Show", "info == null");
+            return;
+        }
+        if (TitleText.text != info.Name) TitleText.text = info.Name;
     }
     /// <summary>
     /// 关闭背景
     /// </summary>
-    public void Hide()
-    {
-        CurrentMonitor = null;
+    private void Hide()
+    {              
         InfoBg.SetActive(false);
     }
     /// <summary>
     /// 设置信息
     /// </summary>
     /// <param name="devInfo"></param>
-    public void SetInfo(DevNode _devInfo)
+    public void SetInfo(DevNode devNode)
     {
-        devNode = _devInfo;
-        DevInfo dev = _devInfo.Info;
-        TitleText.text = dev.Name;
-        string info = "";
-        if (dev.ParentId != null&&RoomFactory.Instance)
+        InitMethod();
+        this.devNode = devNode;
+
+        if (devNode == null)
         {
-            DepNode node = RoomFactory.Instance.GetDepNodeById((int)dev.ParentId);
+            Log.Error("DeviceFollowUI.SetInfo", "devNode == null");
+            return;
+        }
+
+        DevInfo devInfo = devNode.Info;
+        if (devInfo == null)
+        {
+            Log.Error("DeviceFollowUI.SetInfo", "devInfo == null");
+            return;
+        }
+        TitleText.text = devInfo.Name;
+        string info = "";
+        if (devInfo.ParentId != null&&RoomFactory.Instance)
+        {
+            DepNode node = RoomFactory.Instance.GetDepNodeById((int)devInfo.ParentId);
             //if (node != null) info = node.NodeName+ "/";
             if (node != null) info = node.NodeName;
         }

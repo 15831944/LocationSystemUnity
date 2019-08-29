@@ -82,6 +82,15 @@ public class FunctionSwitchBarManage : MonoBehaviour
         ImageColor();
         InitToggleMethod();
         SceneEvents.FullViewStateChange += OnMainPageStateChange;
+
+        if (SystemSettingHelper.systemSetting.IsDebug)
+        {
+            SetCADToggleActive(true);
+        }
+        else
+        {
+            SetCADToggleActive(false);
+        }
     }
     /// <summary>
     /// 进入/退出首页

@@ -136,7 +136,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 Cursor.visible = true;
             }
         }
-
+        /// <summary>
+        ///  Û±Í «∑Òœ‘ æ
+        /// </summary>
+        /// <param name="isShow"></param>
+        public void SetCursorState(bool isShow)
+        {
+            if (Cursor.visible==isShow) return;
+            if (isShow)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                if (!onlyLockCursor) Cursor.lockState = CursorLockMode.Locked;
+                else Cursor.lockState = CursorLockMode.Confined;
+                Cursor.visible = false;
+            }
+        }
         Quaternion ClampRotationAroundXAxis(Quaternion q)
         {
             q.x /= q.w;

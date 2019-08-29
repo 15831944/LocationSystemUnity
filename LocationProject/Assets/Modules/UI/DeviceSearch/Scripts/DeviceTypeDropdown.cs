@@ -16,6 +16,8 @@ public class DeviceTypeDropdown : MonoBehaviour {
         devTyprList = new List<string>();
         AddName();
         SetDropdownata(devTyprList);
+        DevTypeDropdown.onValueChanged.AddListener(DeviceDataPaging.Instance.DeviceType_Click);
+        
     }
 	private void SetDropdownata(List <string > data)
     {
@@ -39,9 +41,11 @@ public class DeviceTypeDropdown : MonoBehaviour {
         string n2 = "基站";
         string n3 = "摄像头";
         string n4 = "门禁";
+        string n5 = "生产设备";
         devTyprList.Add(n1);
         devTyprList.Add(n2);
         devTyprList.Add(n3);
         devTyprList.Add(n4);
+        devTyprList.Add(n5);
     }
 }

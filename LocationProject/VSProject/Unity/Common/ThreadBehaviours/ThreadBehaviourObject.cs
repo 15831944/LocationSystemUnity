@@ -18,7 +18,7 @@ public class ThreadBehaviourObject : ThreadBehaviourBase
             {
                 if (mainAction != null)
                 {
-                    Log.Info("Run MainAction", taskName);
+                    //Log.Info("Run MainAction", taskName);
                     Result = mainAction();
                 }
             }
@@ -37,7 +37,7 @@ public class ThreadBehaviourObject : ThreadBehaviourBase
     {
         if (uiAction != null)
         {
-            Log.Info("Run UIAction",TaskName);
+            //Log.Info("Run UIAction",TaskName);
             uiAction(Result);
         }
     }

@@ -66,7 +66,7 @@ public class MobileInspectionFollowUI : MonoBehaviour
    
     public void ShowRouteInfo()
     {
-        MobileInspectionHistoryDetailsUI.Instance.Show(patrolPointItem);
+        MobileInspectionHistoryDetailsUI.Instance.Show(patrolPointItem);//显示巡检项窗口
     }
     /// <summary>
     /// 初始化Flag按钮的Sprite

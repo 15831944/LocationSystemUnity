@@ -78,16 +78,118 @@ namespace Mogoson.CameraExtension
         }
     }
 
+    [Serializable]
+    public class TransformPos
+    {
+        /// <summary>
+        /// Center of area.
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// Center of area.
+        /// </summary>
+        public Transform transform;
+
+        /// <summary>
+        /// Center of area.
+        /// </summary>
+        public Vector3 position;
+
+        public Vector3 getPositon()
+        {
+            if (transform)
+            {
+                return transform.position;
+            }
+            else//建筑可能被替换，同时建筑一般是不会移动的
+            {
+                return position;
+            }
+        }
+
+        public void SetTransform(Transform transform)
+        {
+            this.transform = transform;
+            if (transform)
+            {
+                name = transform.name;
+                position = transform.position;
+            }
+            else
+            {
+                name = "";
+                position = Vector3.zero;
+            }
+        }
+
+        public TransformPos(Transform transform)
+        {
+            this.transform = transform;
+            if (transform)
+            {
+                name = transform.name;
+                position = transform.position;
+            }
+            else
+            {
+                name = "";
+                position = Vector3.zero;
+            }
+        }
+    }
+
     /// <summary>
     /// Rectangle area on plane.
     /// </summary>
     [Serializable]
     public struct PlaneArea
     {
+        public TransformPos centerPos;
+
+        public Vector3 GetPos()
+        {
+            return centerPos.getPositon();
+        }
+
         /// <summary>
         /// Center of area.
         /// </summary>
         public Transform center;
+
+        ///// <summary>
+        ///// Center of area.
+        ///// </summary>
+        //public string centerName;
+
+        ///// <summary>
+        ///// Center of area.
+        ///// </summary>
+        //public Vector3 centerPos;
+
+        //public Vector3 GetPos()
+        //{
+        //    if (center)
+        //    {
+        //        return center.position;
+        //    }
+        //    else//建筑可能被替换，同时建筑一般是不会移动的
+        //    {
+        //        return centerPos;
+        //    }
+        //}
+
+        public void SetCenter(Transform center)
+        {
+            this.center = center;
+            this.centerPos = new TransformPos(center);
+        }
+
+        public void SetCenter(TransformPos centerPos)
+        {
+            this.centerPos = centerPos;
+            this.center = centerPos.transform;
+        }
 
         /// <summary>
         /// Width of area.
@@ -108,6 +210,7 @@ namespace Mogoson.CameraExtension
         public PlaneArea(Transform center, float width, float length)
         {
             this.center = center;
+            this.centerPos = new TransformPos(center);
             this.width = width;
             this.length = length;
         }
@@ -123,6 +226,23 @@ namespace Mogoson.CameraExtension
         /// Center of align target.
         /// </summary>
         public Transform center;
+
+        /// <summary>
+        /// Center of align target.
+        /// </summary>
+        public TransformPos centerPos;
+
+        public void SetCenter(Transform center)
+        {
+            this.center = center;
+            this.centerPos = new TransformPos(center);
+        }
+
+        public void SetCenter(TransformPos centerPos)
+        {
+            this.center = centerPos.transform;
+            this.centerPos = centerPos;
+        }
 
         /// <summary>
         /// Angles of align.
@@ -155,6 +275,7 @@ namespace Mogoson.CameraExtension
         public AlignTarget(Transform center, Vector2 angles, float distance, Range angleRange, Range distanceRange)
         {
             this.center = center;
+            this.centerPos = new TransformPos(center);
             this.angles = angles;
             this.distance = distance;
             this.angleRange = angleRange;

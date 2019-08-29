@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 public class MapFloor : MonoBehaviour {
@@ -56,6 +58,25 @@ public class MapFloor : MonoBehaviour {
     {
         gameObject.SetActive(true);
     }
+
+    internal void ReplaceDepNode(List<DepNode> childNodes)
+    {
+        if (FloorNode == null)
+        {
+            Debug.LogError("ReplaceDepNode FloorNode == null");return;
+        }
+        if (childNodes == null) return;
+        var newNode = childNodes.FirstOrDefault(i => i!=null&&i.NodeID == FloorNode.NodeID);
+        if (newNode != null)
+        {
+            FloorNode = newNode;
+        }
+        else
+        {
+            Debug.LogWarning("MapFloor.ReplaceDepNode newNode==null:"+FloorNode);
+        }
+    }
+
     /// <summary>
     /// 显示楼层UI
     /// </summary>

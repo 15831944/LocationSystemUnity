@@ -51,7 +51,7 @@ namespace Mogoson.CameraExtension
             if (isAlign == false)
             {
                 isAlign = true;
-                defaultAlign = new AlignTarget(alignCamera.target, alignCamera.CurrentAngles,
+                defaultAlign = new AlignTarget(alignCamera.GetTarget(), alignCamera.CurrentAngles,
                 alignCamera.CurrentDistance, alignCamera.angleRange, alignCamera.distanceRange);
             }
             alignCamera.AlignVeiwToTarget(alignMark.alignTarget);

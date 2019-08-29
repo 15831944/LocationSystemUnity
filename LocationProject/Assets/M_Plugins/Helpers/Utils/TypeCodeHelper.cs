@@ -72,6 +72,18 @@ namespace Assets.M_Plugins.Helpers.Utils
             if (string.IsNullOrEmpty(typeCode)) return false;
             return IsTypeCodeContains(typeCode, AlarmDevTypeCodes);
         }
+        private static string FireFightDevType = "104|";
+
+        /// <summary>
+        /// 是否包含消防设备
+        /// </summary>
+        /// <param name="typeCode"></param>
+        /// <returns></returns>
+        public static bool IsFireFightDevType(string typeCode)
+        {
+            if (string.IsNullOrEmpty(typeCode)) return false;
+            return IsTypeCodeContains(typeCode, FireFightDevType);
+        }
 
         private static string BorderAlarmDev = "20181203|";
         /// <summary>

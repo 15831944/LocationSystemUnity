@@ -39,18 +39,24 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     public Button AddPageBut;
     public Button MinusPageBut;
     public InputField InputPerAlarm;//输入筛选内容
+
+    [System.NonSerialized]
     /// <summary>
     /// 10条数据存放的列表
     /// </summary>
     public List<LocationAlarm> newPerAlarmList;
+
     public Sprite DoubleImage;
     public Sprite OddImage;
+    [System.NonSerialized]
     List<LocationAlarm> PersonnelAlarm;//全部的人员告警
+    [System.NonSerialized]
     List<LocationAlarm> SeachPerItems;//筛选后告警list
     public Button SearchBut;
     public Button CloseBut;
     public Text title;
     bool isPage;
+ 
     public ParkPersonnelAlarmType parkPersonnelAlarmType;
     /// <summary>
     // Use this for initialization
@@ -63,6 +69,7 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
         pegeNumText.onValueChanged.AddListener(InputPersonnelPage);
         AddPageBut.onClick.AddListener(AddPerAlarmPage);
         MinusPageBut.onClick.AddListener(MinPerAlarmPage);
+        InputPerAlarm.onValueChanged.AddListener(InputPerAlarmSearch);
         CloseBut.onClick.AddListener(() =>
         {
             ShowPersonnelAlarmParkWindow(false);
@@ -152,7 +159,8 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
         if (b==true )
         {
             PersonnelAlarmParkWindow.SetActive(true );
-            parkPersonnelAlarmType. StartAlarmType();
+            ParkInformationManage.Instance.PersonToggle.isOn = true;
+           
         }
         else
         {
@@ -162,13 +170,14 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
             SaveSelection();
         }
     }
+    
     /// <summary>
     /// 生成的页数
     /// </summary>
     public void GetPersonnelAlarmPage(List<LocationAlarm> data)
     {
 
-        newPerAlarmList.Clear();
+        newPerAlarmList = new List<LocationAlarm>();
         if (StartPageNum * pageLine < data.Count)
         {
             var QueryData = data.Skip(pageLine * StartPageNum).Take(pageLine);
@@ -193,33 +202,43 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
             DestroyImmediate(grid.transform.GetChild(j).gameObject);
         }
     }
-    public LocationAlarmType GetPersonnelAlarmType()
+   
+   
+    public void InputPerAlarmSearch(string value)
     {
-        int level = parkPersonnelAlarmType.PerTypedropdownItem.value;
-        if (level == 1) return LocationAlarmType.区域告警;
-        else if (level == 2) return LocationAlarmType.消失告警;
-        else if (level == 3) return LocationAlarmType.低电告警;
-        else if (level == 4) return LocationAlarmType.传感器告警;
-        else if (level == 5) return LocationAlarmType.重启告警;
-        else
+        SaveSelection();
+        SeachPerItems.Clear();
+        pegeNumText.text = "1";
+        value = InputPerAlarm.text.ToString();
+        string key = value.ToLower();
+        for (int i = 0; i < PersonnelAlarm.Count; i++)
         {
-            return LocationAlarmType.非法拆卸;
-        }
-    }
-    public bool PersonnelType(LocationAlarm type)
-    {
-        int level = parkPersonnelAlarmType.PerTypedropdownItem.value;
-        if (level == 0) return true;
-        else
-        {
-            if (type.AlarmType == GetPersonnelAlarmType())
-            {
-                return true;
+            if (string.IsNullOrEmpty(key))
+            {        
+                    SeachPerItems.Add(PersonnelAlarm[i]);
             }
+
             else
             {
-                return false;
+                if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel .Name .ToLower().Contains(key))
+                {
+                   
+                        SeachPerItems.Add(PersonnelAlarm[i]);
+                   
+                    
+                }
+
             }
+        }
+        if (SeachPerItems.Count == 0)
+        {
+            pegeNumText.text = "1";
+            pegeTotalText.text = "1";
+        }
+        else
+        {
+            TotaiLine(SeachPerItems);
+            GetPersonnelAlarmPage(SeachPerItems);
         }
     }
     /// <summary>
@@ -229,16 +248,27 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     {
         SaveSelection();
         SeachPerItems.Clear();
+        pegeNumText.text = "1";
         string key = InputPerAlarm.text.ToString().ToLower();
         for (int i = 0; i < PersonnelAlarm.Count; i++)
         {
-            if (key == "" && PersonnelType(PersonnelAlarm[i]))
+            if (string .IsNullOrEmpty (key))
             {
-                SeachPerItems.Add(PersonnelAlarm[i]);
+                
+                    SeachPerItems.Add(PersonnelAlarm[i]);
+               
             }
-            else if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) && PersonnelType(PersonnelAlarm[i]))
+            
+            else 
             {
-                SeachPerItems.Add(PersonnelAlarm[i]);
+                if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel.Name.ToLower().Contains(key))
+                {
+                    
+                        SeachPerItems.Add(PersonnelAlarm[i]);
+                    
+
+                }
+
             }
         }
         if (SeachPerItems.Count == 0)
@@ -256,16 +286,20 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     {
         SaveSelection();
         SeachPerItems.Clear();
+        pegeNumText.text = "1";
         string key = InputPerAlarm.text.ToString().ToLower();
         for (int i = 0; i < PersonnelAlarm.Count; i++)
         {
-            if (key == "" && PersonnelType(PersonnelAlarm[i]))
+            if (key == "" )
             {
                 SeachPerItems.Add(PersonnelAlarm[i]);
             }
-            else if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) && PersonnelType(PersonnelAlarm[i]))
+           else  if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel.Name.ToLower().Contains(key))
             {
-                SeachPerItems.Add(PersonnelAlarm[i]);
+                
+                    SeachPerItems.Add(PersonnelAlarm[i]);
+                
+
             }
         }
         if (SeachPerItems.Count == 0)

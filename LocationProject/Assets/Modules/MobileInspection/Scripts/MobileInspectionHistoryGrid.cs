@@ -20,8 +20,8 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
     private int pageCount = 1;//总页数
     private int showCount = 10;//每页显示人员的个数
 
-    public List<InspectionTrackHistory> searchList;
-    public List<InspectionTrackHistory> InspectionTrackHistoryList;
+    public List<InspectionTrackHistory> searchList;//当前搜索出来的巡检历史路线列表
+    public List<InspectionTrackHistory> InspectionTrackHistoryList;//巡检历史路线列表
     bool IsSearch;
     bool IsStartTime;
     bool IsEndTime;
@@ -38,7 +38,7 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         InspectionTrackHistoryList = new List<InspectionTrackHistory>();
         previousPageBtn.onClick.AddListener(PreviousPageBtn_OnClick);
         nextPageBtn.onClick.AddListener(NextPageBtn_OnClick);
-        InputFieldPage.onEndEdit.AddListener(InputFieldPage_OnEndEdit);
+        InputFieldPage.onValueChanged.AddListener(InputFieldPage_OnEndEdit);
     }
 
     // Update is called once per frame
@@ -46,6 +46,27 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
     {
 
     }
+
+    //显示巡检历史路线列表
+    public void StartShowMobilenspectionHistory()
+    {
+        MobileInspectionHistoryDetailInfo.Instance.CloseMobileInspectionHistoyItemWindow();//关闭历史巡检点窗口
+        MobileInspectionHistoryRouteDetails.Instance.CloseBtn_OnClick();//关闭历史巡检项窗口
+        InspectionTrackHistoryList = MobileInspectionHistory_N.Instance.mobileInspectionHistoryList;//巡检轨迹历史记录
+        currentPageNum = 0;//当前所在页
+        IsSearch = false;
+        IsStartTime = false;
+        IsEndTime = false;
+        //InputFieldPage.text = pageCount.ToString();
+        InputFieldPage.text = "1";
+        if(searchList!=null) searchList.Clear();
+        searchList.AddRange(InspectionTrackHistoryList) ;
+
+        TotaiLine(InspectionTrackHistoryList);
+        CreateGrid(InspectionTrackHistoryList);
+    }
+
+    //根据列表数量生成页数
     public void TotaiLine(List<InspectionTrackHistory> date)
     {
         if (date.Count != 0)
@@ -62,28 +83,15 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         else
         {
             txtPageCount.text = "1";
-
         }
-
     }
-    public void StartShowMobilenspectionHistory()
-    {
-        InspectionTrackHistoryList = MobileInspectionHistory_N.Instance.mobileInspectionHistoryList;
-        currentPageNum = 0;
-        IsSearch = false;
-        IsStartTime = false;
-        IsEndTime = false;
-        InputFieldPage.text = pageCount.ToString();
 
-        TotaiLine(InspectionTrackHistoryList);
-        CreateGrid(InspectionTrackHistoryList);
-    }
     /// <summary>
     /// 搜索
     /// </summary>
     public void Search()
     {
-
+        InputFieldPage.text = "1";
         IsSearch = true;
         if (searchList.Count != 0)
         {
@@ -122,7 +130,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                             searchList.Add(InspectionTrackHistoryList[i]);
                         }
                     }
-
                 }
             }
             else
@@ -144,17 +151,18 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                             searchList.Add(InspectionTrackHistoryList[i]);
                         }
                     }
-
                 }
-
                 Invoke("ChangeEndTime", 0.1f);
             }
         }
-
         TotaiLine(searchList);
-
         CreateGrid(searchList);
+        if (searchList != null && searchList.Count == 0)
+        {
+            UGUIMessageBox.Show("当前时间段内，无历史巡检路线！");
+        }
     }
+
     public void ScreeningStartTime(DateTime datetime)
     {
         IsStartTime = true;
@@ -171,7 +179,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
             DateTime NewStartTime = Convert.ToDateTime(datetime);
             DateTime CurrentEndTime = Convert.ToDateTime(EndTime);
             DateTime NewEndTime = CurrentEndTime.AddHours(24);
-
 
             bool isTime = DateTime.Compare(NewStartTime, NewEndTime) < 0;
             bool ScreenStartTime = DateTime.Compare(NewStartTime, starttime) <= 0 && DateTime.Compare(NewEndTime, starttime) >= 0;
@@ -195,7 +202,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                             searchList.Add(InspectionTrackHistoryList[i]);
                         }
                     }
-
                 }
             }
             else
@@ -217,17 +223,14 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                             searchList.Add(InspectionTrackHistoryList[i]);
                         }
                     }
-
                 }
-
                 Invoke("ChangeEndTime", 0.1f);
             }
         }
-
         TotaiLine(searchList);
-
         CreateGrid(searchList);
     }
+
     public void ScreeningSecondTime(DateTime datetime)
     {
         IsEndTime = true;
@@ -267,7 +270,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                             searchList.Add(InspectionTrackHistoryList[i]);
                         }
                     }
-
                 }
             }
             else
@@ -289,18 +291,14 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                             searchList.Add(InspectionTrackHistoryList[i]);
                         }
                     }
-
                 }
-
                 Invoke("ChangeEndTime", 0.1f);
             }
         }
-
         TotaiLine(searchList);
-
         CreateGrid(searchList);
-
     }
+
     int i = 0;
     /// <summary>
     /// 创建人员列表
@@ -308,7 +306,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
     public void CreateGrid(List<InspectionTrackHistory> date)
     {
         ClearItems();
-
         int startIndex = currentPageNum * showCount;
         int num = showCount;
         if (startIndex + num > searchList.Count)
@@ -317,7 +314,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         }
         if (date.Count == 0) return;
         List<InspectionTrackHistory> historyList = searchList.GetRange(startIndex, num);
-
         foreach (InspectionTrackHistory w in historyList)
         {
             i = i + 1;
@@ -332,9 +328,9 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                 item.transform.gameObject.GetComponent<Image>().sprite = Singleline;
             }
         }
-
         //   SetPreviousAndNextPageBtn();
     }
+
     public string titleHistory;
     /// <summary>
     /// 创建人员列表项
@@ -347,27 +343,26 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         item.transform.SetParent(grid.transform);
         item.transform.localScale = Vector3.one;
         item.transform.localPosition = Vector3.zero;
-
         //item.gameObject.SetActive(true);
         return item;
     }
 
     /// <summary>
-    /// 工作票筛选筛选
+    /// 巡检历史路线筛选条件
     /// </summary>
-    public bool WorkTicketContains(InspectionTrackHistory workTicketT)
+    public bool WorkTicketContains(InspectionTrackHistory inspectionTrackT)
     {
-        if (WorkTicketContainsNO(workTicketT)) return true;
-        if (WorkTicketContainsPerson(workTicketT)) return true;
+        if (InspectionTrackHistoryContainsNO(inspectionTrackT)) return true;
+        if (InspectionTrackHistoryContainsName(inspectionTrackT)) return true;
         return false;
     }
 
     /// <summary>
-    /// 筛选根据巡检路线序号
+    /// 筛选根据巡检编号
     /// </summary>
-    public bool WorkTicketContainsNO(InspectionTrackHistory workTicketT)
+    public bool InspectionTrackHistoryContainsNO(InspectionTrackHistory inspectionTrackT)
     {
-        if (workTicketT.Id.ToString().ToLower().Contains(MobileInspectionHistory_N.Instance.searchInput.text.ToLower()))
+        if (inspectionTrackT.Id.ToString().ToLower().Contains(MobileInspectionHistory_N.Instance.searchInput.text.ToLower()))
         {
             return true;
         }
@@ -378,14 +373,14 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
     }
 
     /// <summary>
-    /// 筛选根据工作票负责人
+    /// 筛选根据路线名称
     /// </summary>
-    public bool WorkTicketContainsPerson(InspectionTrackHistory workTicketT)
+    public bool InspectionTrackHistoryContainsName(InspectionTrackHistory inspectionTrackT)
     {
         string nameT = "";
-        if (workTicketT.Code != null)
+        if (inspectionTrackT.Code != null)
         {
-            nameT = workTicketT.Code;
+            nameT = inspectionTrackT.Code;
         }
         if (nameT.ToLower().Contains(MobileInspectionHistory_N.Instance.searchInput.text.ToLower()))
         {
@@ -405,13 +400,7 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         int n = grid.transform.childCount;
         for (int i = n - 1; i >= 0; i--)
         {
-            GameObject o = grid.transform.GetChild(i).gameObject;
-            //HistoryPersonsSearchUIItem itemT = o.GetComponent<HistoryPersonsSearchUIItem>();
-            //if (selectPersonnelList.Contains(itemT))
-            //{
-            //    o.SetActive(false);
-            //    continue;
-            //}
+            GameObject o = grid.transform.GetChild(i).gameObject;            
             DestroyImmediate(o);
         }
     }
@@ -423,8 +412,8 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
     {
         if (currentPageNum > 0 && pageCount > 0)
         {
-            currentPageNum = currentPageNum - 1;
-            pageCount = pageCount - 1;
+            currentPageNum = currentPageNum - 1;//当前页
+            pageCount = pageCount - 1;//总页数
             InputFieldPage.text = pageCount.ToString();
             if (IsSearch || IsStartTime || IsEndTime)
             {
@@ -451,13 +440,11 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
                 currentPageNum = currentPageNum + 1;
                 pageCount = pageCount + 1;
                 InputFieldPage.text = pageCount.ToString();
-
             }
             else if (currentPageNum == m)
             {
                 pageCount = m;
                 InputFieldPage.text = pageCount.ToString();
-
             }
             CreateGrid(searchList);
         }
@@ -481,7 +468,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         }
     }
 
-
     public void ChangeEndTime()
     {
         string startTime = StartTimeText.text;
@@ -489,6 +475,7 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         string CurrentTime = NewStartTime.ToString("yyyy年MM月dd日");
         EndTimeText.text = CurrentTime.ToString();
     }
+
     /// <summary>
     /// 输入页数文本框编辑结束触发事件
     /// </summary>
@@ -503,7 +490,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
             {
                 currentPage = MaxPage;
                 InputFieldPage.text = currentPage.ToString();
-
             }
             if (currentPage <= 0)
             {
@@ -521,7 +507,6 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
             {
                 currentPage = MaxPage;
                 InputFieldPage.text = currentPage.ToString();
-
             }
             if (currentPage <= 0)
             {

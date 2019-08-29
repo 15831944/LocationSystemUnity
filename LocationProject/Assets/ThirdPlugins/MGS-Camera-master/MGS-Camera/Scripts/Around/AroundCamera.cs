@@ -22,10 +22,21 @@ namespace Mogoson.CameraExtension
     public class AroundCamera : MonoBehaviour
     {
         #region Field and Property
+        ///// <summary>
+        ///// Around center.
+        ///// </summary>
+        public Transform target
+        {
+            get
+            {
+                return GetTarget();
+            }
+        }
+
         /// <summary>
         /// Around center.
         /// </summary>
-        public Transform target;
+        public TransformPos targetPos;
 
         /// <summary>
         /// Settings of mouse button, pointer and scrollwheel.
@@ -43,7 +54,7 @@ namespace Mogoson.CameraExtension
         public Range distanceRange = new Range(1, 10);
 
         //正交摄像机范围
-        public Range OrthographicRange = new Range(10,155);
+        public Range OrthographicRange = new Range(10, 155);
         /// <summary>
         /// Damper for move and rotate.
         /// </summary>
@@ -81,13 +92,15 @@ namespace Mogoson.CameraExtension
         private Vector3 mousePositionOri;
 
         private Camera mainCamera;
+
+
         #endregion
 
         #region Protected Method
         protected virtual void Start()
         {
             CurrentAngles = targetAngles = transform.eulerAngles;
-            CurrentDistance = targetDistance = Vector3.Distance(transform.position, target.position);
+            CurrentDistance = targetDistance = Vector3.Distance(transform.position, GetTargetPosition());
             mainCamera = transform.GetComponent<Camera>();
         }
 
@@ -113,6 +126,11 @@ namespace Mogoson.CameraExtension
             {
                 if (IsClickUGUIorNGUI.Instance.isClickedUI) return;
             }
+       
+            if (FPSMode.Instance != null && FPSMode.Instance.FPSController!=null)
+            {
+                if (FPSMode.Instance.FPSController.IsLoadBuildAndDev) return;
+            }
             if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
             {
                 mousePositionOri = Input.mousePosition;
@@ -133,18 +151,18 @@ namespace Mogoson.CameraExtension
 
             //Mouse scrollwheel.
             if (mainCamera == null) mainCamera = transform.GetComponent<Camera>();
-            if(mainCamera.orthographic)
+            if (mainCamera.orthographic)
             {
-                if(!Input.GetMouseButton(2))
+                if (!Input.GetMouseButton(2))
                 {
                     mainCamera.orthographicSize -= Input.GetAxis("Mouse ScrollWheel") * mouseSettings.wheelSensitivity;
                     mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize, OrthographicRange.min, OrthographicRange.max);
-                }               
+                }
             }
             if (!Input.GetMouseButton(2))
             {
                 targetDistance -= Input.GetAxis("Mouse ScrollWheel") * mouseSettings.wheelSensitivity;
-            }               
+            }
             targetDistance = Mathf.Clamp(targetDistance, distanceRange.min, distanceRange.max);
 
             //Lerp.
@@ -153,9 +171,119 @@ namespace Mogoson.CameraExtension
 
             //Update transform position and rotation.
             transform.rotation = Quaternion.Euler(CurrentAngles);
-            transform.position = target.position - transform.forward * CurrentDistance;
+            //transform.position = GetTargetPosition()- transform.forward * CurrentDistance;
+
+            if (isCameraCollider)
+            {
+                Vector3 currentpos  = GetTargetPosition() - transform.forward * CurrentDistance;
+                SetPosition(currentpos);
+
+            }
+            else
+            {
+                transform.position = GetTargetPosition() - transform.forward * CurrentDistance;
+            }
         }
 
+
+        #region 摄像机遮挡相关功能
+
+        public bool isCanCameraCollider;
+        /// <summary>
+        /// 是否开启通过检测，摄像机和目标物体之间是否被遮挡，获取摄像机合适的位置
+        /// </summary>
+        [HideInInspector]
+        public bool isCameraCollider;
+        public MCinemachineCollider mcinemachineCollider;
+        Camera cam;
+
+        public Transform GetTarget()
+        {
+            if (targetPos != null)
+            {
+                return targetPos.transform;
+            }
+            return null;
+            //return target.transform;
+        }
+
+        public void SetTarget(Transform t)
+        {
+            targetPos = new TransformPos(t);
+        }
+
+        public TransformPos GetTargetPos()
+        {
+            return targetPos;
+        }
+
+        public Vector3 GetTargetPosition()
+        {
+            if (targetPos != null)
+            {
+                return targetPos.getPositon();
+            }
+            return Vector3.zero;
+            //return target.position;
+        }
+
+        /// <summary>
+        /// 通过检测，摄像机和目标物体之间是否被遮挡，获取摄像机合适的位置
+        /// </summary>
+        public void SetPosition(Vector3 currentpos)
+        {
+            if (mcinemachineCollider != null)
+            {
+                Vector3 adjustPos;
+                bool isbool=  mcinemachineCollider.GetPos(currentpos, GetTargetPosition(), out adjustPos);
+
+                //targetDistance = Vector3.Distance(adjustPos, target.transform.position);
+                //CurrentDistance = targetDistance;
+                if (isbool)
+                {
+                    Vector3 targetToCamdir = currentpos - GetTargetPosition();
+                    float offset = targetToCamdir.magnitude - adjustPos.magnitude;
+
+                    Vector3 tpos = GetTargetPosition();
+                    //if (offset > distanceRange.min)
+                    //{
+                        tpos = targetToCamdir.normalized * offset + GetTargetPosition();
+                    //}
+                    //else
+                    //{
+                    //    tpos = targetToCamdir.normalized * distanceRange.min + GetTargetPosition();
+                    //}
+
+                    //Debug.LogError("currentpos:" + currentpos + "||currentpos:" + adjustPos);
+                    //Vector3 p = Vector3.Lerp(transform.position, tpos, damper * Time.deltaTime);
+                    transform.position = tpos;
+                    //Debug.LogErrorFormat("offset:{0}", offset);
+                }
+                else
+                {
+                    transform.position = GetTargetPosition() - transform.forward * CurrentDistance;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否开启通过检测，摄像机和目标物体之间是否被遮挡，获取摄像机合适的位置
+        /// </summary>
+        public void SetisCameraCollider(bool isbool)
+        {
+            if (!isCanCameraCollider) return;
+            isCameraCollider = isbool;
+        }
+
+        [ContextMenu("SetTest")]
+        public void SetTest()
+        {
+            targetDistance = Vector3.Distance(transform.position + transform.forward, GetTargetPosition());
+            CurrentDistance = targetDistance;
+            transform.position = GetTargetPosition() - transform.forward * CurrentDistance;
+        }
+
+        #endregion
         /// <summary>
         /// 获取鼠标移动的距离，Input.GetAxis("Mouse X")在远程桌面和TeamViewer中都是0，不能移动
         /// </summary>

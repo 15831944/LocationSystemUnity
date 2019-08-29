@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Modules.Context;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// 提示框界面
 /// </summary>
-public class UGUIMessageBox : MonoBehaviour {
+public class UGUIMessageBox : MonoBehaviour,IMessageBox {
 
     public static UGUIMessageBox Instance;
     public GameObject window;//窗口
@@ -26,9 +27,15 @@ public class UGUIMessageBox : MonoBehaviour {
     private Action CancelCallAction;//取消回调
     private Action CloseCallAction;//关闭回调
 
+    void Awake()
+    {
+        Instance = this;
+        AppContext.MessageBox = this;
+    }
+
     // Use this for initialization
     void Start () {
-        Instance = this;
+        
         sureBtn.onClick.AddListener(SureBtn_OnClick);
         cancelBtn.onClick.AddListener(CancelBtn_OnClick);
         closeBtn.onClick.AddListener(CloseBtn_OnClick);
@@ -47,10 +54,25 @@ public class UGUIMessageBox : MonoBehaviour {
     /// <param name="msg"></param>
     public static void Show(string msg)
     {
-        Instance.txtMsg.text = msg;
-        Instance.sureBtnTxt.text = "确定";
-        Instance.cancelBtnTxt.text = "取消";
-        Instance.SetWindowActive(true);
+        if (Instance == null)
+        {
+            Debug.LogError("UGUIMessageBox.Show Instance == null");
+            return;
+        }
+        Instance.ShowMessage(msg);
+    }
+
+    /// <summary>
+    /// 显示
+    /// </summary>
+    /// <param name="msg"></param>
+    public void ShowMessage(string msg)
+    {
+
+        txtMsg.text = msg;
+        sureBtnTxt.text = "确定";
+        cancelBtnTxt.text = "取消";
+        SetWindowActive(true);
     }
 
     /// <summary>
@@ -59,6 +81,11 @@ public class UGUIMessageBox : MonoBehaviour {
     /// <param name="msg"></param>
     public static void Show(string msg,Action sureCallActionT, Action cancelCallActionT)
     {
+        if (Instance == null)
+        {
+            Debug.LogError("UGUIMessageBox.Show Instance == null");
+            return;
+        }
         Instance.txtMsg.text = msg;
         Instance.SureCallAction = sureCallActionT;
         Instance.CancelCallAction = cancelCallActionT;
@@ -73,6 +100,11 @@ public class UGUIMessageBox : MonoBehaviour {
     /// <param name="msg"></param>
     public static void Show(string msg,string sureBtnName, string cancelBtnName, Action sureCallActionT, Action cancelCallActionT, Action closeCallActionT)
     {
+        if (Instance == null)
+        {
+            Debug.LogError("UGUIMessageBox.Show Instance == null");
+            return;
+        }
         Instance.txtMsg.text = msg;
         Instance.SureCallAction = sureCallActionT;
         Instance.CancelCallAction = cancelCallActionT;
@@ -88,6 +120,11 @@ public class UGUIMessageBox : MonoBehaviour {
     /// </summary>
     public static void Hide()
     {
+        if (Instance == null)
+        {
+            Debug.LogError("UGUIMessageBox.Hide Instance == null");
+            return;
+        }
         Instance.SetWindowActive(false);
         Instance.SureCallAction = null;
         Instance.CancelCallAction = null;
@@ -108,11 +145,17 @@ public class UGUIMessageBox : MonoBehaviour {
     /// </summary>
     public void SureBtn_OnClick()
     {
+        //Hide();
+        Instance.SetWindowActive(false);
+
         if (SureCallAction!=null)
         {
             SureCallAction();
         }
-        Hide();
+        //Instance.SureCallAction = null;
+        //Instance.CancelCallAction = null;
+        //Instance.CloseCallAction = null;
+
     }
 
     /// <summary>

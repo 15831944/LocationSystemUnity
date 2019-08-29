@@ -35,10 +35,13 @@ public class HistoryPlayUI : MonoBehaviour
     public DateTime datetimeStart;    //时间起始播放值
     public float timeLength;    //播放时间,单位秒
     public float timeSum;//时间和
+
+    [System.NonSerialized]
     /// <summary>
     /// 人员信息数据
     /// </summary>
     private Personnel personnel;
+
     /// <summary>
     /// 如果加载数据成功
     /// </summary>
@@ -47,6 +50,7 @@ public class HistoryPlayUI : MonoBehaviour
     public float CurrentSpeed = 1;//当前播放速度倍数
     public bool IsMouseDragSlider = false;//鼠标拖动进度条
 
+    [System.NonSerialized]
     List<Position> positions;
 
     // Use this for initialization
@@ -259,6 +263,7 @@ public class HistoryPlayUI : MonoBehaviour
         //string code = "0002";
         List<Vector3> list = new List<Vector3>();
         List<DateTime> timelist = new List<DateTime>();
+        var posInfoList = new PositionInfoList();
         DateTime end = GetEndTime();
         DateTime start = GetStartTime();
         //List<Position> positions = new List<Position>();
@@ -276,30 +281,20 @@ public class HistoryPlayUI : MonoBehaviour
             {
                 Debug.LogError("点数：" + positions.Count);
                 if (positions.Count < 2) return;
-                //int temp = 1;
-                //temp = ps.Count / LocationHistoryPath.segmentsMax;
-                //if (ps.Count % LocationHistoryPath.segmentsMax > 0)
-                //{
-                //    temp += 1;//temp个点取一个有效点
-                //}
-                //foreach (Position p in ps)
+
                 for (int i = 0; i < positions.Count; i++)
                 {
-                    //if (i % temp == 0)//temp个点取一个有效点
-                    //{
-                    Position p = positions[i];
-                    Vector3 tempVector3 = new Vector3((float)p.X, (float)p.Y, (float)p.Z);
-                    tempVector3 = LocationManager.GetRealVector(tempVector3);
-                    //Vector3 offset = LocationManager.Instance.transform.position;
-                    //temp = new Vector3(temp.x + offset.x, temp.y + offset.y, temp.z + offset.z);
-                    list.Add(tempVector3);
-                    DateTime t = LocationManager.GetTimestampToDateTime(p.Time);
-                    //DateTime t = p.DateTime;
-                    timelist.Add(t);
-                    //}
+                    var p=new PositionInfo(positions[i], start);
+                    posInfoList.Add(p);
                 }
 
-                LocationHistoryPath histoyObj = LocationHistoryManager.Instance.ShowLocationHistoryPath(personnel, list, list.Count, Color.green, "HistoryPath0002");
+                PathInfo pathInfo = new PathInfo();
+                pathInfo.personnelT = personnel;
+                pathInfo.color = Color.green;
+                pathInfo.posList = posInfoList;
+                pathInfo.timeLength = timeLength;
+
+                LocationHistoryPath histoyObj = LocationHistoryManager.Instance.ShowLocationHistoryPath(pathInfo, "HistoryPath0002");
                 HistoryManController historyManController= histoyObj.gameObject.AddComponent<HistoryManController>();
                 histoyObj.historyManController = historyManController;
                 historyManController.Init(Color.green, histoyObj);
@@ -308,7 +303,7 @@ public class HistoryPlayUI : MonoBehaviour
                 isLoadDataSuccessed = true;
                 timeStart = Time.time;
                 timeSum = 0;
-                histoyObj.InitData(timeLength, timelist);
+                //histoyObj.InitData(timeLength, timelist);
             });
         });
     }

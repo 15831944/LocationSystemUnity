@@ -90,11 +90,16 @@ public class UGUIFollowManage : MonoBehaviour
         }
     }
 
+    public GameObject CreateItemEX(GameObject prefabUI, GameObject target, string groupName,bool changeChildActive,int layerint = -1)
+    {
+        return CreateItem(prefabUI, target, groupName,null, changeChildActive, false,false,true, layerint);
+    }
+
     /// <summary>
     /// 创建一项
     /// </summary>
     /// isCreateParent:是否创建父物体
-    public GameObject CreateItem(GameObject prefabUI, GameObject target, string groupName, Camera camT = null, bool isCreateParent = false, bool IsRayCheckCollision = false, bool isUseCanvasScalerT = true)
+    public GameObject CreateItem(GameObject prefabUI, GameObject target, string groupName, Camera camT = null,bool changeChildActive=false ,bool isCreateParent = false, bool IsRayCheckCollision = false, bool isUseCanvasScalerT = true, int layerint = -1)
     {
         if (camT == null)
         {
@@ -113,7 +118,8 @@ public class UGUIFollowManage : MonoBehaviour
         GameObject ui = Instantiate(prefabUI);
         ui.SetActive(true);
 
-        UGUIFollowTarget followTarget = UGUIFollowTarget.AddUGUIFollowTarget(ui, target, camT, isUseCanvasScalerT);
+        UGUIFollowTarget followTarget = UGUIFollowTarget.AddUGUIFollowTarget(ui, target, camT, isUseCanvasScalerT, layerint);
+        followTarget.SetTargetChildActive = changeChildActive;
         //followTarget.IsRayCheckCollision = IsRayCheckCollision;
         followTarget.SetIsRayCheckCollision(IsRayCheckCollision);
 
@@ -196,7 +202,16 @@ public class UGUIFollowManage : MonoBehaviour
         //name_uilist.Add("FollowUICommon", new List<GameObject>());
         //name_uiparent.Add(name, parentT);
         //return dics[name];
-        CommonFollowUIs.gameObject.SetActive(true);
+        //CommonFollowUIs.gameObject.SetActive(true);
+        SetCommonFollowUIsActive(true);
+    }
+
+    /// <summary>
+    /// 设置跟随UI,公共池的显示隐藏
+    /// </summary>
+    public void SetCommonFollowUIsActive(bool isBool)
+    {
+        CommonFollowUIs.gameObject.SetActive(isBool);
     }
 
     /// <summary>

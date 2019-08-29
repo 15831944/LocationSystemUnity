@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Location.WCFServiceReferences.LocationServices;
+using System;
+using Assets.M_Plugins.Helpers.Utils;
+
 public class FollowTargetManage : MonoBehaviour
 {
     public static FollowTargetManage Instance;
@@ -78,10 +81,12 @@ public class FollowTargetManage : MonoBehaviour
         SetAlarmDevUIState(isFullView);
         if (isFullView)
         {
+            UGUIFollowManage.Instance.SetCommonFollowUIsActive(false);
             HideAllFollowUI();
         }
         else
         {
+            UGUIFollowManage.Instance.SetCommonFollowUIsActive(true);
             ShowAllFollowUI();
         }
     }
@@ -113,6 +118,7 @@ public class FollowTargetManage : MonoBehaviour
     public void HideAllFollowUI(DepNode dep=null)
     {
         HideBuildingUI();
+        CloseDepCameraUI();
         HideCameraUI(dep);
         HideDevInfoUI(dep);
         HideArchorInfoUI(dep);
@@ -168,6 +174,48 @@ public class FollowTargetManage : MonoBehaviour
     }
     #endregion
     #region 摄像头创建UI部分
+    /// <summary>
+    /// 当前区域打开的UI
+    /// </summary>
+    private List<CameraMonitorFollowUI> depOpenUI = new List<CameraMonitorFollowUI>();
+
+    public void SaveDepOpenCameraUI(CameraMonitorFollowUI followUI)
+    {
+        if (depOpenUI == null) depOpenUI = new List<CameraMonitorFollowUI>();
+        if(!depOpenUI.Contains(followUI))
+        {
+            depOpenUI.Add(followUI);
+        }
+    }
+    public void RemoveOpenCameraUI(CameraMonitorFollowUI followUI)
+    {
+        if (depOpenUI == null) return;
+        if (depOpenUI.Contains(followUI))
+        {
+            depOpenUI.Remove(followUI);
+        }
+    }
+    /// <summary>
+    /// 关闭当前Toggle为True的UI
+    /// </summary>
+    public void CloseDepCameraUI()
+    {
+        if (depOpenUI == null||depOpenUI.Count==0) return;
+        try
+        {
+            List<CameraMonitorFollowUI> followTemp = new List<CameraMonitorFollowUI>();
+            followTemp.AddRange(depOpenUI);
+            foreach (var item in followTemp)
+            {
+                if (item == null) continue;
+                if (item.BgToggle.isOn) item.BgToggle.isOn = false;
+            }
+        }catch(Exception e)
+        {
+            Log.Error("FollowTargetManage.CloseDepCameraUI.Exception:"+e.ToString());
+        }
+        depOpenUI.Clear();
+    }
 
     public void CreateCameraUI(GameObject cameraDev,DepNode devDep,DevNode info)
     {
@@ -180,6 +228,9 @@ public class FollowTargetManage : MonoBehaviour
         Camera mainCamera = GetMainCamera();
         if (mainCamera == null) return;
         string cameraDepName = GetDepNodeId(devDep) + CameraListName;
+        DisposeFollowTarget dispostTarget = targetTagObj.AddMissingComponent<DisposeFollowTarget>();
+        dispostTarget.SetInfo(cameraDepName);
+
         //if (!CameraDepNameList.Contains(cameraDepName)) CameraDepNameList.Add(cameraDepName);
         GameObject name = UGUIFollowManage.Instance.CreateItem(CameraUIPrefab, targetTagObj, cameraDepName, mainCamera);
         CameraMonitorFollowUI cameraInfo = name.GetComponent<CameraMonitorFollowUI>();
@@ -187,7 +238,7 @@ public class FollowTargetManage : MonoBehaviour
         {
             cameraInfo.SetInfo(info);
         }
-        if (DevSubsystemManage.IsRoamState || !FunctionSwitchBarManage.Instance.CameraToggle.ison)
+        if (DevSubsystemManage.IsRoamState || !FunctionSwitchBarManage.Instance.CameraToggle.ison||ObjectAddListManage.IsEditMode)
         {
             UGUIFollowManage.Instance.SetGroupUIbyName(cameraDepName, false);
         }
@@ -198,20 +249,31 @@ public class FollowTargetManage : MonoBehaviour
     /// </summary>
     public void HideCameraUI(DepNode dep=null)
     {
-        if (FactoryDepManager.currentDep == null|| FunctionSwitchBarManage.Instance == null) return;
-        if (dep==null&&FunctionSwitchBarManage.Instance.CameraToggle.ison) return;
-        DepNode depToShow = dep == null ? FactoryDepManager.currentDep : dep;
-        string cameraDepName = GetDepNodeId(depToShow) + CameraListName;
-        UGUIFollowManage.Instance.SetGroupUIbyName(cameraDepName, false);
+        try
+        {
+            Log.Info("HideCameraUI");
+            if (FactoryDepManager.currentDep == null || FunctionSwitchBarManage.Instance == null) return;
+            if (dep == null && FunctionSwitchBarManage.Instance.CameraToggle.ison) return;
+            DepNode depToShow = dep == null||dep is DepController ? FactoryDepManager.currentDep : dep;
+            depToShow = depToShow is DepController ? FactoryDepManager.Instance : depToShow;//区域也默认关闭整厂摄像头
+            string cameraDepName = GetDepNodeId(depToShow) + CameraListName;
+            UGUIFollowManage.Instance.SetGroupUIbyName(cameraDepName, false);
+            CloseDepCameraUI();//关闭当前区域打开的Toggle
+        }catch(Exception e)
+        {
+            Log.Error("FollowTargetManage.HideCameraUI.Exception:" + e.ToString());
+        }
     }
     /// <summary>
     /// 显示摄像机漂浮UI
     /// </summary>
     public void ShowCameraUI(DepNode dep = null)
     {
+        Log.Info("ShowCameraUI");
         if (FunctionSwitchBarManage.Instance == null) return;
-        if (!FunctionSwitchBarManage.Instance.CameraToggle.ison||FactoryDepManager.currentDep==null||ObjectAddListManage.IsEditMode) return;
+        if (!FunctionSwitchBarManage.Instance.CameraToggle.ison||FactoryDepManager.currentDep==null||ObjectAddListManage.IsEditMode) return;      
         DepNode depToShow = dep == null ? FactoryDepManager.currentDep : dep;
+        depToShow = depToShow is DepController ? FactoryDepManager.Instance : depToShow;//区域也默认显示整厂摄像头
         string cameraDepName = GetDepNodeId(depToShow) + CameraListName;
         UGUIFollowManage.Instance.SetGroupUIbyName(cameraDepName, true);
     }
@@ -224,7 +286,7 @@ public class FollowTargetManage : MonoBehaviour
     /// <param name="sisDev"></param>
     /// <param name="info"></param>
     /// <param name="isShow">是否显示</param>
-    public void CreateDevFollowUI(GameObject sisDev,DepNode devDep, DevNode info)
+    public void CreateDevFollowUI(GameObject sisDev,DepNode devDep, DevNode info,Action<DeviceFollowUI>onCreateFinished=null)
     {
         GameObject targetTagObj = UGUIFollowTarget.CreateTitleTag(sisDev, Vector3.zero);
         if (UGUIFollowManage.Instance == null)
@@ -235,19 +297,23 @@ public class FollowTargetManage : MonoBehaviour
         Camera mainCamera = GetMainCamera();
         if (mainCamera == null) return;
         string devDepName = GetDepNodeId(devDep) + DevListName;
+        DisposeFollowTarget dispostTarget = targetTagObj.AddMissingComponent<DisposeFollowTarget>();
+        dispostTarget.SetInfo(devDepName);
+
         //if (!DevDepNameList.Contains(devDepName)) DevDepNameList.Add(devDepName);
         GameObject name = UGUIFollowManage.Instance.CreateItem(DevUIPrefab, targetTagObj, devDepName, mainCamera);
         UGUIFollowTarget followTarget = name.GetComponent<UGUIFollowTarget>();
-        followTarget.SetEnableDistace(true,60);
+        //followTarget.SetEnableDistace(true,60);
         DeviceFollowUI cameraInfo = name.GetComponent<DeviceFollowUI>();
         if (cameraInfo != null)
         {
             cameraInfo.SetInfo(info);
+            if (onCreateFinished != null) onCreateFinished(cameraInfo);
         }
-        if (DevSubsystemManage.IsRoamState||!FunctionSwitchBarManage.Instance.DevInfoToggle.ison)
-        {
-            UGUIFollowManage.Instance.SetGroupUIbyName(devDepName, false);
-        }        
+        //if (DevSubsystemManage.IsRoamState||!FunctionSwitchBarManage.Instance.DevInfoToggle.ison)
+        //{
+        //    UGUIFollowManage.Instance.SetGroupUIbyName(devDepName, false);
+        //}        
     }
     /// <summary>
     /// 隐藏设备漂浮UI
@@ -256,8 +322,9 @@ public class FollowTargetManage : MonoBehaviour
     {
         if (FactoryDepManager.currentDep == null) return;
         DepNode depToShow = dep == null ? FactoryDepManager.currentDep : dep;
-        string devDepName = GetDepNodeId(depToShow) + DevListName;
-        UGUIFollowManage.Instance.SetGroupUIbyName(devDepName, false);
+        //string devDepName = GetDepNodeId(depToShow) + DevListName;
+        //UGUIFollowManage.Instance.SetGroupUIbyName(devDepName, false);
+        if (DeviceFollowUI.CurrentMonitor != null) DeviceFollowUI.CurrentMonitor.CloseUI();
     }
     /// <summary>
     /// 显示设备漂浮UI
@@ -266,43 +333,85 @@ public class FollowTargetManage : MonoBehaviour
     {
         if (FunctionSwitchBarManage.Instance == null) return;
         if (!FunctionSwitchBarManage.Instance.DevInfoToggle.ison|| FactoryDepManager.currentDep == null || ObjectAddListManage.IsEditMode) return;
-        DepNode depToShow = dep == null ? FactoryDepManager.currentDep : dep;
-        string devDepName = GetDepNodeId(depToShow) + DevListName;
-        UGUIFollowManage.Instance.SetGroupUIbyName(devDepName, true);
+        //DepNode depToShow = dep == null ? FactoryDepManager.currentDep : dep;
+        //string devDepName = GetDepNodeId(depToShow) + DevListName;
+        //UGUIFollowManage.Instance.SetGroupUIbyName(devDepName, true);
     }
     #endregion
     #region 创建设备告警漂浮UI
+
+    /// <summary>
+    /// 设置告警跟随UI的信息
+    /// </summary>
+    /// <param name="dev"></param>
+    /// <param name="alarmInfo"></param>
+    public void SetAlarmFollowUI(DevNode dev, DeviceAlarm alarmInfo)
+    {
+        string typeCode = dev.Info.TypeCode.ToString();
+        if (TypeCodeHelper.IsAlarmDev(typeCode))
+        {
+            if (dev.alarmUi == null)
+            {
+                dev.alarmUi = CreateFireDevFollowUI(dev.gameObject, dev.ParentDepNode, alarmInfo);
+            }
+            else
+            {
+                dev.alarmUi.InitInfo(alarmInfo);
+            }
+        }
+        else
+        {
+            if (dev.alarmUi == null)
+            {
+                dev.alarmUi = CreateAlarmDevFollowUI(dev.gameObject, dev.ParentDepNode, alarmInfo);
+            }
+            else
+            {
+                dev.alarmUi.InitInfo(alarmInfo);
+            }
+        }
+    }
+
     /// <summary>
     /// 创建设备漂浮UI
     /// </summary>
     /// <param name="sisDev"></param>
     /// <param name="info"></param>
     /// <param name="isShow">是否显示</param>
-    public GameObject CreateBorderDevFollowUI(GameObject borderDev,DepNode dep ,DeviceAlarm alarmInfo)
+    private BorderDevFollowUI CreateAlarmDevFollowUI(GameObject borderDev,DepNode dep ,DeviceAlarm alarmInfo)
     {
-        string depNodeId = dep is RoomController ? dep.ParentNode.NodeID.ToString() : dep.NodeID.ToString();
-        string groupName = string.Format("{0}{1}", AlarmDevUIName, depNodeId);
-        GameObject followObj = CreateFollowTarget(BorderDevUIPrefab,borderDev, groupName);
-        if (followObj == null) return null;
-        BorderDevFollowUI followUI = followObj.GetComponent<BorderDevFollowUI>();
-        if (followUI != null)
+        try
         {
-            followUI.InitInfo(alarmInfo);
+            string depNodeId = dep is RoomController ? dep.ParentNode.NodeID.ToString() : dep.NodeID.ToString();
+            string groupName = string.Format("{0}{1}", AlarmDevUIName, depNodeId);
+            GameObject followObj = CreateFollowTarget(BorderDevUIPrefab, borderDev, groupName);
+            if (followObj == null) return null;
+            BorderDevFollowUI followUI = followObj.GetComponent<BorderDevFollowUI>();
+            //if (followUI != null)
+            //{
+            //    followUI.InitInfo(alarmInfo);
+            //}
+            return followUI;
         }
-        return followObj;     
+        catch (Exception ex)
+        {
+            Log.Error("FollowTargetManage.CreateAlarmDevFollowUI", ex.ToString());
+            return null;
+        }
+    
     }
-    public GameObject CreateFireDevFollowUI(GameObject fireDev,DepNode dep,DeviceAlarm alarmInfo)
+    public FireDevFollowUI CreateFireDevFollowUI(GameObject fireDev,DepNode dep,DeviceAlarm alarmInfo)
     {
-        string depNodeId = dep is RoomController ? dep.ParentNode.NodeID.ToString():dep.NodeID.ToString();
-        string groupName = string.Format("{0}{1}", AlarmDevUIName, depNodeId);
+        //string depNodeId = dep is RoomController ? dep.ParentNode.NodeID.ToString():dep.NodeID.ToString();
+        string groupName = string.Format("{0}{1}", AlarmDevUIName, dep.NodeID);
         GameObject followObj = CreateFollowTarget(FireDevUIPrefab, fireDev, groupName);
         if (followObj == null) return null;
         FireDevFollowUI followUI = followObj.GetComponent<FireDevFollowUI>();
-        if (followUI != null)
-        {
-            followUI.InitInfo(alarmInfo);
-        }
-        return followObj;
+        //if (followUI != null)
+        //{
+        //    followUI.InitInfo(alarmInfo);
+        //}
+        return followUI;
     }
     /// <summary>
     /// 移除设备漂浮UI
@@ -317,6 +426,16 @@ public class FollowTargetManage : MonoBehaviour
         {
             UGUIFollowManage.Instance.RemoveUIbyTarget(groupName, titleTag.gameObject);
         }       
+    }
+    public void RemoveAlarmDevFloowUI(DepNode depNode,GameObject alarmObj)
+    {
+        if (depNode == null) return;
+        string groupName = string.Format("{0}{1}", AlarmDevUIName, depNode.NodeID);
+        Transform titleTag = alarmObj.gameObject.transform.Find("TitleTag");
+        if (titleTag != null)
+        {
+            UGUIFollowManage.Instance.RemoveUIbyTarget(groupName, titleTag.gameObject);
+        }
     }
     /// <summary>
     /// 设置告警漂浮UI的状态（显示/关闭）
@@ -357,6 +476,9 @@ public class FollowTargetManage : MonoBehaviour
         Camera mainCamera = GetMainCamera();
         if (mainCamera == null) return;
         string devDepName = GetDepNodeId(devDep) + ArchorDevUIName;
+        DisposeFollowTarget dispostTarget = targetTagObj.AddMissingComponent<DisposeFollowTarget>();
+        dispostTarget.SetInfo(devDepName);
+
         //if (!DevDepNameList.Contains(devDepName)) DevDepNameList.Add(devDepName);
         GameObject name = UGUIFollowManage.Instance.CreateItem(ArchorDevUIPrefab, targetTagObj, devDepName, mainCamera);
         UGUIFollowTarget followTarget = name.GetComponent<UGUIFollowTarget>();
@@ -420,6 +542,11 @@ public class FollowTargetManage : MonoBehaviour
     /// <returns></returns>
     private string GetDepNodeId(DepNode dep)
     {
+        if (dep == null)
+        {
+            Log.Error("FollowTargetManage.GetDepNodeId", "dep==null");
+            return "";
+        }
         if (dep as RoomController) return dep.ParentNode.NodeID.ToString();
         return dep.NodeID.ToString();
     }

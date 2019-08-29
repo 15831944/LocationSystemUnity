@@ -12,18 +12,25 @@ public class MouseInputCheck : MonoBehaviour {
         SceneEvents.BuildingOpenCompleteAction += OnBuildingOpen;
         SceneEvents.BuildingStartCloseAction += OnBuildingClose;
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    void OnDestroy()
+    {
+        SceneEvents.BuildingOpenCompleteAction -= OnBuildingOpen;
+        SceneEvents.BuildingStartCloseAction -= OnBuildingClose;
+    }
+
+    // Update is called once per frame
+    void Update () {
         CloseBuildingCheck();
     }
     /// <summary>
     /// 建筑展开
     /// </summary>
-    private void OnBuildingOpen()
+    private void OnBuildingOpen(BuildingController building)
     {
         //Debug.LogError("BuildingOpen");
-        IsBuildingOpen = true;
+        if(building.isExpandFloor)
+            IsBuildingOpen = true;
     }
     /// <summary>
     /// 建筑关闭

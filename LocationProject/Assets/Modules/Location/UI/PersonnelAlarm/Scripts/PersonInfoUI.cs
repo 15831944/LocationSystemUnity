@@ -11,7 +11,8 @@ public enum PersonInfoUIState
     Normal,//正常
     Standby,//待机
     StandbyLong,//长时间不动
-    Leave//离开
+    Leave,//离开
+    LowBattery//低电
 }
 
 public class PersonInfoUI : MonoBehaviour
@@ -24,6 +25,7 @@ public class PersonInfoUI : MonoBehaviour
     /// <summary>
     /// 人员信息数据
     /// </summary>
+    [System.NonSerialized]
     [HideInInspector]
     public Personnel personnel;
     /// <summary>
@@ -60,6 +62,7 @@ public class PersonInfoUI : MonoBehaviour
     public GameObject historyBtn;//历史轨迹按钮
                                  // public Button historyBtn;//历史轨迹按钮
     public GameObject videomonitorBtn;//视频监控按钮
+    public GameObject arVideoButton;//AR视频按钮
 
     private Tweener contentGridTweener;//内容列表动画
     private CanvasGroup contentGridCanvasGroup;//内容列表CanvasGroup
@@ -72,6 +75,8 @@ public class PersonInfoUI : MonoBehaviour
     public Text infoStandbyTime;//待机时间
     public Text nameStandbyTime;//待机时间
 
+    public ToggleButton3 CameraFollowToggleButton;//摄像机跟随控制
+
     void Start()
     {
         //Instance = this;
@@ -80,6 +85,8 @@ public class PersonInfoUI : MonoBehaviour
         EntranceGuardBtn.GetComponent<Button>().onClick.AddListener(EntranceGuardBtn_OnClick);
         videomonitorBtn.GetComponent<Button>().onClick.AddListener(VideoMonitorBtn_OnClick);
         ButtonGroup();
+        CameraFollowToggleButton.OnValueChanged = CameraFollowToggleButton_OnValueChanged;
+        if (arVideoButton) arVideoButton.GetComponent<Button>().onClick.AddListener(ShowARVideo);
     }
 
     // Update is called once per frame
@@ -119,13 +126,23 @@ public class PersonInfoUI : MonoBehaviour
 
         txtName.text = personnel.Name;
         TagName.GetComponentInChildren<Text>(true).text = personnel.Name;
-        txtJob.text = "(" + personnel.Pst + ")";
+
+
+
+        //txtJob.text = "(" + personnel.Pst + ")";
+
         //SetPhoto(personnelT.Sex);
 
         gameObject.name = personnel.Name;
         if (personnel.Tag != null)
         {
             gameObject.name += personnel.Tag.Code;
+
+            txtJob.text = "(" + personnel.Tag.Code + ")";
+        }
+        else
+        {
+            txtJob.text = "";
         }
 
         LocationUIManage.Instance.SetPhoto(photo, personnelT.Sex);
@@ -209,6 +226,7 @@ public class PersonInfoUI : MonoBehaviour
         StartOutManage.Instance.ShowBackButton(()
             =>
         {
+            LocationManager.Instance.currentLocationFocusObj.SetRendererEnable(true, false);
             LocationManager.Instance.HideCurrentPersonInfoUI();
             //StartOutManage.Instance.HideBackButton();
             if (LocationManager.Instance.IsFocus)
@@ -233,6 +251,36 @@ public class PersonInfoUI : MonoBehaviour
         }
 
         StartOutManage.Instance.HideBackButton();
+    }
+    /// <summary>
+    /// 设置是否显示AR视频按钮
+    /// </summary>
+    private void SetArButtonState()
+    {
+        if (arVideoButton == null) return;
+        if (personnel != null && !string.IsNullOrEmpty(personnel.RtspUrl))
+        {
+            arVideoButton.SetActive(true);
+        }
+        else
+        {
+            arVideoButton.SetActive(false);
+        }
+    }
+    /// <summary>
+    /// 显示Ar视频
+    /// </summary>
+    private void ShowARVideo()
+    {
+        if (personnel == null)
+        {
+            Debug.LogError("Personnel is null...");
+            return;
+        }
+        if (CameraVideoManage.Instance)
+        {
+            CameraVideoManage.Instance.ShowRtspVideo(personnel.RtspUrl);
+        }
     }
 
     private void SetTagName(bool b)
@@ -294,7 +342,7 @@ public class PersonInfoUI : MonoBehaviour
     /// </summary>
     public void SetTxtAreaName(string nameT)
     {
-        txtArea.text = nameT;
+        if(txtArea!=null)txtArea.text = nameT;
     }
 
     /// <summary>
@@ -373,48 +421,14 @@ public class PersonInfoUI : MonoBehaviour
     /// </summary>
     public void VideoMonitorBtn_OnClick()
     {
-      
-        
-        NearPersonnelCameraManage.Instance.Personnel.text = personnel.Name.ToString();
-        if (personnel.AreaName == null)
-        {
-            NearPersonnelCameraManage.Instance.CurrentArea.text = "厂区内";
-        }
-        else
-        {
-            NearPersonnelCameraManage.Instance.CurrentArea.text = personnel.AreaName.ToString();
-        }
-
         NearPersonnelCameraManage.Instance.ShowNearPersonnelCameraWindow();
-        
-        NearPersonnelCameraManage.Instance. isRefresh = false;
-        StartRefershNearPersonnelCameraData();
+        NearPersonnelCameraManage.Instance.isRefresh = false;
+        NearPersonnelCameraManage.Instance.GetNearPerCamData(personnel.Id, 250f, 1, txtArea.text, locationObj, personnel.Name );
+
+        // StartRefershNearPersonnelCameraData();
 
     }
-    public void StartRefershNearPersonnelCameraData()
-    {
-        if (!IsInvoking("RefershNearPersonnelCameraData"))
-        {
-            InvokeRepeating("RefershNearPersonnelCameraData",0, CommunicationObject.Instance.NearCameraRefreshInterval);
-        }
-    }
-    public void RefershNearPersonnelCameraData()
-    {
-        NearPersonnelCameraManage.Instance.SaveSelection();
-        float dis = 250;
-       // Debug.LogError("蔡露露");
-        Vector3 PerRotion = new Vector3(locationObj.transform.eulerAngles.x, locationObj.transform.eulerAngles.z, locationObj.transform.eulerAngles.y);
-        NearPersonnelCameraManage.Instance.PersonnelRotation.GetComponent<RectTransform>().localEulerAngles = PerRotion;
-        NearPersonnelCameraManage.Instance.GetNearPerCamData(personnel.Id, dis, 1);
-       // Debug.LogError("caixulu");
-    }
-    public void CloseRefershNearPersonnelCameraData()
-    {
-        if (IsInvoking("RefershNearPersonnelCameraData"))
-        {
-            CancelInvoke("RefershNearPersonnelCameraData");
-        }
-    }
+
     /// <summary>
     /// 关闭定位相关功能
     /// </summary>
@@ -433,6 +447,7 @@ public class PersonInfoUI : MonoBehaviour
     /// <param name="button"></param>
     public void ChangeButtonColor(GameObject button)
     {
+        if (button == null) return;
         EventTriggerListener colorButton = EventTriggerListener.Get(button);
         colorButton.onEnter = CheckButton;
         colorButton.onExit = NormalButton;
@@ -481,6 +496,7 @@ public class PersonInfoUI : MonoBehaviour
         ChangeButtonColor(videomonitorBtn);
         ChangeButtonColor(historyBtn);
         ChangeButtonColor(EntranceGuardBtn);
+        ChangeButtonColor(arVideoButton);
     }
 
     /// <summary>
@@ -509,41 +525,86 @@ public class PersonInfoUI : MonoBehaviour
         SetContentToggle(b);
     }
 
+    public bool isPersonStandBy = false;
+
+    public DateTime? standByStartTime = null;
+
+    private string lastTxt = "";
+
+    public void SetStandBy(bool isStandBy)
+    {
+        if (isPersonStandBy == false && isStandBy == true)
+        {
+            standByStartTime = DateTime.Now;
+        }
+        //else
+        //{
+        //    //if (isStandBy)
+        //    {
+        //        standByStartTime = null;
+        //    }
+        //}
+        isPersonStandBy = isStandBy;
+    }
+
+
     /// <summary>
     /// 显示待机时间
     /// </summary>
     public void ShowStandByTime()
     {
-        TimeSpan time = DateTime.Now - LocationManager.GetTimestampToDateTime(locationObj.tagPosInfo.Time);
-        //infoStandbyTime.text = time.TotalSeconds.ToString();
-        //nameStandbyTime.text = "(" + time.TotalSeconds.ToString() + ")";
+        TimeSpan time = TimeSpan.Zero;
 
-        //infoStandbyTime.text = "已待机";
-        //nameStandbyTime.text = "(" + time.TotalSeconds.ToString() + ")";
+        //if (standByStartTime == null)
+        //{
 
-        if (time.TotalSeconds < 60)//如果小于1分钟显示秒
+        //}
+
+        DateTime start = LocationManager.GetTimestampToDateTime(locationObj.tagPosInfo.Time);
+        if (standByStartTime != null)
         {
-            infoStandbyTime.text = "(" + Math.Round(time.TotalSeconds, 0).ToString() + "秒)";
-        }
-        else if (time.TotalSeconds < 3600)//如果小于1小时显示分钟和秒
-        {
-            infoStandbyTime.text = "(" + time.Minutes.ToString() + "分" + time.Seconds + "秒)";
-        }
-        else if (time.TotalSeconds < 3600 * 24)//如果小于天显示小时和分钟
-        {
-            infoStandbyTime.text = "(" + time.Hours.ToString() + "时" + time.Minutes.ToString() + "分)";
-        }
-        else if (time.TotalSeconds < 3600 * 24 * 365) //如果大于一天显示天和小时
-        {
-            infoStandbyTime.text = "(" + time.Days.ToString() + "天" + time.Hours.ToString() + "时)";
+            //start = (DateTime)standByStartTime;
+            time = DateTime.Now - start;
         }
         else
         {
-            infoStandbyTime.text = "(" + Math.Round(time.TotalDays, 0).ToString() + "天)";
+            time = DateTime.Now - start;
+            time.Add(TimeSpan.FromSeconds(-5)); //5s后才算开始待机
         }
-        infoStandbyTime.text = "待机" + infoStandbyTime.text;
-        nameStandbyTime.text = infoStandbyTime.text;
 
+        //Log.Info("ShowStandByTime Time", string.Format("{0},{1},{2}", locationObj.tagPosInfo.Time, time, standByStartTime));
+
+        var txt = GetTimeText(time);
+
+        //if (isPersonStandBy == false || string.IsNullOrEmpty(txt))
+        //{
+        //    if (string.IsNullOrEmpty(lastTxt))
+        //    {
+        //        HideStandByTime();
+        //        return;
+        //    }
+        //    else
+        //    {
+        //        txt = lastTxt;
+        //    }
+        //}
+
+        //if (string.IsNullOrEmpty(txt))
+        //{
+        //    HideStandByTime();
+        //}
+
+        ShowStandByTime("待机" + txt);
+    }
+
+    private string lastStandByText = "";
+
+    private void ShowStandByTime(string txt)
+    {
+        //Log.Info("ShowStandByTime", string.Format("{0}->{1}", lastStandByText, txt));
+        lastStandByText = txt;
+        infoStandbyTime.text = txt;
+        nameStandbyTime.text = txt;
         infoStandbyTime.gameObject.SetActive(true);
         nameStandbyTime.gameObject.SetActive(true);
     }
@@ -553,7 +614,62 @@ public class PersonInfoUI : MonoBehaviour
     /// </summary>
     public void HideStandByTime()
     {
+        //Log.Info("HideStandByTime");
         infoStandbyTime.gameObject.SetActive(false);
         nameStandbyTime.gameObject.SetActive(false);
+    }
+
+    private int seconds = 0;
+
+    private string GetTimeText(TimeSpan time)
+    {
+        seconds = (int)time.TotalSeconds;
+        string txt = "";
+        if (time.TotalSeconds <= 60) //如果小于1分钟显示秒
+        {
+            if (time.TotalSeconds > 0.9999999)
+            {
+                txt = "(" + Math.Round(time.TotalSeconds, 0).ToString() + "秒)";
+            }
+        }
+        else if (time.TotalSeconds <= 3600) //如果小于1小时显示分钟和秒
+        {
+            txt = "(" + time.Minutes.ToString() + "分" + time.Seconds + "秒)";
+        }
+        else if (time.TotalSeconds <= 3600 * 24) //如果小于天显示小时和分钟
+        {
+            txt = "(" + time.Hours.ToString() + "时" + time.Minutes.ToString() + "分)";
+        }
+        else if (time.TotalSeconds <= 3600 * 24 * 365) //如果大于一天显示天和小时
+        {
+            txt = "(" + time.Days.ToString() + "天" + time.Hours.ToString() + "时)";
+        }
+        else
+        {
+            txt = "(" + Math.Round(time.TotalDays, 0).ToString() + "天)";
+        }
+
+        return txt;
+    }
+
+
+    /// <summary>
+    /// CameraFollowToggleButton点击切换镜头跟随效果
+    /// </summary>
+    public void CameraFollowToggleButton_OnValueChanged(bool b)
+    {
+        if (b)
+        {
+            CameraSceneManager.Instance.SetTheThirdPersonCameraTrue();
+        }
+        else
+        {
+            CameraSceneManager.Instance.SetTheThirdPersonCameraFalse();
+        }
+    }
+
+    public void ResetCameraFollowToggleButton()
+    {
+        CameraFollowToggleButton.RReset();
     }
 }

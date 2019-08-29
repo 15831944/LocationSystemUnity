@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 对于人员，我们在PhysicsManager设置人员所在layer不能与地板所在layer和自身碰撞
+/// </summary>
 public class PersonMove : MonoBehaviour {
 
-    public float speed = 6.0F;
+    public float speed = 0.1F;
     public float jumpSpeed = 8.0F;
     public float gravity = 20.0F;
     private Vector3 moveDirection = Vector3.zero;
@@ -39,27 +42,50 @@ public class PersonMove : MonoBehaviour {
     /// </summary>
     public void SetPosition(Vector3 pos)
     {
-        //transform.position = pos;
         transform.position = new Vector3(transform.position.x, pos.y, transform.position.z);
         moveDirection = pos - transform.position;
         UpdatePosition();
+
+        //moveDirection = pos - transform.position;
+        //UpdatePosition();
+    }
+
+    /// <summary>
+    /// 设置位置
+    /// </summary>
+    public void SetPosition_History(Vector3 pos)
+    {
+        //transform.position = new Vector3(transform.position.x, pos.y, transform.position.z);
+        moveDirection = pos - transform.position;
+        UpdatePosition();
+
+        //moveDirection = pos - transform.position;
+        //UpdatePosition();
     }
 
     /// <summary>
     /// 刷新位置
+    /// 注意：对于人员，我们在PhysicsManager设置人员所在layer不能与地板所在layer和自身碰撞
     /// </summary>
     public void UpdatePosition()
     {
+        //moveDirection *= speed;
+        //controller.Move(moveDirection);
 
-        //if (controller.isGrounded)
-        //{
-        //    moveDirection *= speed;
+        //controller.Move(moveDirection * Time.deltaTime * speed);
+        Vector3 back = transform.position;
 
-        //}
-        moveDirection *= speed;
-        //moveDirection.y -= gravity * Time.deltaTime;
-        //controller.Move(moveDirection * Time.deltaTime);
-        controller.Move(moveDirection);
+        if (controller.enabled == false)
+        {
+            controller.enabled = true;
+        }
+
+        CollisionFlags flags= controller.Move(moveDirection);//注意：对于人员，我们在PhysicsManager设置人员所在layer不能与地板所在layer和自身碰撞
+
+        if ((flags & CollisionFlags.Sides)!=0)
+        {
+            transform.position = back;
+        }
     }
 
     public void SetCharacterController(bool isBool)
