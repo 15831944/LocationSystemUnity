@@ -6,8 +6,8 @@ using UnityEngine.UI;
 public class DatePickerChange : UIBehaviour
 {
 
-    private Text _dateText = null;
-    private CalendarChange _calendar = null;
+    public Text _dateText = null;
+    public CalendarChange _calendar = null;
  
     private DateTime _dateTime = DateTime.Today;
     // get data from this property
@@ -23,11 +23,39 @@ public class DatePickerChange : UIBehaviour
 
     protected override void Awake()
     {
-        _dateText = this.transform.Find("DateText").GetComponent<Text>();
-        _calendar = this.transform.Find("Calendar").GetComponent<CalendarChange>();
+        Init();
+    }
+
+    private bool inited = false;
+
+    private void Init()
+    {
+        if (inited)
+        {
+            return;
+        }
+        inited = true;
+        if (_dateText == null)
+        {
+            _dateText = this.transform.Find("DateText").GetComponent<Text>();
+            if (_dateText == null)
+            {
+                Log.Error("DatePickerChange.Awake", "_dateText == null:" + this); ;
+            }
+        }
+
+        if (_calendar == null)
+        {
+            _calendar = this.transform.Find("Calendar").GetComponent<CalendarChange>();
+            if (_calendar == null)
+            {
+                Log.Error("DatePickerChange.Awake", "_calendar == null:" + this); ;
+            }
+        }
+
         //_calendar.onDayClick.AddListener(dateTime => { DateTime = dateTime; });
-        _calendar.onDayClick.AddListener(dateTime 
-            => 
+        _calendar.onDayClick.AddListener(dateTime
+            =>
         {
             if (dateTime > DateTime.Now)
             {
@@ -78,6 +106,15 @@ public class DatePickerChange : UIBehaviour
 
     private void refreshDateText()
     {
+        if (_calendar == null)
+        {
+            Init();
+        }
+        if (_calendar == null)
+        {
+            Log.Error("DatePickerChange.refreshDateText", "_calendar == null:" + this); ;
+            return;
+        }
         if (_calendar.DisplayType == E_DisplayType.Standard)
         {
             switch (_calendar.CalendarType)

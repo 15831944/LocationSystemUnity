@@ -15,7 +15,8 @@ public class WallInfoMenu : MonoBehaviour {
         BuildingController bc = j1.GetComponent<BuildingController>();
         bc.isExpandFloor = false;
         bc.isHideWall = true;
-        bc.TopFloor= j1.transform.FindChildByName("J1_TOP").gameObject;
+        bc.TopFloor = new List<GameObject>();
+        bc.TopFloor.Add(j1.transform.FindChildByName("J1_TOP").gameObject);
         Debug.Log(j1);
         //var b1=j1.transform.FindChildByName("F2_WallB1");
         //var b1c=b1.gameObject.AddComponent<WallController>();

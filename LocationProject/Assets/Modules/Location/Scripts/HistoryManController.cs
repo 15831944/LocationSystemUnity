@@ -60,7 +60,19 @@ public class HistoryManController : MonoBehaviour
                 showArchorsTime = 0;
             }
         }
+
+        if (isNavAgent == false)
+        {
+            if (PathFindingManager.Instance)
+            {
+                PathFindingManager.Instance.StartNavAgent(this);//直接一开始就切换
+                isNavAgent = true;
+            }
+        }
+
     }
+
+    private bool isNavAgent = false;
 
     public void Init(Color colorT, LocationHistoryPathBase locationHistoryPathBaseT)
     {

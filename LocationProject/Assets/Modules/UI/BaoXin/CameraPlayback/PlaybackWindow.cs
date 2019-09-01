@@ -80,12 +80,21 @@ public class PlaybackWindow : MonoBehaviour
 
     public void Show()
     {
+        ProgressText.text = "";
+
         if (Window != null)
         {
             Window.SetActive(true);
         }
         if (!gameObject.activeInHierarchy) gameObject.SetActive(true);
         InitUI();
+
+        //if (HideWindows != null)
+        //{
+        //    HideWindows.Hide();
+        //}
+
+        CameraAlarmManage.Instance.CloseAllWindow();
     }
 
     public void Hide()
@@ -96,7 +105,16 @@ public class PlaybackWindow : MonoBehaviour
         }
 
         Stop();
+
+        //if (HideWindows != null)
+        //{
+        //    HideWindows.Show();
+        //}
+
+        CameraAlarmManage.Instance.ShowCameraVideo();
     }
+
+    public GameObject[] HideWindows;
 
     public void OpenExe()
     {

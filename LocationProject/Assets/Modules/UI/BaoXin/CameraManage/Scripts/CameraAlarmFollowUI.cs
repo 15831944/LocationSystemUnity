@@ -51,6 +51,23 @@ public class CameraAlarmFollowUI : MonoBehaviour
         PictureTog.onValueChanged.AddListener(ShowSmallPictureWindow);
         FixedTog.onValueChanged.AddListener(FixedTog_Click);
 
+        uis.Add(this);
+    }
+
+    public static List<CameraAlarmFollowUI> uis = new List<CameraAlarmFollowUI>();
+
+    private void OnDestroy()
+    {
+        uis.Remove(this);
+    }
+
+    public static void RefreshAll()
+    {
+        foreach (var item in uis)
+        {
+            if (item == null) continue;
+            item.RefreshCameraAlarmInfo();
+        }
     }
 
     /// <summary>
@@ -131,42 +148,89 @@ public class CameraAlarmFollowUI : MonoBehaviour
     /// </summary>
     public void RefreshCameraAlarmInfo()
     {
-        Debug.LogError("刷新摄像机告警信息Picture");
-        RefreshCameraAlarmListInfo = new List<CameraAlarmInfo>();
-        //  RefreshCameraAlarmListInfo.AddRange(AlarmPushManage.Instance.CameraAlarmPushList);
-        if (AlarmPushManage.Instance.AllCameraAlarmPush != null)
+        Debug.LogError("刷新摄像机告警信息Picture CurrentCameraDevID:" + CurrentCameraDevID);
+        try
         {
-          //  RefreshCameraAlarmListInfo.AddRange(AlarmPushManage.Instance.NewestCameraAlarmPush);
-            for (int i = 0; i < AlarmPushManage.Instance.AllCameraAlarmPush.Count; i++)
+            var refreshCameraAlarmListInfo = new List<CameraAlarmInfo>();
+            //  RefreshCameraAlarmListInfo.AddRange(AlarmPushManage.Instance.CameraAlarmPushList);
+            var alarmPushList = AlarmPushManage.Instance.AllCameraAlarmPush;
+            if (alarmPushList != null)
             {
-                int DevID = AlarmPushManage.Instance.AllCameraAlarmPush[i].DevID;
-                if (CurrentCameraDevID == DevID.ToString ())
+                
+                //  RefreshCameraAlarmListInfo.AddRange(AlarmPushManage.Instance.NewestCameraAlarmPush);
+                for (int i = 0; i < alarmPushList.Count; i++)
                 {
-                    RefreshCameraAlarmListInfo.Add(AlarmPushManage.Instance.AllCameraAlarmPush[i]);
+                    var alarm = alarmPushList[i];
+                    int DevID = alarm.DevID;
+                    if (DevID == 0)
+                    {
+                        int? DevID2 = CommunicationObject.Instance.GetCameraDevIdByURL(alarm.cid_url);
+                        Log.Info("RefreshCameraAlarmInfo 1", string.Format("url:{0},dev:{1}", alarm.cid_url, DevID2));
+                        if (DevID2 != null)
+                        {
+                            alarm.DevID = (int)DevID2;
+                            DevID = alarm.DevID;
+                        }
+                    }
+                    else
+                    {
+                        Log.Info("RefreshCameraAlarmInfo 2", "DevID:" + DevID);
+                    }
+                    
+                    if (CurrentCameraDevID == DevID.ToString())
+                    {
+                        refreshCameraAlarmListInfo.Add(alarm);
+                    }
                 }
             }
-        }
-        if (RefreshCameraAlarmListInfo.Count >0 && PictureTog.isOn == false && !SmallPictureWindow.activeSelf && AlarmPushManage.Instance.IsNewAlarm == true)
-        {
-            NewstAlarmTag.SetActive(true);
-        }
-        if (PictureTog.isOn == true && SmallPictureWindow.activeSelf)
-        {
-            NewstAlarmTag.SetActive(false);
-            if (RefreshCameraAlarmListInfo.Count != 0 && AlarmPushManage.Instance.IsNewAlarm == true)
+            else
             {
-                PictureInfo.text = CurrentCameraDev.Info.Name;
-                Texture2D texture = new Texture2D(width, height);
-                byte[] Pic = PictureData(RefreshCameraAlarmListInfo[RefreshCameraAlarmListInfo.Count - 1].pic_data);
-                texture.LoadImage(Pic);
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                Picture.sprite = sprite;
-                AlarmPushManage.Instance.IsNewAlarm = false;
+                Log.Info("RefreshCameraAlarmInfo", "AlarmPushManage.Instance.AllCameraAlarmPush==null");
             }
 
-            CurrentCameraAlarmInfo.Clear();
-            CurrentCameraAlarmInfo.AddRange(RefreshCameraAlarmListInfo);
+            if (refreshCameraAlarmListInfo.Count > 0 && PictureTog.isOn == false && !SmallPictureWindow.activeSelf && AlarmPushManage.Instance.IsNewAlarm == true)
+            {
+                NewstAlarmTag.SetActive(true);
+            }
+            else
+            {
+                Log.Info("RefreshCameraAlarmInfo", "ELSE1");
+            }
+
+            if (PictureTog.isOn == true && SmallPictureWindow.activeSelf)
+            {
+                NewstAlarmTag.SetActive(false);
+                if (refreshCameraAlarmListInfo.Count != 0 && AlarmPushManage.Instance.IsNewAlarm == true)
+                {
+                    PictureInfo.text = CurrentCameraDev.Info.Name;
+                    Texture2D texture = new Texture2D(width, height);
+                    byte[] Pic = PictureData(refreshCameraAlarmListInfo[refreshCameraAlarmListInfo.Count - 1].pic_data);
+                    texture.LoadImage(Pic);
+                    Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                    Picture.sprite = sprite;
+                    AlarmPushManage.Instance.IsNewAlarm = false;
+                }
+                else
+                {
+                    Log.Info("RefreshCameraAlarmInfo", string.Format("ELSE2,{0},{1}", refreshCameraAlarmListInfo.Count, AlarmPushManage.Instance.IsNewAlarm));
+                }
+
+                Log.Info("RefreshCameraAlarmInfo", string.Format("count1:{0}", refreshCameraAlarmListInfo.Count));
+                //CurrentCameraAlarmInfo.Clear();
+                CurrentCameraAlarmInfo=refreshCameraAlarmListInfo;
+            }
+            else
+            {
+                Log.Info("RefreshCameraAlarmInfo", "ELSE3");
+            }
+
+            RefreshCameraAlarmListInfo = refreshCameraAlarmListInfo;
         }
+        catch (Exception ex)
+        {
+            Log.Error("RefreshCameraAlarmInfo", "Exception :"+ex);
+        }
+       
     }
     /// <summary>
     /// 展示最新告警图片
@@ -392,55 +456,86 @@ public class CameraAlarmFollowUI : MonoBehaviour
         GetCurrentCameraAlarmList();
     }
 
-   
+
     /// <summary>
     /// 判断当前摄像头有没有告警，如果有告警就显示告警图片，否则显示视频
     /// </summary>
     public void GetCurrentCameraAlarmList()
     {
-        CurrentCameraAlarmInfo = new List<CameraAlarmInfo>();
-        if (AlarmPushManage.Instance.AllCameraAlarmPush != null)
+        try
         {
-            for (int i = 0; i < AlarmPushManage.Instance.AllCameraAlarmPush.Count; i++)
+            Log.Error("CameraAlarmFollowUI.GetCurrentCameraAlarmList", "CurrentCameraDevID:"+ CurrentCameraDevID);
+            var currentCameraAlarmInfo = new List<CameraAlarmInfo>();
+            if (AlarmPushManage.Instance.AllCameraAlarmPush != null)
             {
-                int? DevID = CommunicationObject.Instance.GetCameraDevIdByURL(AlarmPushManage.Instance.AllCameraAlarmPush[i].cid_url);
-                if (DevID == null) return;
-                if (CurrentCameraDevID == DevID.ToString ())
+                for (int i = 0; i < AlarmPushManage.Instance.AllCameraAlarmPush.Count; i++)
                 {
-                    CurrentCameraAlarmInfo.Add(AlarmPushManage.Instance.AllCameraAlarmPush[i]);
+                    var alarm = AlarmPushManage.Instance.AllCameraAlarmPush[i];
+                    int? DevID = CommunicationObject.Instance.GetCameraDevIdByURL(alarm.cid_url);
+                    Log.Info("CameraAlarmFollowUI.GetCurrentCameraAlarmList",string.Format("url:{0},dev:{1}",alarm.cid_url,DevID));
+                    if (CurrentCameraDevID == DevID+"")
+                    {
+                        currentCameraAlarmInfo.Add(alarm);
+                    }
                 }
             }
-        }
-
-        if (CurrentCameraAlarmInfo.Count == 0)
-        {
-            VideoTog.isOn = true;
-            //ShowCameraVedioWindow(true);
-            PictureInfo.text = "";
-            Picture.sprite = PictureWindow.Instance.TransperantBack;
-            NewstAlarmTag.SetActive(false);
-        }
-        else
-        {
-            CurrentCameraAlarmInfo.Reverse();
-            PictureTog.isOn = true;
-            if (!SmallPictureWindow.activeSelf)
+            else
             {
-                SmallPictureWindow.SetActive(true);
+                Log.Error("CameraAlarmFollowUI.GetCurrentCameraAlarmList", "AlarmPushManage.Instance.AllCameraAlarmPush == null");
             }
 
-            PictureInfo.text = CurrentCameraDev.Info.Name + "_" + CurrentCameraDev.Info.Id;
-            Texture2D texture = new Texture2D(width, height);
-            byte[] Pic = PictureData(CurrentCameraAlarmInfo[CurrentCameraAlarmInfo.Count - 1].pic_data);
-            texture.LoadImage(Pic);
-            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            Picture.sprite = sprite;
+            if (currentCameraAlarmInfo.Count == 0)
+            {
+                VideoTog.isOn = true;
+                //ShowCameraVedioWindow(true);
+                PictureInfo.text = "";
+                Picture.sprite = PictureWindow.Instance.TransperantBack;
+                NewstAlarmTag.SetActive(false);
+            }
+            else
+            {
+                currentCameraAlarmInfo.Reverse();
+                PictureTog.isOn = true;
+                if (!SmallPictureWindow.activeSelf)
+                {
+                    SmallPictureWindow.SetActive(true);
+                }
 
+                PictureInfo.text = CurrentCameraDev.Info.Name + "_" + CurrentCameraDev.Info.Id;
+                Texture2D texture = new Texture2D(width, height);
+                int count = currentCameraAlarmInfo.Count;
+                if (count == 0)
+                {
+                    Log.Error("GetCurrentCameraAlarmList", "currentCameraAlarmInfoCount == 0");
+                    return;
+                }
+                int last = count - 1;
+                Log.Info("GetCurrentCameraAlarmList", "last:" + last);
+                var info = currentCameraAlarmInfo[last];
+                if (info == null)
+                {
+                    Log.Error("GetCurrentCameraAlarmList", "info == null");
+                    return;
+                }
+
+                Log.Info("GetCurrentCameraAlarmList", "pic_data:" + info.pic_data.Length);
+
+                byte[] Pic = PictureData(info.pic_data);
+                texture.LoadImage(Pic);
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                Picture.sprite = sprite;
+
+                CurrentCameraAlarmInfo = currentCameraAlarmInfo;
+            }
+            if (!IsInvoking("RefreshCameraAlarmInfo"))
+            {
+                InvokeRepeating("RefreshCameraAlarmInfo", 0, ReshTime);
+
+            }
         }
-        if (!IsInvoking("RefreshCameraAlarmInfo"))
+        catch (Exception ex)
         {
-            InvokeRepeating("RefreshCameraAlarmInfo", 0, ReshTime);
-
+            Log.Error("GetCurrentCameraAlarmList", "" + ex); ;
         }
     }
     public byte[] PictureData(string picture)
@@ -547,7 +642,6 @@ public class CameraAlarmFollowUI : MonoBehaviour
             UGUIMessageBox.Show("视频连接失败！");
         }
     }
-
     /// <summary>
     /// 关闭重连的Invoke
     /// </summary>

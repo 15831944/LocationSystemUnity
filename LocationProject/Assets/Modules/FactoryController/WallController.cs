@@ -4,15 +4,55 @@ using UnityEngine;
 
 public class WallController : MonoBehaviour {
 
-    public Vector3 direction = new Vector3(1, 0, 0);
+    public Vector3 direction = new Vector3(0, 0, 1);
 
     public bool isActive = false;
     public MeshRenderer[] renderers;
     public List<GameObject> objs = new List<GameObject>();
 
     // Use this for initialization
-    GameObject obj;
+    public GameObject obj;
     void Start()
+    {
+        InitRenders();
+        InitSphere();
+        ResetPos();
+    }
+
+    [ContextMenu("InitSphere")]
+    private void InitSphere()
+    {
+        if (obj != null)
+        {
+            if (obj.transform.parent != transform)
+            {
+                obj = null;
+            }
+        }
+        if (obj == null)
+        {
+            obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            //obj.transform.parent = this.transform;
+            //obj.transform.localPosition = new Vector3(10 * direction, 0, 0);
+            obj.transform.parent = this.transform;
+            obj.transform.localPosition = direction + new Vector3(0, -1, 0);
+            obj.name = gameObject.name;
+
+            Renderer renderer = obj.GetComponent<Renderer>();
+            if (renderer)
+            {
+                renderer.enabled = false;
+            }
+
+            //#if !UNITY_EDITOR
+            obj.gameObject.SetActive(false);
+            //#endif
+        }
+
+    }
+
+    [ContextMenu("InitRenders")]
+    private void InitRenders()
     {
         renderers = gameObject.GetComponentsInChildren<MeshRenderer>();
         foreach (var item in renderers)
@@ -24,30 +64,13 @@ public class WallController : MonoBehaviour {
             }
             objs.Add(item.gameObject);
         }//放到前面 避免把小球放进去
-
-        obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        //obj.transform.parent = this.transform;
-        //obj.transform.localPosition = new Vector3(10 * direction, 0, 0);
-        obj.transform.parent = this.transform;
-        obj.transform.localPosition = direction + new Vector3(0, -1, 0);
-        obj.name = gameObject.name;
-
-        Renderer renderer = obj.GetComponent<Renderer>();
-        if (renderer)
-        {
-            renderer.enabled = false;
-        }
-
-#if !UNITY_EDITOR
-        obj.gameObject.SetActive(false);
-#endif
     }
 
     [ContextMenu("ResetPos")]
     public void ResetPos()
     {
 #if UNITY_EDITOR
-        obj.transform.localPosition = direction + new Vector3(0, -1, 0);
+        obj.transform.localPosition = direction*0.5f + new Vector3(0, -1, 0);
 #endif
     }
 

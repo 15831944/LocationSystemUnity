@@ -377,6 +377,7 @@ public class CameraSceneManager : MonoBehaviour
     /// </summary>
     public void SetTheThirdPersonCamera(bool isEnable)
     {
+        Log.Info("CameraSceneManager.SetTheThirdPersonCamera", "isEnable:"+ isEnable);
         if (isEnable)
         {
             Transform followTarget = null;
@@ -395,15 +396,18 @@ public class CameraSceneManager : MonoBehaviour
             alignCamera.enabled = false;
             if (followTarget != null)
             {
+                Log.Info("CameraSceneManager.SetTheThirdPersonCamera", "followTarget:" + followTarget);
                 if (CinemachineController.Instance)//切换到Cinemachine摄像机控制系统
                 {
                     CinemachineController.Instance.SetFollow(followTarget, lookAtTarget);
                 }
-                else if (theThirdPersonCamera != null)
+                if (theThirdPersonCamera != null)
                 {
                     theThirdPersonCamera.SetFollow(followTarget);
                     theThirdPersonCamera.enabled = isEnable;
                 }
+
+                alignCamera.SetTarget(followTarget);
             }
            
         }
@@ -420,6 +424,7 @@ public class CameraSceneManager : MonoBehaviour
             if (alignCamera != null)
             {
                 alignCamera.enabled = true;
+                
             }
         }
     }

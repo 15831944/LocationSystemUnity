@@ -110,7 +110,7 @@ public class BuildingController : DepNode {
     /// <summary>
     /// 顶部楼层
     /// </summary>
-    public GameObject TopFloor;
+    public List<GameObject> TopFloor;
 
 
     #endregion
@@ -656,9 +656,14 @@ public class BuildingController : DepNode {
             deviceAssets[i].LoadAsset(dep =>
             {
                 deviceAssetStartIndex++;
-                if (deviceAssets.Count == 1) if (action != null) action();
+                if (deviceAssets.Count == 1)
+                {
+                    Debug.LogError("LoadDeviceComplete1...");
+                    if (action != null) action();
+                }
                 if (deviceAssetStartIndex == endIndex)
                 {
+                    Debug.LogError("LoadDeviceComplete2...");
                     if (action != null) action();
                 }
             });
@@ -728,7 +733,7 @@ public class BuildingController : DepNode {
 
     public void HideTop()
     {
-        if (TopFloor)
+        if (TopFloor!=null)
         {
             TopFloor.SetActive(false);
             Debug.Log("TopFloor.SetActive(false)");
@@ -753,7 +758,7 @@ public class BuildingController : DepNode {
 
     public void ShowTop()
     {
-        if (TopFloor)
+        if (TopFloor!=null)
         {
             TopFloor.SetActive(true);
         }

@@ -133,7 +133,7 @@ public class NavMeshTest : MonoBehaviour
         //TimeSpan time = DateTime.Now - start;
         //Debug.Log("ShowNavMeshPoints:" + time.TotalMilliseconds + "ms");
 
-        NavMeshHelper.GetClosetPointAsync(targetPos,this.name, (pr,p) =>
+        NavMeshHelper.GetClosetPointAsync(targetPos,this.name,null, (pr,p) =>
         {
             TimeSpan time = DateTime.Now - start;
             Debug.Log("ShowNavMeshPoints:" + time.TotalMilliseconds + "ms");
@@ -168,9 +168,9 @@ public class NavMeshTest : MonoBehaviour
             {
                 Vector3 vector3 = vertices[i];
                 //Gizmos.DrawSphere(vector3, 1);
-                GameObject o = NavMeshHelper.CreatePoint(vector3,"Vertice"+i,0.2f,Color.gray);
-                o.transform.parent = this.transform;
-                points.Add(o);
+                //GameObject o = NavMeshHelper.CreatePoint(vector3,"Vertice"+i,0.2f,Color.gray);
+                //o.transform.parent = this.transform;
+                //points.Add(o);
             }
 
        

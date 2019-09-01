@@ -300,6 +300,9 @@ public class HistoryPlayUI : MonoBehaviour
                 historyManController.Init(Color.green, histoyObj);
                 PersonAnimationController personAnimationController = histoyObj.gameObject.GetComponent<PersonAnimationController>();
                 personAnimationController.DoMove();
+
+                PathFindingManager.Instance.StartNavAgent(historyManController);
+
                 isLoadDataSuccessed = true;
                 timeStart = Time.time;
                 timeSum = 0;

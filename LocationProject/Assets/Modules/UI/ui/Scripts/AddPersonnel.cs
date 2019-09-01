@@ -37,33 +37,38 @@ public class AddPersonnel : MonoBehaviour
     void Start()
     {
         Instance = this;
-        CancelBut.onClick.AddListener(() =>
-        {
-            CloseAddPerWindow();
-            DataPaging.Instance.ShowpersonnelSearchWindow();
-            DataPaging.Instance.StartPerSearchUI();
-        });
-        CloseBut.onClick.AddListener(() =>
-        {
-            CloseAddPerWindow();
-            DataPaging.Instance.ShowpersonnelSearchWindow();
-            DataPaging.Instance.StartPerSearchUI();
-        });
-        DepartBut.onClick.AddListener(() =>
-        {
-            AddDepartmentData();
-        });
-        JobBut.onClick.AddListener(() =>
-        {
-            GetAddJobsData();
-            CloseAddPerWindow();
-        });
-        EnsureBut.onClick.AddListener(() =>
-        {
-            AddPersonnelData();
-        });
-
-        TagBut.onClick.AddListener(AddTagCardInfo);
+        if(CancelBut)
+            CancelBut.onClick.AddListener(() =>
+            {
+                CloseAddPerWindow();
+                DataPaging.Instance.ShowpersonnelSearchWindow();
+                DataPaging.Instance.StartPerSearchUI();
+            });
+        if(CloseBut)
+            CloseBut.onClick.AddListener(() =>
+            {
+                CloseAddPerWindow();
+                DataPaging.Instance.ShowpersonnelSearchWindow();
+                DataPaging.Instance.StartPerSearchUI();
+            });
+        if(DepartBut)
+            DepartBut.onClick.AddListener(() =>
+            {
+                AddDepartmentData();
+            });
+        if(JobBut)
+            JobBut.onClick.AddListener(() =>
+            {
+                GetAddJobsData();
+                CloseAddPerWindow();
+            });
+        if(EnsureBut)
+            EnsureBut.onClick.AddListener(() =>
+            {
+                AddPersonnelData();
+            });
+        if(TagBut)
+            TagBut.onClick.AddListener(AddTagCardInfo);
     }
     public void AddTagCardInfo()
     {

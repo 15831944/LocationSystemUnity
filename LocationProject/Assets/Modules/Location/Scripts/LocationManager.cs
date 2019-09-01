@@ -1957,6 +1957,7 @@ public class LocationManager : MonoBehaviour
 
     #endregion
 
+    public bool UseShowPos = false;
 }
 
 public class PositionInfo

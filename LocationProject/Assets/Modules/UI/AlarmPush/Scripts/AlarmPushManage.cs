@@ -91,97 +91,119 @@ public class AlarmPushManage : MonoBehaviour
 
     private void CameraAlarmHub_OnCameraAlarmsRecieved(List<CameraAlarmInfo> CameraInfo)
     {
-        //string json = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
-        //Debug.LogError("CameraAlarmHub_OnCameraAlarmsRecieved");
-        //Debug.LogError(json);
-        IsBaoXin = true;
-        IsNewAlarm = true;
-        AllCameraAlarmPush = new List<CameraAlarmInfo>();
-
-        if (NewestCameraAlarmPush == null)
+        try
         {
-            NewestCameraAlarmPush = new List<CameraAlarmInfo>();
-        }
-        CameraAlarmPushList = new List<CameraAlarmInfo>();
+            if (CameraInfo == null || CameraInfo.Count == 0) return;
+            //string json = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
+            Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved","count:"+ CameraInfo.Count);
+            //Debug.LogError(json);
+            IsBaoXin = true;
+            IsNewAlarm = true;
+            AllCameraAlarmPush = new List<CameraAlarmInfo>();
 
-        FullViewController mainPage = FullViewController.Instance;
-        foreach (var cam in CameraInfo)
-        {
-            if (cam.status == 1)
+            if (NewestCameraAlarmPush == null)
             {
-                AllCameraAlarmPush.Add(cam);
+                NewestCameraAlarmPush = new List<CameraAlarmInfo>();
             }
-        }
-        if (mainPage && mainPage.IsFullView) return;
+            CameraAlarmPushList = new List<CameraAlarmInfo>();
 
-        foreach (var camAlarm in AllCameraAlarmPush)
-        {
-            NewestCameraAlarmPush.Add(camAlarm);
-            AlarmPushInfo AlarmInformation = new AlarmPushInfo();
-            AlarmInformation.SetAlarmInfo(camAlarm);
-            CameraAlarmInfo CurrentCameraAlarm = new CameraAlarmInfo();
-            AlarmPushInfo CompleteCameraAlarm = new AlarmPushInfo();
-
-            CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
-            CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid);
-            if (camAlarm.AlarmType == 2)
+            FullViewController mainPage = FullViewController.Instance;
+            foreach (var cam in CameraInfo)
             {
-                CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid && i.FlameData == camAlarm.FlameData);
-                CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.FlameData != null);
-            }
-            else if (camAlarm.AlarmType == 1)
-            {
-                CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
-                CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.HeadData != null);
-
-            }
-            else if (camAlarm.AlarmType == 3)
-            {
-                CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
-                CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.SmogData != null);
-            }
-            if (CurrentCameraAlarm != null)
-            {
-                if (CompleteCameraAlarm != null)
+                if (cam.status == 1)
                 {
-                    isPushInfo = true;
-                    int? DevID = GetCameraInfoId(camAlarm.cid_url);
-                    if (grid.transform.childCount == 0)
+                    AllCameraAlarmPush.Add(cam);
+                }
+                else
+                {
+                    Log.Error("CameraAlarmHub_OnCameraAlarmsRecieved", "cam.status != 1 :" + cam.status);
+                }
+            }
+
+            Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved", "AllCameraAlarmPush:" + AllCameraAlarmPush.Count);
+            if (mainPage && mainPage.IsFullView) return;
+
+            foreach (var camAlarm in AllCameraAlarmPush)
+            {
+                NewestCameraAlarmPush.Add(camAlarm);
+                AlarmPushInfo AlarmInformation = new AlarmPushInfo();
+                AlarmInformation.SetAlarmInfo(camAlarm);
+                CameraAlarmInfo CurrentCameraAlarm = new CameraAlarmInfo();
+                AlarmPushInfo CompleteCameraAlarm = new AlarmPushInfo();
+
+                CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
+                CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid);
+                if (camAlarm.AlarmType == 2)
+                {
+                    CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid && i.FlameData == camAlarm.FlameData);
+                    CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.FlameData != null);
+                }
+                else if (camAlarm.AlarmType == 1)
+                {
+                    CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
+                    CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.HeadData != null);
+
+                }
+                else if (camAlarm.AlarmType == 3)
+                {
+                    CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
+                    CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.SmogData != null);
+                }
+                if (CurrentCameraAlarm != null)
+                {
+                    if (CompleteCameraAlarm != null)
                     {
-                        isPushInfo = false;
-                    }
-                    for (int i = 0; i < grid.transform.childCount; i++)
-                    {
-                        if (grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text == DevID.ToString())
+                        isPushInfo = true;
+                        int? DevID = GetCameraInfoId(camAlarm.cid_url);
+                        if (grid.transform.childCount == 0)
                         {
-
-                            int k = i;
-                            if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
+                            isPushInfo = false;
+                        }
+                        for (int i = 0; i < grid.transform.childCount; i++)
+                        {
+                            if (grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text == DevID.ToString())
                             {
-                                if (grid.transform.childCount == 1)//只有一条告警
-                                {
-                                    DestroyImmediate(grid.transform.GetChild(k).gameObject);
 
+                                int k = i;
+                                if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
+                                {
+                                    if (grid.transform.childCount == 1)//只有一条告警
+                                    {
+                                        DestroyImmediate(grid.transform.GetChild(k).gameObject);
+
+                                    }
+                                    else
+                                    {
+                                        RemoveAlarmTween(k);
+                                    }
                                 }
                                 else
                                 {
-                                    RemoveAlarmTween(k);
+                                    RemoveChildTween(k);
                                 }
-                            }
-                            else
-                            {
-                                RemoveChildTween(k);
-                            }
 
+                            }
                         }
                     }
+
                 }
+                CurrentAlarmPushInfoList.Add(AlarmInformation);
 
+                CameraAlarmPushList.AddRange(AllCameraAlarmPush);
+
+                Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved", "CurrentAlarmPushInfoList:" + CurrentAlarmPushInfoList.Count);
+
+                Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved", "CameraAlarmPushList:" + CameraAlarmPushList.Count);
+
+                CameraAlarmFollowUI.RefreshAll();
             }
-            CurrentAlarmPushInfoList.Add(AlarmInformation);
-
-            CameraAlarmPushList.AddRange(AllCameraAlarmPush);
         }
+        catch (Exception ex)
+        {
+
+            Log.Error("CameraAlarmHub_OnCameraAlarmsRecieved", "Exception :" + ex);
+        }
+        
     }
 
     private void Update()
@@ -633,20 +655,17 @@ public class AlarmPushManage : MonoBehaviour
         CompleteAlarmPushInfoList.Add(Alarm);
         CurrentAlarmPushInfoList.Remove(Alarm);
         GameObject obj = InstantiateLineBaoxin();
-
-        if (cameraAlarm.CameraAlarmInfor.HeadData != null)
+        CameraAlarmInfoItem item = obj.GetComponent<CameraAlarmInfoItem>();
+        if (item == null)
         {
-            Log.Error("没戴安全帽！");
+            Log.Error("ShowCameraAlarmInformation", "item==null");
         }
-        else if (cameraAlarm.CameraAlarmInfor.FlameData != null)
+        else
         {
-            Log.Error("火警！");
+            item.GetCameraAlarmData(cameraAlarm);
+            item.MoveTween();
         }
-
-        //CameraAlarmInfoItem item = obj.GetComponent<CameraAlarmInfoItem>();
-        //item.GetCameraAlarmData(cameraAlarm);
-        //CompleteAlarmPushInfoList.Add(cameraAlarm);
-        //item.MoveTween();
+        CompleteAlarmPushInfoList.Add(cameraAlarm);
     }
     public void ShowTitleObj()
     {
@@ -982,7 +1001,7 @@ public class AlarmPushManage : MonoBehaviour
     public GameObject InstantiateLineBaoxin()
     {
         AlarmObj = Instantiate(LineExample);
-        AlarmObj = Instantiate(TemplateInformation);
+        //AlarmObj = Instantiate(TemplateInformation);
         AlarmObj.transform.parent = grid.transform;
         AlarmObj.transform.localScale = new Vector3(1, 1, 1);
         AlarmObj.transform.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(400, -230f, 0);

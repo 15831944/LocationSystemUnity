@@ -584,7 +584,7 @@ public class MultHistoryPlayUINew : MonoBehaviour
         {
             foreach (PositionInfo info in keyValuePair.Value)
             {
-                var navMeshPos = NavMeshHelper.GetClosetPoint(info.Vec);
+                var navMeshPos = NavMeshHelper.GetClosetPoint(info.Vec,null);
                 info.NavPos = navMeshPos;
             }
         }
@@ -1219,6 +1219,7 @@ public class MultHistoryPlayUINew : MonoBehaviour
 
     public void ShowPersons(List<Personnel> personnelsT)
     {
+        Log.Info("MultHistoryPlayUINew.ShowPersons");
         //如果在播放就让它终止
         //ExecuteEvents.Execute<IPointerClickHandler>(MultHistoryPlayUI.Instance.StopBtn.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
         CreatePersons(personnelsT);

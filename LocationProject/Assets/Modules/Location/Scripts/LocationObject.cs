@@ -342,6 +342,8 @@ public class LocationObject : MonoBehaviour
         //    LODGroup p = GetComponent<LODGroup>();
         //    LOD[] ps = p.GetLODs();
         //}
+
+        posInfo.ShowPos = currentPos;//
     }
 
 
@@ -620,7 +622,7 @@ public class LocationObject : MonoBehaviour
 
         }                   
         targetPos = targetPosNew;
-        posInfo.ShowPos = targetPosNew;
+        //posInfo.ShowPos = targetPosNew;
 
         if (gameObject.activeInHierarchy)
         {
@@ -646,6 +648,8 @@ public class LocationObject : MonoBehaviour
         {
             ShowPositionSphereTest(targetPos);
         }
+
+        //Log.Info("SetPositionInfo", string.Format("{0},{1},{2},{3}", this.name, posInfo.TargetPos, posInfo.ShowPos, LocationManager.Instance.UseShowPos));
     }
     /// <summary>
     /// 获取楼层展开时的高度

@@ -15,34 +15,64 @@ public class NavMeshSceneLoader : MonoBehaviour
 
     void Awake()
     {
+        Log.Info("NavMeshSceneLoader.Awake");
         Instance = this;
+        //Init();
     }
 
     void Start()
     {
+        Log.Info("NavMeshSceneLoader.Start");
         Init();
     }
 
     [ContextMenu("Init")]
     public void Init()
     {
-        LoadScene(SceneWhenCollapse);
+        Log.Info("NavMeshSceneLoader.Init");
+        //LoadScene(SceneWhenCollapse);
+
+        LoadSceneAsync(SceneWhenCollapse);
     }
 
     public void LoadScene(string sceneName)
     {
-        Log.Info("NavMeshSceneLoader.LoadScene", "start:"+ sceneName);
-        var operation=SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        operation.completed += op =>
+        try
         {
+            Log.Info("NavMeshSceneLoader.LoadScene", "start:" + sceneName);
+            SceneManager.LoadScene(sceneName);
             Log.Info("NavMeshSceneLoader.LoadScene", "end:" + sceneName);
-            NavMeshHelper.RefreshNavMeshInfo();//这个要更新，不然算出来的位置就有问题
-            if (LocationManager.Instance != null)
+            currentScene = sceneName;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error("NavMeshSceneLoader.LoadScene",ex.ToString());
+        }
+        
+    }
+
+    public void LoadSceneAsync(string sceneName)
+    {
+        try
+        {
+            Log.Info("NavMeshSceneLoader.LoadSceneAsync", "start:" + sceneName);
+            var operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            operation.completed += op =>
             {
-                LocationManager.Instance.ShowLocation();//开始计算位置信息
-            }
-        };
-        currentScene = sceneName;
+                Log.Info("NavMeshSceneLoader.LoadSceneAsync", "end:" + sceneName);
+                NavMeshHelper.RefreshNavMeshInfo();//这个要更新，不然算出来的位置就有问题
+                if (LocationManager.Instance != null)
+                {
+                    LocationManager.Instance.ShowLocation();//开始计算位置信息
+                }
+            };
+            currentScene = sceneName;
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error("NavMeshSceneLoader.LoadSceneAsync", ex.ToString());
+        }
+
     }
 
     public void UnloadScene(string sceneName)
@@ -61,14 +91,14 @@ public class NavMeshSceneLoader : MonoBehaviour
     public void LoadSceneWhenCollapse()
     {
         UnloadScene(SceneWhenExpand);
-        LoadScene(SceneWhenCollapse);
+        LoadSceneAsync(SceneWhenCollapse);
     }
 
     [ContextMenu("LoadSceneWhenExpand")]
     public void LoadSceneWhenExpand()
     {
         UnloadScene(SceneWhenCollapse);
-        LoadScene(SceneWhenExpand);
+        LoadSceneAsync(SceneWhenExpand);
     }
 
     [ContextMenu("SwitchScene")]

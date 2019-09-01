@@ -203,7 +203,7 @@ public class HistoricalPathStatisticsManage : MonoBehaviour
             Vector3 v1 = new Vector3(pos.X, pos.Y, pos.Z);//二维坐标
             Vector3 v2 = LocationManager.GetRealVector(v1);//三维坐标
             
-            Vector3 v3 = NavMeshHelper.GetClosetPoint(v2); //NavMesh上的坐标，这部分可能会比较花时间
+            Vector3 v3 = NavMeshHelper.GetClosetPoint(v2,null); //NavMesh上的坐标，这部分可能会比较花时间
             //Vector3 v4 = new Vector3(v3.x, v2.y, v3.z);//高度相同
             var dis = Vector3.Distance(v2, v3);
 

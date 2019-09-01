@@ -63,11 +63,11 @@ public class PathFindingManager : MonoBehaviour
             {
                 EnableArcReactor_Trail(obj);//在人物脚下绘制运动轨迹
 
-                StartNavAgent();
+                //StartNavAgent();
                 var bs = GameObject.FindObjectsOfType<BuildingController>();
                 foreach (var b in bs)
                 {
-                    b.HideTop();
+                    b.HideWalls();
                 }
             }
             else
@@ -79,11 +79,11 @@ public class PathFindingManager : MonoBehaviour
                     ArcManager.Instance.DisenableTrail();
                 }
 
-                StopNavAgent();
+                //StopNavAgent();
                 var bs = GameObject.FindObjectsOfType<BuildingController>();
                 foreach (var b in bs)
                 {
-                    b.ShowTop();
+                    b.ShowWalls();
                 }
             }
         }
@@ -110,6 +110,7 @@ public class PathFindingManager : MonoBehaviour
     [ContextMenu("StartNavAgent")]
     public void StartNavAgent(HistoryManController man)
     {
+        Log.Info("PathFindingManager.StartNavAgent");
         if (man == null)
         {
             Log.Error("PathFindingManager.StartNavAgent man == null");

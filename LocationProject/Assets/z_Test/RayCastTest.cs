@@ -28,21 +28,32 @@ public class RayCastTest : MonoBehaviour
         //    Debug.Log(devInfo.DevList.Count);
         //}           
     }
+
+    public Camera RoamCamera;
     private void RayTest()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Ray ray = new Ray(transform.position, Vector3.up);
+            Ray ray;
+            if(RoamCamera==null)
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            }
+            else
+            {
+                ray = RoamCamera.ScreenPointToRay(Input.mousePosition);
+            }
+            
+            //Ray ray = new Ray(transform.position, Vector3.up);
             RaycastHit hitInfo;
-            //if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity, LayerMask.GetMask("Floor")))
+            if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity))
+            {
+                Debug.LogError(hitInfo.transform.name + LayerMask.LayerToName(hitInfo.transform.gameObject.layer));
+            }
+            //if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity))
             //{
             //    Debug.Log(hitInfo.transform.name + LayerMask.LayerToName(hitInfo.transform.gameObject.layer));
             //}
-            if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity))
-            {
-                Debug.Log(hitInfo.transform.name + LayerMask.LayerToName(hitInfo.transform.gameObject.layer));
-            }
         }
     }
 }

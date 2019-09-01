@@ -31,7 +31,7 @@ public class CameraAlarmHub : Hub
     {
         var arg = methodCall.Arguments[0];
         string json = JsonMapper.ToJson(arg);
-        Debug.Log("GetCameraAlarms");
+        Debug.Log("CameraAlarmHub.GetCameraAlarms");
         Debug.Log(json);
         List<CameraAlarmInfo> alarms = JsonMapper.ToObject<List<CameraAlarmInfo>>(json);
         ////Debug.Log("OnAlarmRecieved:"+methodCall.Arguments.Length);

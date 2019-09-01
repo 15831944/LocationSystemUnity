@@ -104,6 +104,12 @@ public class CameraAlarmManage : MonoBehaviour
     {
         Instance = this;
     }
+
+    public void ShowCameraVideo()
+    {
+        ShowCameraVedio(currentCameraDev, SmallCameraAlarmFollow);
+    }
+
     /// <summary>
     /// 打开摄像头监控视频
     /// </summary>

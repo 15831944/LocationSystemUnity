@@ -37,7 +37,7 @@ public class PersonAnimationController : MonoBehaviour {
         //isMove = false;
 
         GetAnimator();
-        if (Animator == null) return;
+        if (Animator == null||Animator.runtimeAnimatorController==null) return;
         Animator.SetBool("isMove", false);
     }
 
@@ -53,7 +53,7 @@ public class PersonAnimationController : MonoBehaviour {
         //isMove = true;
 
         GetAnimator();
-        if (Animator == null) return;
+        if (Animator == null || Animator.runtimeAnimatorController == null) return;
         Animator.SetBool("isMove", true);
     }
 

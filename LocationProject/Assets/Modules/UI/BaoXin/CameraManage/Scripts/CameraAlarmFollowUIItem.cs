@@ -66,7 +66,8 @@ public class CameraAlarmFollowUIItem : MonoBehaviour
         {
             AlarmType.text = "烟雾";
         }
-        AlarmTimeText.text = GetDataTime(alarm.time_stamp).ToString("yyyy年MM月dd日 HH时mm分ss秒");
+        //AlarmTimeText.text = GetDataTime(alarm.time_stamp).ToString("yyyy年MM月dd日 HH时mm分ss秒");
+        AlarmTimeText.text = GetDataTime(alarm.time_stamp).ToString("MM月dd日 HH时mm分ss秒");
         PictureData = alarm.pic_data;
         PictureBut.onClick.AddListener(() =>
        {
@@ -80,6 +81,7 @@ public class CameraAlarmFollowUIItem : MonoBehaviour
         long lTime = ((long)time_stamp * 10000000);
         TimeSpan toNow = new TimeSpan(lTime);
         DateTime AlarmTime = dtStart.Add(toNow);
+        AlarmTime=AlarmTime.AddHours(8);
         return AlarmTime;
     }
     public void ShowPictureWindow(bool b)

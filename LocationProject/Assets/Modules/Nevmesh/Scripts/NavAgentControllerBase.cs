@@ -18,12 +18,13 @@ public class NavAgentControllerBase : MonoBehaviour {
 
     public bool enableJump = true;
 
-    public bool useWrap = true;
+    //public bool useWrap = true;
 
     public double timespan = 1;
 
 
     private float MaxSpeed = 3f;//NavMeshAgent移动最大速度
+    private float MinSpeed = 0.5f;//NavMeshAgent移动最大速度
     //public bool printDistance = true;
 
     protected void SetSpeed(float dis)
@@ -33,6 +34,10 @@ public class NavAgentControllerBase : MonoBehaviour {
         if(speed>MaxSpeed)
         {
             speed = MaxSpeed;
+        }
+        if (speed < MinSpeed)
+        {
+            speed = MinSpeed;
         }
         agent.speed = (float)speed;
     }
@@ -49,16 +54,24 @@ public class NavAgentControllerBase : MonoBehaviour {
         {
             if (distance > MaxDistance)//距离太远了，直接飞过去
             {
-                if (useWrap)
+                //if (useWrap)
+                //{
+                Vector3 destination = GetDestination(targetPos);
+                //Vector3 destination = NavMeshHelper.GetClosetPointEx(targetPos, agent);
+                if (destination == Vector3.zero)
                 {
-                    //Vector3 destination = GetDestination(targetPos);
-                    Vector3 destination = NavMeshHelper.GetSamplePosition(targetPos);
-                    agent.Warp(targetPos);//要用这个
+
                 }
                 else
                 {
-                    transform.position = targetPos;//这个会导致人飞到一个位置后，又按原来路径去走回去。
+                    var r=agent.Warp(destination);//要用这个
+                    Debug.Log("Jump(Warp) distance:" + distance + "|" + this + "|" + destination + "|" + r);
                 }
+                //}
+                //else
+                //{
+                //    transform.position = targetPos;//这个会导致人飞到一个位置后，又按原来路径去走回去。
+                //}
             }
         }
     }
@@ -102,7 +115,7 @@ public class NavAgentControllerBase : MonoBehaviour {
     {
         Vector3 destination = targetPos;
         InitNavMeshAgent();
-        return NavMeshHelper.GetClosetPoint(destination);
+        return NavMeshHelper.GetClosetPoint(destination,agent);
     }
 
     private Dictionary<string,GameObject> posBuffer=new Dictionary<string, GameObject>();
@@ -174,7 +187,7 @@ public class NavAgentControllerBase : MonoBehaviour {
 
     public bool IsBusyUpdatePosition = false;
 
-    public bool UseShowPos = false;
+    //public bool UseShowPos = false;
 
     public void UpdatePosition()
     {
@@ -182,13 +195,15 @@ public class NavAgentControllerBase : MonoBehaviour {
         DateTime start = DateTime.Now;
 
         var posNew = posInfo.TargetPos; //实际的点
-        if (UseShowPos)
+        if (LocationManager.Instance.UseShowPos)//宝信用UseShowPos等于true效果好很多，不会偏到上一层，因为原来的代码已经对高度做了一下限制。
         {
             posNew = posInfo.ShowPos; //原来的算法的人移动的点
         }
 
+        //Log.Info("UpdatePosition", string.Format("{0},{1},{2},{3}", this.name, posInfo.TargetPos, posInfo.ShowPos, LocationManager.Instance.UseShowPos));
+
         //Log.Info("NavAgentControllerBase.UpdatePosition");
-        if (this.targetPos == posNew)
+        if (this.targetPos == posNew)//用TargetPos，可以优化性能，用ShowPos，这里就没什么用了
         {
             //Log.Info("NavAgentControllerBase.UpdatePosition","this.targetPos == hisPosInfo.ShowPos");
             return;
@@ -243,69 +258,81 @@ public class NavAgentControllerBase : MonoBehaviour {
         if (lastPos == pos) return false;//坐标不变，不用计算处理。
         lastPos = pos;
 
-        Log.Info("NavAgentControllerBase.SetDestination", string.Format("pos:{0},obj:{1}",pos,this));
+        //Log.Info("NavAgentControllerBase.SetDestination", string.Format("pos:{0},obj:{1}",pos,this));
         if (IsBusyUpdatePosition)
         {
-            Log.Info("NavAgentControllerBase.UpdatePosition", "IsBusyUpdatePosition");
+            //Log.Info("NavAgentControllerBase.UpdatePosition", "IsBusyUpdatePosition");
             return false;
         }
         DateTime start = DateTime.Now;
         IsBusyUpdatePosition = true;
-        NavMeshHelper.GetClosetPointAsync(pos,this.name, (destination,p) => //多线程异步方式计算,避免影响性能
+        NavMeshHelper.GetClosetPointAsync(pos,this.name,agent, (destination,p) => //多线程异步方式计算,避免影响性能
         {
-            Log.Info("NavAgentControllerBase.SetDestination", string.Format("{0}=>{1},{2}", pos,destination, this));
-            if (SystemSettingHelper.IsDebug())//调试模式下，查看接下来的移动方向
+            try
             {
-                if (ArcManager.Instance != null)
+                //Log.Info("NavAgentControllerBase.SetDestination", string.Format("{0}=>{1},{2}", pos,destination, this));
+                if (SystemSettingHelper.IsDebug())//调试模式下，查看接下来的移动方向
                 {
-                    if(p!=null)
-                        ArcManager.Instance.ArcLine.SetLine(gameObject.transform, p.transform);
-                }
-            }
-
-            if (agent != null)
-            {
-                if (agent.gameObject.activeInHierarchy)
-                {
-                    bool r = agent.SetDestination(destination);//Agent被关闭或者被销毁，调用这个方法会报错
-                    if (r == false)//人物物体不在NavMesh上，立刻跳到目标位置
+                    if (ArcManager.Instance != null)
                     {
-                        Log.Info("NavAgentControllerBase.SetDestination", string.Format("Wrap pos:{0},obj:{1}", pos, this));
-                        //this.transform.position = destination;
-                        agent.Warp(destination);//要用这个,用上面那句话，"不在NavMesh上"的问题会一直出现，要用Warp才会重新计算
+                        if (p != null)
+                            ArcManager.Instance.SetLine(gameObject.transform, p.transform);
+                    }
+                }
+
+                if (agent != null)
+                {
+                    if (agent.gameObject.activeInHierarchy)
+                    {
+                        bool r = agent.SetDestination(destination);//Agent被关闭或者被销毁，调用这个方法会报错
+                        if (r == false)//人物物体不在NavMesh上，立刻跳到目标位置
+                        {
+                            Log.Info("NavAgentControllerBase.SetDestination", string.Format("Wrap pos:{0},obj:{1}", pos, this));
+                            //this.transform.position = destination;
+                            agent.Warp(destination);//要用这个,用上面那句话，"不在NavMesh上"的问题会一直出现，要用Warp才会重新计算
+                        }
+                        else
+                        {
+                            HisPosInfo hisPosInfo = posInfo as HisPosInfo; //假如是历史数据
+                            if (hisPosInfo != null)
+                            {
+                                var current = hisPosInfo.CurrentPosInfo;
+                                var next = current.Next;
+
+                                if (next != null)
+                                {
+                                    TimeSpan t = next.Time - current.Time; //下一个点的时间
+                                                                           //float distance = Vector3.Distance(next.Vec, current.Vec); //下一个点的距离
+
+                                    //Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("{0}=>{1},time:{2},distance:{3}", current.Vec, next.Vec, time, distance));
+                                    this.timespan = t.TotalSeconds;//时间越长，走的越慢
+                                }
+
+                            }
+                        }
+                        EnableUpdate = true;
                     }
                     else
                     {
-                        HisPosInfo hisPosInfo = posInfo as HisPosInfo; //假如是历史数据
-                        if (hisPosInfo != null)
-                        {
-                            var current = hisPosInfo.CurrentPosInfo;
-                            var next = current.Next;
-
-                            if (next != null)
-                            {
-                                TimeSpan t = next.Time - current.Time; //下一个点的时间
-                                                                       //float distance = Vector3.Distance(next.Vec, current.Vec); //下一个点的距离
-
-                                //Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("{0}=>{1},time:{2},distance:{3}", current.Vec, next.Vec, time, distance));
-                                this.timespan = t.TotalSeconds;//时间越长，走的越慢
-                            }
-
-                        }
+                        Log.Error("NavAgentControllerBase.SetDestination", "agent.gameObject.activeInHierarchy==false:" + this);
                     }
-                    EnableUpdate = true;
                 }
                 else
                 {
-                    Log.Error("NavAgentControllerBase.SetDestination", "agent.gameObject.activeInHierarchy==false:" + this);
+                    Log.Error("NavAgentControllerBase.SetDestination", "agent==null:" + this);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Log.Error("NavAgentControllerBase.SetDestination", "agent==null:"+this);
+                Log.Error("NavAgentControllerBase.SetDestination", "Exception:" + ex);
             }
-            IsBusyUpdatePosition = false;
-            TimeSpan time = DateTime.Now - start;
+            finally
+            {
+                IsBusyUpdatePosition = false;
+                TimeSpan time = DateTime.Now - start;
+            }
+            
+            
             //Log.Info("NavAgentControllerBase.UpdatePosition", NavMeshHelper.Log);
             //Log.Info("NavAgentControllerBase.SetDestination", "UpdatePosition End time:" +time.TotalMilliseconds+"ms");
         });
