@@ -125,7 +125,7 @@ public class BuildingFloorTweening : MonoBehaviour {
     {
         Debug.Log("OpenBuilding");
         Light light = GameObject.FindObjectOfType<Light>();
-        if (LightShadows.Soft == light.shadows)
+        if (light!=null && LightShadows.Soft == light.shadows)
         {
             shadows = light.shadows;
             light.shadows = LightShadows.None;
@@ -149,7 +149,7 @@ public class BuildingFloorTweening : MonoBehaviour {
             FloorSequnce.OnRewind(() =>
             {
                 Light light = GameObject.FindObjectOfType<Light>();
-                light.shadows = shadows;
+                if(light)light.shadows = shadows;
 
                 foreach (var item in HideFloors)
                 {
@@ -164,7 +164,7 @@ public class BuildingFloorTweening : MonoBehaviour {
             FloorSequnce.OnRewind(() =>
             {
                 Light light = GameObject.FindObjectOfType<Light>();
-                light.shadows = shadows;
+                if (light) light.shadows = shadows;
 
                 foreach (var item in HideFloors)
                 {

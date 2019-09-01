@@ -55,15 +55,25 @@ public class PersonneiAlarmInfo : MonoBehaviour
         PerID = info.TagId.ToString();
         But.onClick.AddListener(() =>
        {
-           PersonPosition(PerID);
+           PersonPosition(PerID,info );
        });
 
     }
-    public void PersonPosition(string PerID)
+    public void PersonPosition(string PerID, LocationAlarm info)
     {
         int perId = int.Parse(PerID);
         LocationManager.Instance.FocusPersonAndShowInfo(perId);
         PersonnelAlarmParkInfo.Instance.ShowPersonnelAlarmParkWindow(false);
+        JudgePerOnLine(perId, info);
+    }
+    public void JudgePerOnLine(int tagNum, LocationAlarm per)
+    {
+        List<LocationObject> listT = LocationManager.Instance.GetPersonObjects();
+        LocationObject locationObjectT = listT.Find((item) => item.personnel.TagId == tagNum);
+        if (per.Tag == null || locationObjectT == null || per.Tag.IsActive == false)
+        {
+            UGUIMessageBox.Show("当前人员已离线或者不在监控区域！");
+        }
     }
     // Update is called once per frame
     void Update()

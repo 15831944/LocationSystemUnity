@@ -72,6 +72,7 @@ public class PersonnelAlarmList : MonoBehaviour
     public StartTime showStartTime;
     //public PersonnelAlarmType perAlarmType;
     [System.NonSerialized] List<LocationAlarm> AlarmItem;
+    bool IsGetData = false;
     void Start()
     {
        
@@ -95,9 +96,11 @@ public class PersonnelAlarmList : MonoBehaviour
 
     private void LoadData()
     {
+        if (IsGetData) return;
         perAlarmData.Start = DateTime.Now.Year.ToString() + "年01月01日";
         perAlarmData.End = DateTime.Now.ToString("yyyy年MM月dd日"); ;
         perAlarmData.IsAll = true;
+        IsGetData = true;
         var personnelAlarm = CommunicationObject.Instance.GetLocationAlarms(perAlarmData);
         if (personnelAlarm != null)
         {
@@ -111,6 +114,7 @@ public class PersonnelAlarmList : MonoBehaviour
 
             }
         }
+        IsGetData = false;
         ScreenAlarmItem.AddRange(AlarmItem);
     }
 
@@ -383,7 +387,7 @@ public class PersonnelAlarmList : MonoBehaviour
             AlarmType = newPerAlarmList[i].AlarmType.ToString();
             PerID = newPerAlarmList[i].TagId.ToString();
             SetInstantiateLine(newPerAlarmList.Count);
-            SetPersonnelAlarmData(i, num, nameT, job, AlarmType, content, startTime, handleTime, PerID);
+            SetPersonnelAlarmData(i, num, nameT, job, AlarmType, content, startTime, handleTime, PerID, newPerAlarmList[i ]);
         }
     }
     /// <summary>
@@ -407,7 +411,7 @@ public class PersonnelAlarmList : MonoBehaviour
             GetPersonnelAlarmData();
         }
     }
-    public void SetPersonnelAlarmData(int i, string num, string name, string job, string AlarmType, string content, string startTime, string endTime, string PerID)
+    public void SetPersonnelAlarmData(int i, string num, string name, string job, string AlarmType, string content, string startTime, string endTime, string PerID, LocationAlarm per)
     {
         Transform line = grid.transform.GetChild(i);
         line.GetChild(0).GetComponent<Text>().text = num;
@@ -421,7 +425,7 @@ public class PersonnelAlarmList : MonoBehaviour
         but.onClick.RemoveAllListeners();
         but.onClick.AddListener(() =>
   {
-      PerAlarmBut_Click(PerID);
+      PerAlarmBut_Click(PerID,per );
   });
         if (i % 2 == 0)
         {
@@ -436,17 +440,25 @@ public class PersonnelAlarmList : MonoBehaviour
     /// 人员订位
     /// </summary>
     /// <param name="tagNum"></param>
-    public void PerAlarmBut_Click(string tagNum)
+    public void PerAlarmBut_Click(string tagNum, LocationAlarm per)
     {
         AlarmPushManage.Instance.CloseAlarmPushWindow(false);
-        //AlarmPushManage.Instance.IsShow.isOn = false;
         ParkInformationManage.Instance.ShowParkInfoUI(false);
         int tagID = int.Parse(tagNum);
         LocationManager.Instance.FocusPersonAndShowInfo(tagID);
         PersonSubsystemManage.Instance.ChangeImage(false, PersonSubsystemManage.Instance.PersonnelAlamToggle);
         PersonSubsystemManage.Instance.PersonnelAlamToggle.isOn = false;
         Close_PersonnelAlarm();
-
+        JudgePerOnLine(tagID, per);
+    }
+    public void JudgePerOnLine(int  tagNum, LocationAlarm per)
+    {
+        List<LocationObject>  listT = LocationManager.Instance.GetPersonObjects();
+        LocationObject locationObjectT = listT.Find((item) => item.personnel.TagId == tagNum);
+        if (per.Tag ==null || locationObjectT==null||per .Tag .IsActive ==false)
+        {
+            UGUIMessageBox.Show("当前人员已离线或者不在监控区域！");
+        }
     }
     /// <summary>
     /// 每一行的预设
@@ -505,6 +517,7 @@ public class PersonnelAlarmList : MonoBehaviour
         if(AlarmItem!=null)AlarmItem.Clear();
         if(ScreenAlarmItem!=null) ScreenAlarmItem.Clear();
         personAlarmUI.SetActive(false);
+        IsGetData = false;
     }
     //List<LocationAlarm> ScreenAlarmTime = new List<LocationAlarm>();
     /// <summary>

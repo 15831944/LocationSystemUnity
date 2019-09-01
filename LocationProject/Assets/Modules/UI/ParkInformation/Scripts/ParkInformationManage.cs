@@ -49,11 +49,12 @@ public class ParkInformationManage : MonoBehaviour
     public Toggle DevToggle;
     [System.NonSerialized]
     private AlarmSearchArg searchArg;
-    bool isRefresh;
+    bool isRefresh=false ;
     [System.NonSerialized]
     DepNode CurrentSelectNode;
     //Color ArrowDotColor = new Color(255 / 255f, 255 / 255f, 255 / 255f, 102 / 255f);
     //public AreaStatistics AreaInfo;
+   public  bool IsGetPerData = false;
     void Start()
     {
 
@@ -177,10 +178,9 @@ public class ParkInformationManage : MonoBehaviour
 
         CommunicationObject.Instance.GetAreaStatistics(dep, (data) =>
         {
-            ShowParkDataInfo(data);
-
-            isRefresh = false;
+            ShowParkDataInfo(data);         
         });
+        isRefresh = false;
     }
 
     private void ShowParkDataInfo(AreaStatistics data)
@@ -235,30 +235,31 @@ public class ParkInformationManage : MonoBehaviour
             FullViewController mainPage = FullViewController.Instance;
             if (mainPage && mainPage.IsFullView)
             {
-                if (IsInvoking("StartRefreshData"))
-                {
-                    CancelInvoke("StartRefreshData");
-                    Debug.LogError("刷新统计信息");
-                }
+                //if (IsInvoking("StartRefreshData"))
+                //{
+                //    CancelInvoke("StartRefreshData");
+                //    Debug.LogError("刷新统计信息");
+                //}
                 ParkInfoUI.SetActive(false);
                 return;
             }
             else
             {
                 ParkInfoUI.SetActive(true);
-                if (!IsInvoking("StartRefreshData"))
-                {
-                    StartRefreshData();
-                }
+                //if (!IsInvoking("StartRefreshData"))
+                //{
+                //    StartRefreshData();
+                //}
+                StartRefreshData();
             }
 
         }
         else
         {
-            if (IsInvoking("StartRefreshData"))
-            {
-                CancelInvoke("StartRefreshData");
-            }
+            //if (IsInvoking("StartRefreshData"))
+            //{
+            //    CancelInvoke("StartRefreshData");
+            //}
             ParkInfoUI.SetActive(false);
         }
     }
@@ -292,13 +293,16 @@ public class ParkInformationManage : MonoBehaviour
         ParkDeviceAlarmList.AddRange(DevList);
         ParkDevAlarmInfo.Instance.ShowDevAlarm();
         ParkDevAlarmInfo.Instance.GetDevAlarmList(ParkDeviceAlarmList, AreaDevName);
-       
+
     }
+     
     private void LoadData()
     {
+        if (IsGetPerData) return;
         AlarmItem = new List<LocationAlarm>();
         perAlarmData = new AlarmSearchArg();
         perAlarmData.IsAll = false ;
+        IsGetPerData = true;
         var personnelAlarm = CommunicationObject.Instance.GetLocationAlarms(perAlarmData);
         if (personnelAlarm != null)
         {
@@ -312,6 +316,7 @@ public class ParkInformationManage : MonoBehaviour
 
             }
         }
+        IsGetPerData = false;
         PersonnelScreenAlarm();
     }
     public void PersonnelScreenAlarm()

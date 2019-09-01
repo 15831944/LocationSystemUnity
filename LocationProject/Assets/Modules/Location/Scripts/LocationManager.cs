@@ -876,7 +876,7 @@ public class LocationManager : MonoBehaviour
             {
                 Log.Info(string.Format("IsChanged:{0}->{1}", LasTagListInfo,info));
                 PersonnelTreeManage.Instance.areaDivideTree.RefreshPersonnel();
-                ParkInformationManage.Instance.StartRefreshData();
+                //ParkInformationManage.Instance.StartRefreshData();
             }
         }
         LasTagListInfo = info;
@@ -1557,7 +1557,7 @@ public class LocationManager : MonoBehaviour
     {
         RecoverFocus(() =>
         {
-
+            AlarmPushManage.Instance.CloseAlarmPushWindow(true);
             //if (PersonSubsystemManage.Instance.IsHistorical == false)
             //{
             //    //DepNode dep = FactoryDepManager.Instance;
@@ -1864,8 +1864,8 @@ public class LocationManager : MonoBehaviour
     {
         //throw new NotImplementedException();
         Debug.Log("AlarmHub_OnLocationAlarmRecieved:" + objs.Count);
-
         ShowLocationAlarms(objs);
+        ParkInformationManage.Instance.StartRefreshData();
     }
 
     /// <summary>

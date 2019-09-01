@@ -56,7 +56,7 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     public Button CloseBut;
     public Text title;
     bool isPage;
- 
+  
     public ParkPersonnelAlarmType parkPersonnelAlarmType;
     /// <summary>
     // Use this for initialization
@@ -164,6 +164,7 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
         }
         else
         {
+            ParkInformationManage.Instance.IsGetPerData = false;
             PersonnelAlarmParkWindow.SetActive(false );
             ParkInformationManage.Instance.PersonToggle.isOn = false;
             PersonnelAlarm.Clear();

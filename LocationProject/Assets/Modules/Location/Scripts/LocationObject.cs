@@ -2025,16 +2025,22 @@ public class LocationObject : MonoBehaviour
     /// <returns></returns>
     private Highlighter GetHighLighter()
     {
-        Highlighter h = null;
-        if (navAgentFollow != null)
+        try
         {
-            h = navAgentFollow.gameObject.AddMissingComponent<Highlighter>();
-        }
-        else
+            Highlighter h = null;
+            if (navAgentFollow != null)
+            {
+                h = navAgentFollow.gameObject.AddMissingComponent<Highlighter>();
+            }
+            else
+            {
+                h = gameObject.AddMissingComponent<Highlighter>();
+            }
+            return h;
+        }catch(Exception e)
         {
-            h = gameObject.AddMissingComponent<Highlighter>();
+            return null;
         }
-        return h;
     }
 
     /// <summary>

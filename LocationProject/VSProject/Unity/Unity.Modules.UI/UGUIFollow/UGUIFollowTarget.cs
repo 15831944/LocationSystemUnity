@@ -312,7 +312,7 @@ public class UGUIFollowTarget : MonoBehaviour
         }
 
 
-        if (Math.Round(currentPos.x, 2) != Math.Round(p1.x, 2) && Math.Round(currentPos.y, 2) != Math.Round(p1.y, 2))
+        if (Math.Round(currentPos.x, 2) != Math.Round(p1.x, 2) || Math.Round(currentPos.y, 2) != Math.Round(p1.y, 2))
         {
             rectTransform.localPosition = p1;
             currentPos = rectTransform.localPosition;
