@@ -16,6 +16,7 @@ public class CinemachineController : MonoBehaviour {
 
     public void SetFollow(Transform target,Transform lookAt=null)
     {
+        Log.Info("CinemachineController.SetFollow");
         this.target = target;
         this.lookAt = lookAt;
         SetTarget();
