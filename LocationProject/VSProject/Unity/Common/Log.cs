@@ -77,9 +77,25 @@ public static class Log
         }
     }
 
+    public static Dictionary<string, bool> TagFilter = null;
+
     public static string Add(LogLevel level, object tag, object obj)
     {
         if (Enable == false) return "";
+
+        string tagT = tag + "";
+        if (TagFilter != null)
+        {
+            if (TagFilter.ContainsKey(tagT))
+            {
+                bool r = TagFilter[tagT];
+                if (r == false)
+                {
+                    return "";
+                }
+            }
+        }
+
         string text = string.Format("[{0}]{1}", tag, obj);
         //MonoBehaviour.print(text);
         DateTime now = DateTime.Now;
