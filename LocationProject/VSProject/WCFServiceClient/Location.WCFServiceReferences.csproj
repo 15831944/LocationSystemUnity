@@ -78,6 +78,9 @@
     <None Include="Service References\LocationServices\Arrays1.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Service References\LocationServices\CommunicationClass.ExtremeVision.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Service References\LocationServices\DbModel.Location.AreaAndDev.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -113,6 +116,9 @@
     </None>
     <None Include="Service References\LocationServices\Location.TModel.LocationHistory.Data1.xsd">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.AlarmStatistics.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\LocationServices\Location.WCFServiceReferences.LocationServices.Archor.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
@@ -290,6 +296,12 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\LocationServices\TModel.BaseData1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\TModel.FuncArgs.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\LocationServices\TModel.Location.Alarm.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\LocationServices\TModel.Location.AreaAndDev.xsd">

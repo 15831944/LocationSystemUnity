@@ -57,6 +57,11 @@ public class NavMeshSceneLoader : MonoBehaviour
         {
             Log.Info("NavMeshSceneLoader.LoadSceneAsync", "start:" + sceneName);
             var operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            if (operation == null)
+            {
+                Log.Error("LoadSceneAsync", "加载场景失败:" + sceneName);
+                return;
+            }
             operation.completed += op =>
             {
                 Log.Info("NavMeshSceneLoader.LoadSceneAsync", "end:" + sceneName);

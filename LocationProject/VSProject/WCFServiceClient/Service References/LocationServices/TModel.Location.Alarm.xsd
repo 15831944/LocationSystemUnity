@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/TModel.Location.Alarm" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/TModel.Location.Alarm" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:complexType name="AlarmStatistics">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="DevTypeAlarms" nillable="true" type="tns:ArrayOfAlarmGroupCount" />
+      <xs:element minOccurs="0" name="Lines" nillable="true" type="tns:ArrayOfAlarmLine" />
+      <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="itemList" nillable="true" type="q1:ArrayOfstring" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AlarmStatistics" nillable="true" type="tns:AlarmStatistics" />
+  <xs:complexType name="ArrayOfAlarmGroupCount">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AlarmGroupCount" nillable="true" type="tns:AlarmGroupCount" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfAlarmGroupCount" nillable="true" type="tns:ArrayOfAlarmGroupCount" />
+  <xs:complexType name="AlarmGroupCount">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Count" type="xs:int" />
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AlarmGroupCount" nillable="true" type="tns:AlarmGroupCount" />
+  <xs:complexType name="ArrayOfAlarmLine">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AlarmLine" nillable="true" type="tns:AlarmLine" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfAlarmLine" nillable="true" type="tns:ArrayOfAlarmLine" />
+  <xs:complexType name="AlarmLine">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Points" nillable="true" type="tns:ArrayOfAlarmLinePoint" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AlarmLine" nillable="true" type="tns:AlarmLine" />
+  <xs:complexType name="ArrayOfAlarmLinePoint">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="AlarmLinePoint" nillable="true" type="tns:AlarmLinePoint" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfAlarmLinePoint" nillable="true" type="tns:ArrayOfAlarmLinePoint" />
+  <xs:complexType name="AlarmLinePoint">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Key" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Value" type="xs:double" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AlarmLinePoint" nillable="true" type="tns:AlarmLinePoint" />
+</xs:schema>

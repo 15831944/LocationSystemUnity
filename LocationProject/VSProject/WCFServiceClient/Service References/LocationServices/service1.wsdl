@@ -13,6 +13,8 @@
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.Location.AreaAndDev" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.LocationHistory.AreaAndDev" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/DbModel.Location.AreaAndDev" />
+      <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.FuncArgs" />
+      <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.Location.Alarm" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.Location.Nodes" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/Location.TModel.Location" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.Location.Person" />
@@ -24,6 +26,7 @@
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.Location.Manage" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/DbModel.Location.Authorizations" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/WebApiCommunication.ExtremeVision" />
+      <xsd:import namespace="http://schemas.datacontract.org/2004/07/CommunicationClass.ExtremeVision" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/LocationServices.Locations.Plugins" />
       <xsd:import namespace="http://schemas.datacontract.org/2004/07/TModel.Models.Settings" />
     </xsd:schema>
@@ -454,6 +457,18 @@
   <wsdl:message name="ILocationService_GetDevMonitorInfoByKKS_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetDevMonitorInfoByKKSResponse" />
   </wsdl:message>
+  <wsdl:message name="ILocationService_GetDevAlarmStatistics_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDevAlarmStatistics" />
+  </wsdl:message>
+  <wsdl:message name="ILocationService_GetDevAlarmStatistics_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDevAlarmStatisticsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILocationService_GetLocationAlarmStatistics_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLocationAlarmStatistics" />
+  </wsdl:message>
+  <wsdl:message name="ILocationService_GetLocationAlarmStatistics_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLocationAlarmStatisticsResponse" />
+  </wsdl:message>
   <wsdl:message name="ILocationService_GetKKSInfoByNodeId_InputMessage">
     <wsdl:part name="parameters" element="tns:GetKKSInfoByNodeId" />
   </wsdl:message>
@@ -759,12 +774,6 @@
   </wsdl:message>
   <wsdl:message name="ILocationService_Getinspectionhistorylist_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetinspectionhistorylistResponse" />
-  </wsdl:message>
-  <wsdl:message name="ILocationService_GetUserList_InputMessage">
-    <wsdl:part name="parameters" element="tns:GetUserList" />
-  </wsdl:message>
-  <wsdl:message name="ILocationService_GetUserList_OutputMessage">
-    <wsdl:part name="parameters" element="tns:GetUserListResponse" />
   </wsdl:message>
   <wsdl:message name="ILocationService_GetorgList_InputMessage">
     <wsdl:part name="parameters" element="tns:GetorgList" />
@@ -1405,6 +1414,14 @@
       <wsdl:input wsaw:Action="http://tempuri.org/IDevService/GetDevMonitorInfoByKKS" message="tns:ILocationService_GetDevMonitorInfoByKKS_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IDevService/GetDevMonitorInfoByKKSResponse" message="tns:ILocationService_GetDevMonitorInfoByKKS_OutputMessage" />
     </wsdl:operation>
+    <wsdl:operation name="GetDevAlarmStatistics">
+      <wsdl:input wsaw:Action="http://tempuri.org/IDevService/GetDevAlarmStatistics" message="tns:ILocationService_GetDevAlarmStatistics_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IDevService/GetDevAlarmStatisticsResponse" message="tns:ILocationService_GetDevAlarmStatistics_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLocationAlarmStatistics">
+      <wsdl:input wsaw:Action="http://tempuri.org/IDevService/GetLocationAlarmStatistics" message="tns:ILocationService_GetLocationAlarmStatistics_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IDevService/GetLocationAlarmStatisticsResponse" message="tns:ILocationService_GetLocationAlarmStatistics_OutputMessage" />
+    </wsdl:operation>
     <wsdl:operation name="GetKKSInfoByNodeId">
       <wsdl:input wsaw:Action="http://tempuri.org/IKKSService/GetKKSInfoByNodeId" message="tns:ILocationService_GetKKSInfoByNodeId_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IKKSService/GetKKSInfoByNodeIdResponse" message="tns:ILocationService_GetKKSInfoByNodeId_OutputMessage" />
@@ -1608,10 +1625,6 @@
     <wsdl:operation name="Getinspectionhistorylist">
       <wsdl:input wsaw:Action="http://tempuri.org/IBaseDataService/Getinspectionhistorylist" message="tns:ILocationService_Getinspectionhistorylist_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IBaseDataService/GetinspectionhistorylistResponse" message="tns:ILocationService_Getinspectionhistorylist_OutputMessage" />
-    </wsdl:operation>
-    <wsdl:operation name="GetUserList">
-      <wsdl:input wsaw:Action="http://tempuri.org/IBaseDataService/GetUserList" message="tns:ILocationService_GetUserList_InputMessage" />
-      <wsdl:output wsaw:Action="http://tempuri.org/IBaseDataService/GetUserListResponse" message="tns:ILocationService_GetUserList_OutputMessage" />
     </wsdl:operation>
     <wsdl:operation name="GetorgList">
       <wsdl:input wsaw:Action="http://tempuri.org/IBaseDataService/GetorgList" message="tns:ILocationService_GetorgList_InputMessage" />
@@ -2491,6 +2504,24 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="GetDevAlarmStatistics">
+      <soap:operation soapAction="http://tempuri.org/IDevService/GetDevAlarmStatistics" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLocationAlarmStatistics">
+      <soap:operation soapAction="http://tempuri.org/IDevService/GetLocationAlarmStatistics" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetKKSInfoByNodeId">
       <soap:operation soapAction="http://tempuri.org/IKKSService/GetKKSInfoByNodeId" style="document" />
       <wsdl:input>
@@ -2943,15 +2974,6 @@
     </wsdl:operation>
     <wsdl:operation name="Getinspectionhistorylist">
       <soap:operation soapAction="http://tempuri.org/IBaseDataService/Getinspectionhistorylist" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetUserList">
-      <soap:operation soapAction="http://tempuri.org/IBaseDataService/GetUserList" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
