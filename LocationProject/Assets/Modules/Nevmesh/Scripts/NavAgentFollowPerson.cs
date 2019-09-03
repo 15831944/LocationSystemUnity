@@ -18,7 +18,13 @@ public class NavAgentFollowPerson : NavAgentControllerBase
     }
     private void OnEnable()
     {
+        isOnEnableWrap = true;
         MovePerson();
+    }
+
+    private void OnDisable()
+    {
+        isPosInfoSet = false;
     }
 
     protected override void InitNavMeshAgent()

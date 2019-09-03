@@ -64,11 +64,28 @@ public class BuildingBenchmark : MonoBehaviour
     }
     public void BuildingBenchmarkList(List<PositionList> PosList)
     {
-        AllPositionList = new List<PositionList>();
-        AllPositionList.AddRange(PosList);
-        TotaiLine();
-        GetPageData(PosList);
+        if (PosList == null || PosList.Count == 0)
+        {
+            NullData();
+        }
+        else
+        {
+            AllPositionList = new List<PositionList>();
+            AllPositionList.AddRange(PosList);
+            TotaiLine();
+            GetPageData(PosList);
+            pegeNumTex.text = "1";
+        }
+
+    }
+    public void NullData()
+    {
         pegeNumTex.text = "1";
+        pegeTotalText.text = "1";
+        DeleteLinePrefabs();
+        FloorBenchmark.Instance.NullData();
+        AreaPersonnelBenchmarkOneDay.Instance.NullData();
+        AreaPersonnelBenchmarkMonths.Instance.NullDate();
     }
     public void ShowBuildingBenchmarkInfo(List<PositionList> PosList)
     {
@@ -128,7 +145,7 @@ public class BuildingBenchmark : MonoBehaviour
         {
             currentPage = int.Parse(pegeNumTex.text);
         }
-
+        if (AllPositionList == null) return;
         int maxPage = (int)Math.Ceiling((double)(AllPositionList.Count) / (double)pageSize);
         if (currentPage > maxPage)
         {

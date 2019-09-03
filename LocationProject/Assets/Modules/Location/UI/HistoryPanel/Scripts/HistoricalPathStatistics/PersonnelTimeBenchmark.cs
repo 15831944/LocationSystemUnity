@@ -62,7 +62,7 @@ public class PersonnelTimeBenchmark : MonoBehaviour
     public Text promptText;
   
     string PerName;
-  public string   CurrentTime ;
+     public string   CurrentTime ;
     void Start()
     {
         AddPageBut.onClick.AddListener(AddPerTimeBenchmarkPage);
@@ -246,7 +246,7 @@ public class PersonnelTimeBenchmark : MonoBehaviour
         {
             currentPage = int.Parse(pegeNumTex.text);
         }
-
+        if (AllPositionList == null) return;
         int maxPage = (int)Math.Ceiling((double)(AllPositionList.Count) / (double)pageSize);
         if (currentPage > maxPage)
         {
@@ -365,7 +365,19 @@ public class PersonnelTimeBenchmark : MonoBehaviour
         }
     }
     // Update is called once per frame
-
+    public void NullData()
+    {
+        promptText.text = "";
+        pegeNumTex.text = "1";
+        pegeTotalText.text = "1";          
+        DeleteLinePrefabs();
+        LineChart_Y_value.DateY(0);        
+        List<float> data = new List<float>();
+        PersonnelLineChart.Inject(data);
+        PersonnelLineChart.enabled = false;//这样处理不用点击一下Inspector里面的东西，柱状图才可以出来
+        PersonnelLineChart.enabled = true;
+        return;
+    }
     void Update()
     {
 

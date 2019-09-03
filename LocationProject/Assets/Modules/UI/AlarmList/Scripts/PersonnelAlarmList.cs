@@ -73,6 +73,7 @@ public class PersonnelAlarmList : MonoBehaviour
     //public PersonnelAlarmType perAlarmType;
     [System.NonSerialized] List<LocationAlarm> AlarmItem;
     bool IsGetData = false;
+    //public Button PerStatisticalBut;
     void Start()
     {
        
@@ -92,6 +93,11 @@ public class PersonnelAlarmList : MonoBehaviour
         SearchBut.onClick.AddListener(PerAlarmSearchBut_Click);
         pegeNumText.onValueChanged.AddListener(InputPersonnelPage);
         InputPerAlarm.onValueChanged.AddListener(PerAlarmSearch);
+       // PerStatisticalBut.onClick.AddListener(() =>
+       //{
+       //    PerAlarmStatisticalManage.Instance . ShowPerAlarmStatisticalWindow(true);
+       //    PerAlarmStatisticalManage.Instance.StartShowPerAlarmStatisticalInfo();
+       //});
     }
 
     private void LoadData()
@@ -207,7 +213,7 @@ public class PersonnelAlarmList : MonoBehaviour
 
             double a = Math.Ceiling((double)SeachPerItems.Count / (double)pageLine);
             int m = (int)a;
-            if (StartPageNum <= m)
+            if (StartPageNum < m)
             {
                 PageNum += 1;
                 pegeNumText.text = PageNum.ToString();
@@ -217,13 +223,13 @@ public class PersonnelAlarmList : MonoBehaviour
         }
         else
         {
-            double a = Math.Ceiling((double)ScreenAlarmItem.Count / (double)pageLine);
+            double a = Math.Ceiling((double)SeachPerItems.Count / (double)pageLine);
             int m = (int)a;
-            if (StartPageNum <= m)
+            if (StartPageNum <m)
             {
                 PageNum += 1;
                 pegeNumText.text = PageNum.ToString();
-                GetPersonnelAlarmPage(ScreenAlarmItem);
+                GetPersonnelAlarmPage(SeachPerItems);
             }
         }
 
@@ -262,7 +268,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 {
                     pegeNumText.text = PageNum.ToString();
                 }
-                GetPersonnelAlarmPage(ScreenAlarmItem);
+                GetPersonnelAlarmPage(SeachPerItems);
             }
         }
 
@@ -318,7 +324,7 @@ public class PersonnelAlarmList : MonoBehaviour
             }
             StartPageNum = currentPage - 1;
             PageNum = currentPage;
-            GetPersonnelAlarmPage(ScreenAlarmItem);
+            GetPersonnelAlarmPage(SeachPerItems);
             ispage = false;
         }
 
@@ -373,9 +379,9 @@ public class PersonnelAlarmList : MonoBehaviour
                 startTime = NewTime.ToString("yyyy年MM月dd日 HH:mm:ss");
             }
             
-            string HandleTime1 = newPerAlarmList[i].HandleTime.ToString();
+            string HandleTime1 = newPerAlarmList[i].HistoryTime.ToString();
 
-            if (HandleTime1.Contains("2000"))
+            if (string .IsNullOrEmpty (HandleTime1))
             {
                 handleTime = "<color=#C66BABFF>未消除</color>"; ;
             }
@@ -548,7 +554,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 {
                     SeachPerItems.Add(AlarmItem[i]);
                 }
-                else if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                else if ((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                 {
                     if (ScreenTime )
                     {
@@ -566,7 +572,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 {
                     SeachPerItems.Add(AlarmItem[i]);
                 }
-                else if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                else if ((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                 {
                     if (Time2 )
                     {
@@ -585,7 +591,7 @@ public class PersonnelAlarmList : MonoBehaviour
         else
         {
             promptText.gameObject.SetActive(false);
-            TotaiLine(SeachPerItems);
+           // TotaiLine(SeachPerItems);
             GetPersonnelAlarmPage(SeachPerItems);
         }
 
@@ -617,7 +623,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 {
                     SeachPerItems.Add(AlarmItem[i]);
                 }
-                else if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                else if ((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                 {
                     if (ScreenTime )
                     {
@@ -635,7 +641,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 {
                     SeachPerItems.Add(AlarmItem[i]);
                 }
-                else if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                else if ((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                 {
                     if (Time2)
                     {
@@ -655,7 +661,7 @@ public class PersonnelAlarmList : MonoBehaviour
         else
         {
             promptText.gameObject.SetActive(false);
-            TotaiLine(SeachPerItems);
+            //TotaiLine(SeachPerItems);
             GetPersonnelAlarmPage(SeachPerItems);
         }
 
@@ -703,14 +709,16 @@ public class PersonnelAlarmList : MonoBehaviour
 
                 else
                 {
-                    if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                    if (AlarmItem[i].Tag!=null)
                     {
-                        if (ScreenTime )
+                        if (AlarmItem[i].Tag .Code .ToString().ToLower().Contains(key) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                         {
-                            SeachPerItems.Add(AlarmItem[i]);
+                            if (ScreenTime)
+                            {
+                                SeachPerItems.Add(AlarmItem[i]);
+                            }
                         }
                     }
-
                 }
             }
             else
@@ -728,13 +736,17 @@ public class PersonnelAlarmList : MonoBehaviour
 
                 else
                 {
-                    if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                    if (AlarmItem[i].Tag != null)
                     {
-                        if (Time2 )
+                        if ((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                         {
-                            SeachPerItems.Add(AlarmItem[i]);
+                            if (Time2)
+                            {
+                                SeachPerItems.Add(AlarmItem[i]);
+                            }
                         }
                     }
+                     
 
 
                 }
@@ -750,7 +762,7 @@ public class PersonnelAlarmList : MonoBehaviour
         else
         {
             promptText.gameObject.SetActive(false);
-            TotaiLine(SeachPerItems);
+          //  TotaiLine(SeachPerItems);
             GetPersonnelAlarmPage(SeachPerItems);
         }
     }
@@ -785,7 +797,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 
                 else 
                 {
-                    if (AlarmItem[i].Personnel .WorkNumber .ToString().ToLower().Contains(key) || AlarmItem[i].Personnel .Name .ToLower().Contains(key))
+                    if (AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key) || AlarmItem[i].Personnel .Name .ToLower().Contains(key))
                     {
                         if (ScreenTime )
                         {
@@ -810,7 +822,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 
                 else 
                 {
-                    if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                    if ((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                     {
                         if (Time2 )
                         {
@@ -832,7 +844,7 @@ public class PersonnelAlarmList : MonoBehaviour
         else
         {
             promptText.gameObject.SetActive(false);
-            TotaiLine(SeachPerItems);
+          //  TotaiLine(SeachPerItems);
             GetPersonnelAlarmPage(SeachPerItems);
         }
 
@@ -892,7 +904,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 {
                     SeachPerItems.Add(AlarmItem[i]);
                 }
-                else if ((AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                else if ((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key)) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                 {
                     if (ScreenTime )
                     {
@@ -910,7 +922,7 @@ public class PersonnelAlarmList : MonoBehaviour
                 {
                     SeachPerItems.Add(AlarmItem[i]);
                 }
-                else if ((AlarmItem[i].Personnel.WorkNumber!=null&&(AlarmItem[i].Personnel.WorkNumber!=null&&AlarmItem[i].Personnel.WorkNumber.ToString().ToLower().Contains(key))) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
+                else if (((AlarmItem[i].Tag.Code.ToString().ToLower().Contains(key))) || AlarmItem[i].Personnel.Name.ToLower().Contains(key))
                 {
                     if (Time2 )
                     {
@@ -930,7 +942,7 @@ public class PersonnelAlarmList : MonoBehaviour
         else
         {
             promptText.gameObject.SetActive(false);
-            TotaiLine(SeachPerItems);
+           // TotaiLine(SeachPerItems);
             GetPersonnelAlarmPage(SeachPerItems);
         }
 

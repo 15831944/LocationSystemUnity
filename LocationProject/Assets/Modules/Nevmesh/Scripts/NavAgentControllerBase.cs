@@ -22,6 +22,8 @@ public class NavAgentControllerBase : MonoBehaviour {
 
     public double timespan = 1;
 
+    public bool isPosInfoSet;//位置信息是否设置
+    public bool isOnEnableWrap;//是否在激活时wrap（处理：人从一楼激活，慢慢走到二楼的情况）
 
     private float MaxSpeed = 3f;//NavMeshAgent移动最大速度
     private float MinSpeed = 0.5f;//NavMeshAgent移动最大速度
@@ -45,6 +47,7 @@ public class NavAgentControllerBase : MonoBehaviour {
     protected void SetSpeedByDistance()
     {
         //bool r = agent.SetDestination(followTarget.position);
+        if (!isPosInfoSet) return;
         distance = Vector3.Distance(targetPos, transform.position);
         //if(printDistance)
         //    Debug.Log("distance:" + distance);
@@ -52,8 +55,9 @@ public class NavAgentControllerBase : MonoBehaviour {
 
         if (enableJump)
         {
-            if (distance > MaxDistance)//距离太远了，直接飞过去
+            if (distance > MaxDistance||isOnEnableWrap)//距离太远了，直接飞过去
             {
+                isOnEnableWrap = false;
                 //if (useWrap)
                 //{
                 Vector3 destination = GetDestination(targetPos);
@@ -206,10 +210,11 @@ public class NavAgentControllerBase : MonoBehaviour {
         if (this.targetPos == posNew)//用TargetPos，可以优化性能，用ShowPos，这里就没什么用了
         {
             //Log.Info("NavAgentControllerBase.UpdatePosition","this.targetPos == hisPosInfo.ShowPos");
+            isPosInfoSet = true;
             return;
-        }
-
+        }        
         this.targetPos = posNew;
+        isPosInfoSet = true;
         //1.实际的点，独立往目标点移动的效果。
         //  待机能看出来，人物会在原地不动。
         //  这个确定效果可以的话，原来的人就可以删掉了。
@@ -284,6 +289,7 @@ public class NavAgentControllerBase : MonoBehaviour {
                 {
                     if (agent.gameObject.activeInHierarchy)
                     {
+                        string posTTT = agent.transform.position.ToString();
                         bool r = agent.SetDestination(destination);//Agent被关闭或者被销毁，调用这个方法会报错
                         if (r == false)//人物物体不在NavMesh上，立刻跳到目标位置
                         {

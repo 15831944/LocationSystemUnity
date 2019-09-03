@@ -324,13 +324,19 @@ public class CameraAlarmManage : MonoBehaviour
         {
             bool IsTime = DateTime.Compare(NewAlaemTime, GetDataTime(CurrentCameraHistoryAlarm[i].time_stamp)) >= 0;
             string AlarmType="";
-            if (CurrentCameraHistoryAlarm[i].FlameData!= null)
-            {
-                AlarmType = "火警";
-            }
-            else if (CurrentCameraHistoryAlarm[i].HeadData!= null)
+            if (CurrentCameraHistoryAlarm[i].AlarmType == 1)
             {
                 AlarmType = "未戴安全帽";
+            }
+            else if (CurrentCameraHistoryAlarm[i].AlarmType == 2)
+            {
+                AlarmType = "火警";
+
+            }
+            else if (CurrentCameraHistoryAlarm[i].AlarmType == 3)
+            {
+               
+                AlarmType = "烟雾";
             }
             if (IsTime && ScreenCameraAlarmType(AlarmType, level))
             {
@@ -477,13 +483,18 @@ public class CameraAlarmManage : MonoBehaviour
     public string GetCameraAlarmType(int level)
     {
         if (level == 1) return "火警";
-        else
+        else if (level == 2)
         {
             return "未戴安全帽";
+        }
+        else
+        {
+            return "烟雾";
         }
     }
     public void CloseAllWindow()
     {
+        AlarmPictureWindow.SetActive(false );
         ShowMaxCameraALarmWindow(false);
         VedioWindow.SetActive(false);
         ShowAlarmWindow(false);
@@ -505,6 +516,8 @@ public class CameraAlarmManage : MonoBehaviour
         CameraAlarmWindow.SetActive(b);
         if (b == false)
         {
+            CameraAlarmDropdown.CameraTypeDropdown.value = 0;
+            CameraAlarmDropdown.CameraTypeDropdown.captionText.text = "告警类型";
             Close();
             if (IsInvoking("RefreshCameraAlarmInfo"))
             {
@@ -617,6 +630,7 @@ public class CameraAlarmManage : MonoBehaviour
             SmallCameraAlarmFollow.PictureTog.isOn = true;
             SmallCameraAlarmFollow.ShowSmallPictureWindow(true);
         }
+        AlarmPictureWindow.SetActive(false);
         ShowMaxCameraALarmWindow(false);
         VedioWindow.SetActive(false);
         ShowAlarmWindow(false);
@@ -681,6 +695,10 @@ public class CameraAlarmManage : MonoBehaviour
     List<CameraAlarmInfo> CurrentPictureAlarmList;
     public void ShowPictureInfo(CameraDevController cameraDev, CameraAlarmFollowUI SmallUI, List<CameraAlarmInfo> infoList)
     {
+        if (!AlarmPictureWindow.activeSelf)
+        {
+            AlarmPictureWindow.SetActive(true );
+        }
         if (MaxCameraAlarmList.Count != 0)
         {
             MaxCameraAlarmList.Clear();
@@ -740,9 +758,13 @@ public class CameraAlarmManage : MonoBehaviour
         {
             NewstAlarmTag.SetActive(true);
         }
-        if (PictureTog.isOn == true && AlarmPictureWindow.activeSelf&& RefreshCameraAlarmListInfo.Count > 0 && AlarmPushManage.Instance.IsNewAlarm == true)
+        if (PictureTog.isOn == true && AlarmPictureWindow.activeSelf&& RefreshCameraAlarmListInfo.Count > 0  )
         {
-            NewstAlarmTag.SetActive(false);
+            if (NewstAlarmTag.activeSelf)
+            {
+                NewstAlarmTag.SetActive(false);
+            }
+           
             if (RefreshCameraAlarmListInfo.Count != 0)
             {
                 Texture2D texture = new Texture2D(width, height);
@@ -764,7 +786,7 @@ public class CameraAlarmManage : MonoBehaviour
         return bytes;
     }
     public void ShowPictureWindow(bool b)
-    {
+    {     
         AlarmPictureWindow.SetActive(b);
         if (b)
         {

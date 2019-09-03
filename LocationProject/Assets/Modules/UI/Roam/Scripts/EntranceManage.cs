@@ -62,22 +62,34 @@ public class EntranceManage : MonoBehaviour
         {
             ThirdBut_Click(ThirdObj.transform);
         });
-
-        ForthObj.transform.GetChild(0).GetChild(1).GetComponent<Button>().onClick.AddListener(() =>
+        if (ForthObj != null)
         {
-            ForthBut_Click(ForthObj.transform);
-        });
+            ForthObj.transform.GetChild(0).GetChild(1).GetComponent<Button>().onClick.AddListener(() =>
+            {
+                ForthBut_Click(ForthObj.transform);
+            });
+        }
 
-        FiveObj.transform.GetChild(0).GetChild(1).GetComponent<Button>().onClick.AddListener(() =>
+        if (FiveObj != null)
         {
-            FiveBut_Click(FiveObj.transform);
-        });
+            FiveObj.transform.GetChild(0).GetChild(1).GetComponent<Button>().onClick.AddListener(() =>
+            {
+                FiveBut_Click(FiveObj.transform);
+            });
+        }
 
         ClickChange(FirstObj);
         ClickChange(SecoundObj);
         ClickChange(ThirdObj);
-        ClickChange(ForthObj);
-        ClickChange(FiveObj);
+        if (ForthObj != null)
+        {
+            ClickChange(ForthObj);
+        }
+        if (FiveObj != null)
+        {
+            ClickChange(FiveObj);
+        }
+
 
     }
     /// <summary>
@@ -131,8 +143,8 @@ public class EntranceManage : MonoBehaviour
     /// <param name="obj"></param>
     public void ClickEntranceBut(Transform obj)
     {
-        EntranceTween.instance.SetButtonExitTweener(obj.GetChild(0));
         ShowWindow(false);
+        EntranceTween.instance.SetButtonExitTweener(obj.GetChild(0));      
         FPSMode.Instance.SwitchTo(true);
         RoamManage.Instance.FPSController.ChangeGravityValue(1f);
         obj.GetChild(1).gameObject.SetActive(false);
@@ -189,9 +201,9 @@ public class EntranceManage : MonoBehaviour
         }
         else
         {
-
-            CloseCurrentEntranceTweener();
             Window.SetActive(false);
+            CloseCurrentEntranceTweener();
+           
         }
     }
     void Update()
@@ -237,13 +249,15 @@ public class EntranceManage : MonoBehaviour
         {
             CloseEntranceTweener(ThirdObj.transform);
         }
-        else if (ForthObj.transform.GetChild(1).gameObject.activeInHierarchy)
+        else if (ForthObj != null && ForthObj.transform.GetChild(1).gameObject.activeInHierarchy)
         {
             CloseEntranceTweener(ForthObj.transform);
         }
-        else if (FiveObj.transform.GetChild(1).gameObject.activeInHierarchy)
+        else if (FiveObj != null && FiveObj.transform.GetChild(1).gameObject.activeInHierarchy)
         {
             CloseEntranceTweener(FiveObj.transform);
         }
     }
+
+
 }

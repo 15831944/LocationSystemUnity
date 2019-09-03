@@ -88,7 +88,7 @@ public class PersonnelBenchmarkOneDay : MonoBehaviour
         DeleteLinePrefabs();
         LineChart_Y_value.DateY(0);
         List<float> data = new List<float>();
-     
+        TimeTitle.text = "";
         PersonnelLineChart.Inject(data);
         PersonnelLineChart.enabled = false;//这样处理不用点击一下Inspector里面的东西，柱状图才可以出来
         PersonnelLineChart.enabled = true;

@@ -95,7 +95,7 @@ public class AlarmPushManage : MonoBehaviour
         {
             if (CameraInfo == null || CameraInfo.Count == 0) return;
             //string json = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
-            Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved","count:"+ CameraInfo.Count);
+            Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved", "count:" + CameraInfo.Count);
             //Debug.LogError(json);
             IsBaoXin = true;
             IsNewAlarm = true;
@@ -132,61 +132,68 @@ public class AlarmPushManage : MonoBehaviour
                 AlarmPushInfo CompleteCameraAlarm = new AlarmPushInfo();
 
                 CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
-                CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid);
-                if (camAlarm.AlarmType == 2)
+                AlarmPushInfo nullData = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null);
+                if (nullData != null)
                 {
-                    CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid && i.FlameData == camAlarm.FlameData);
-                    CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.FlameData != null);
-                }
-                else if (camAlarm.AlarmType == 1)
-                {
-                    CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
-                    CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.HeadData != null);
-
-                }
-                else if (camAlarm.AlarmType == 3)
-                {
-                    CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
-                    CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.SmogData != null);
-                }
-                if (CurrentCameraAlarm != null)
-                {
-                    if (CompleteCameraAlarm != null)
+                    CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i =>i.CameraAlarmInfor!=null && i.CameraAlarmInfor.cid == camAlarm.cid);
+                    if (camAlarm.AlarmType == 2)
                     {
-                        isPushInfo = true;
-                        int? DevID = GetCameraInfoId(camAlarm.cid_url);
-                        if (grid.transform.childCount == 0)
+                        CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid && i.FlameData == camAlarm.FlameData);
+                        CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null && i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.FlameData != null);
+                    }
+                    else if (camAlarm.AlarmType == 1)
+                    {
+                        CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
+                        CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null && i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.HeadData != null);
+
+                    }
+                    else if (camAlarm.AlarmType == 3)
+                    {
+                        CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
+                        CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null && i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.SmogData != null);
+                    }
+                    if (CurrentCameraAlarm != null)
+                    {
+                        if (CompleteCameraAlarm != null)
                         {
-                            isPushInfo = false;
-                        }
-                        for (int i = 0; i < grid.transform.childCount; i++)
-                        {
-                            if (grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text == DevID.ToString())
+                            isPushInfo = true;
+                            Debug.LogError("isPushInfo = true;" + isPushInfo);
+                            int? DevID = GetCameraInfoId(camAlarm.cid_url);
+                            if (grid.transform.childCount == 0)
                             {
+                                isPushInfo = false;
 
-                                int k = i;
-                                if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
+                            }
+                            for (int i = 0; i < grid.transform.childCount; i++)
+                            {
+                                if (grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text == DevID.ToString())
                                 {
-                                    if (grid.transform.childCount == 1)//只有一条告警
-                                    {
-                                        DestroyImmediate(grid.transform.GetChild(k).gameObject);
 
+                                    int k = i;
+                                    if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
+                                    {
+                                        if (grid.transform.childCount == 1)//只有一条告警
+                                        {
+                                            DestroyImmediate(grid.transform.GetChild(k).gameObject);
+
+                                        }
+                                        else
+                                        {
+                                            RemoveAlarmTween(k);
+                                        }
                                     }
                                     else
                                     {
-                                        RemoveAlarmTween(k);
+                                        RemoveChildTween(k);
                                     }
-                                }
-                                else
-                                {
-                                    RemoveChildTween(k);
-                                }
 
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
+
                 CurrentAlarmPushInfoList.Add(AlarmInformation);
 
                 CameraAlarmPushList.AddRange(AllCameraAlarmPush);
@@ -203,7 +210,7 @@ public class AlarmPushManage : MonoBehaviour
 
             Log.Error("CameraAlarmHub_OnCameraAlarmsRecieved", "Exception :" + ex);
         }
-        
+
     }
 
     private void Update()
@@ -369,9 +376,11 @@ public class AlarmPushManage : MonoBehaviour
     /// </summary>
     public void PushInformation()
     {
+
         if (CurrentAlarmPushInfoList.Count == 0 || isPushInfo) return;
 
         isPushInfo = true;
+        Debug.LogError("isPushInfo = true;" + isPushInfo);
         AlarmPushInfo value = CurrentAlarmPushInfoList[0];
         ShowAlarmLevel(value);
 
@@ -495,22 +504,35 @@ public class AlarmPushManage : MonoBehaviour
     /// <param name="alarm"></param>
     public void ShowLocationAlarmInformation(AlarmPushInfo alarm)
     {
+
         AlarmPushInfo Alarm = CurrentAlarmPushInfoList.Find(m => m.locationAlarmInfo.Id == alarm.locationAlarmInfo.Id);
         CurrentAlarmPushInfoList.Remove(Alarm);
         if (alarm.locationAlarmInfo.AlarmLevel != LocationAlarmLevel.正常)
         {
-
             GetLocationAlarmPushData(alarm);
             CompleteAlarmPushInfoList.Add(alarm);
         }
         else
         {
-            try
-            {
 
-                string CurrentId = alarm.locationAlarmInfo.Id.ToString();
-                AlarmPushInfo showAlarm = ShowAlarmPushInfoList.Find(m => m.locationAlarmInfo.Id == alarm.locationAlarmInfo.Id);
+            Debug.LogError(alarm.locationAlarmInfo.AlarmLevel);
+            string CurrentId = alarm.locationAlarmInfo.Id.ToString();
+            AlarmPushInfo nullData = ShowAlarmPushInfoList.Find(m => m.locationAlarmInfo != null);
+            List<AlarmPushInfo> perAlarm = new List<AlarmPushInfo>();
+            if (nullData != null)
+            {
+                Debug.LogError(ShowAlarmPushInfoList.Count + "nullData");
+                foreach (var item in ShowAlarmPushInfoList)
+                {
+                    if (item.locationAlarmInfo != null)
+                    {
+                        perAlarm.Add(item);
+                    }
+                }
+                AlarmPushInfo showAlarm = perAlarm.Find(m => m.locationAlarmInfo.Id == alarm.locationAlarmInfo.Id);
                 Debug.LogError("showAlarm" + ShowAlarmPushInfoList.Count);
+                string ID = "";
+                int k = 0;
                 if (showAlarm != null)
                 {
                     ShowAlarmPushInfoList.Remove(showAlarm);
@@ -518,7 +540,15 @@ public class AlarmPushManage : MonoBehaviour
                     {
                         if (CurrentId == grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text)
                         {
-                            int k = i;
+                            ID = CurrentId;
+                             k = i;
+                        }
+                        if (string.IsNullOrEmpty(ID))
+                        {
+                            isPushInfo = false;
+                        }
+                        else
+                        {
                             CompleteAlarmPushInfoList.Remove(alarm);
                             grid.transform.GetChild(i).DOScaleX(0, 0.1f).OnComplete(() =>
                             {
@@ -528,8 +558,11 @@ public class AlarmPushManage : MonoBehaviour
                                     {
                                         if (grid.transform.childCount == 1)//只有一条告警
                                         {
-                                            DestroyImmediate(grid.transform.GetChild(k).gameObject);
+
+                                            DestroyImmediate(grid.transform.GetChild(0).gameObject);
                                             isPushInfo = false;
+
+                                            Debug.LogError("能否推送" + isPushInfo);
                                         }
                                         else //大于1小于6条告警
                                         {
@@ -558,13 +591,14 @@ public class AlarmPushManage : MonoBehaviour
                         CloseAlarmPushInfoList.Remove(overAlarm);
                         AlarmNumChange();
                     }
+                    else if (overAlarm == null && ShowAlarm == null)
+                    {
+                        isPushInfo = false;
+                    }
                 }
+            }
 
-            }
-            catch (Exception e)
-            {
-                Debug.LogErrorFormat("{0}：{1},!!!", e.ToString(), alarm.locationAlarmInfo.Id);
-            }
+
         }
         if (grid.transform.childCount == 0)
         {
@@ -611,6 +645,7 @@ public class AlarmPushManage : MonoBehaviour
                                         {
                                             DestroyImmediate(grid.transform.GetChild(k).gameObject);
                                             isPushInfo = false;
+
                                         }
                                         else //大于1小于6条告警
                                         {
@@ -737,7 +772,7 @@ public class AlarmPushManage : MonoBehaviour
                     AlarmTw = ObjY.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                     {
                         isPushInfo = false;
-                        BaoXinDelete_ClickAlarm();
+                    //    BaoXinDelete_ClickAlarm();
                     });
                 }
                 else
@@ -766,6 +801,7 @@ public class AlarmPushManage : MonoBehaviour
             {
                 TitleObj.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = "<color=#58A2B4FF>还有</color>" + AlarmNum.ToString() + "<color=#58A2B4FF>条未处理告警未显示</color>";
                 isPushInfo = false;
+
             }
         }
     }
@@ -783,7 +819,7 @@ public class AlarmPushManage : MonoBehaviour
         {
             if (grid.transform.childCount <= 5)
             {
-                
+
 
                 for (int i = 0; i < grid.transform.childCount; i++)
                 {
@@ -798,6 +834,8 @@ public class AlarmPushManage : MonoBehaviour
                             AlarmTw = ObjY.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                             {
                                 isPushInfo = false;
+
+                                Debug.LogError("推送一条结束" + isPushInfo);
                             });
                         }
                     }
@@ -825,6 +863,7 @@ public class AlarmPushManage : MonoBehaviour
                                     AlarmTw = Objy.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                                     {
                                         isPushInfo = false;
+                                        return;
                                     });
                                 }
                             }
@@ -840,7 +879,7 @@ public class AlarmPushManage : MonoBehaviour
                 TitleObj.SetActive(true);
                 AlarmNum = AlarmNum + 1;
 
-               // ShowAlarmPushInfoList.Add(alarm);
+                // ShowAlarmPushInfoList.Add(alarm);
                 string CloseId = grid.transform.GetChild(0).GetChild(3).GetComponent<Text>().text;
                 int strId = int.Parse(CloseId);
                 AlarmPushInfo showAlarmInfo = ShowAlarmPushInfoList.Find(m => m.AlarmType == AlarmPushInfoType.locationAlarm && m.locationAlarmInfo.Id == strId);
@@ -893,6 +932,7 @@ public class AlarmPushManage : MonoBehaviour
                                             AlarmTween = ObjY.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                                             {
                                                 isPushInfo = false;
+                                                return;
                                             });
                                         }
 
@@ -905,11 +945,12 @@ public class AlarmPushManage : MonoBehaviour
                 });
 
             }
-           
+
         }
         else
         {
             isPushInfo = false;
+
         }
     }
 
@@ -986,7 +1027,7 @@ public class AlarmPushManage : MonoBehaviour
             mask2.DOLocalMoveX(-300, 0.1f).OnComplete(() =>
            {
                mask2.gameObject.SetActive(false);
-              
+
 
            }); //第2个光片
 
@@ -1089,6 +1130,7 @@ public class AlarmPushManage : MonoBehaviour
                     ObjY.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                     {
                         isPushInfo = false;
+
                     });
                 }
             }
@@ -1217,14 +1259,14 @@ public class AlarmPushManage : MonoBehaviour
     public void CloseAlarmPushWindow(bool b)
     {
         IsShow.gameObject.SetActive(b);
-        if (IsShow.isOn == true&& IsShow.gameObject.activeSelf )
+        if (IsShow.isOn == true && IsShow.gameObject.activeSelf)
         {
             AlarmPushWindow.SetActive(true);
         }
         else
         {
             AlarmPushWindow.SetActive(false);
-        }    
+        }
     }
     /// <summary>
     /// 删除点击过的告警
@@ -1235,9 +1277,11 @@ public class AlarmPushManage : MonoBehaviour
         {
             if (ClickAlarmList.Count == 0) return;
             isPushInfo = true;
+            Debug.LogError("isPushInfo = true;" + isPushInfo);
             if (grid.transform.childCount == 0)
             {
                 isPushInfo = false;
+
             }
             for (int i = 0; i < grid.transform.childCount; i++)
             {

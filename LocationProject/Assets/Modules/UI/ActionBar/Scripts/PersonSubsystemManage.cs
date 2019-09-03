@@ -217,6 +217,7 @@ public class PersonSubsystemManage : MonoBehaviour
         Debug.Log("OnHistoricalToggleChange:" + isOn);
         if (isOn)
         {
+            AlarmPushManage.Instance.CloseAlarmPushWindow(false);
             IsHistorical = true;
             if (LocationManager.Instance.IsFocus)
             {
@@ -232,7 +233,8 @@ public class PersonSubsystemManage : MonoBehaviour
         }
         else
         {
-            if(SceneAssetManager.Instance) SceneAssetManager.Instance.RecoverEnableLoadBuilding();
+            
+            if (SceneAssetManager.Instance) SceneAssetManager.Instance.RecoverEnableLoadBuilding();
              AlarmPushManage.Instance.CloseAlarmPushWindow(true);
             //AlarmPushManage.Instance.IsShow.isOn = true ;
             ActionBarManage.Instance.Show();
@@ -274,7 +276,8 @@ public class PersonSubsystemManage : MonoBehaviour
             ActionBarManage.Instance.Hide();
             FunctionSwitchBarManage.Instance.SetWindow(false);
             MonitorRangeManager.Instance.HideAllRanges();
-            LocationHistoryUITool.Show();           
+            LocationHistoryUITool.Show();
+            AlarmPushManage.Instance.CloseAlarmPushWindow(false);
             if (AutoSelectHistoryPath.Instance)
             {
                 AutoSelectHistoryPath.Instance.Select();

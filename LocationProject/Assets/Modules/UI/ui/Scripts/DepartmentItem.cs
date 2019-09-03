@@ -21,7 +21,7 @@ public class DepartmentItem : MonoBehaviour {
         DepartName.text = dep.Name.ToString();
         if (string.IsNullOrEmpty(dep.ParentId.ToString ()))
         {
-            SuperiorDepartments.text = "四会电厂";
+            SuperiorDepartments.text = "--";
         }else
         {
             int id = (int)dep.ParentId;

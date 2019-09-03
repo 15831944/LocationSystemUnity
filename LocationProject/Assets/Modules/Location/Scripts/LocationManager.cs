@@ -876,6 +876,7 @@ public class LocationManager : MonoBehaviour
             {
                 Log.Info(string.Format("IsChanged:{0}->{1}", LasTagListInfo,info));
                 PersonnelTreeManage.Instance.areaDivideTree.RefreshPersonnel();
+                PersonnelTreeManage.Instance.departmentDivideTree.RefreshActivePerson();//刷新数据，当部门树不显示离线人员时
                 //ParkInformationManage.Instance.StartRefreshData();
             }
         }

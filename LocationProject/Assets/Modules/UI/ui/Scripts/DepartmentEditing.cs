@@ -39,7 +39,7 @@ public class DepartmentEditing : MonoBehaviour
         IDText.text = "<color=#60D4E4FF>Id：</color>" + dep.Id.ToString();
         if (string.IsNullOrEmpty(dep.ParentId.ToString()))
         {
-            departmentManagement.DepartmentDropdownItem.captionText.text = "四会电厂";
+            departmentManagement.DepartmentDropdownItem.captionText.text = "--";
         }
         else
         {

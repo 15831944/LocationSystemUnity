@@ -55,13 +55,13 @@ public class TimeBenchmarkManage : MonoBehaviour
     public UGUI_LineChartDateFill TimeData;
     //List<PositionList> TimeScreenPositionList;
     public UGUI_LineChartYValue LineChartYvalue;
-    public GameObject  TimeGrid;
+    public GameObject TimeGrid;
     public GameObject TimeObj;
     public GameObject scrollView;
     public GameObject Panel;
     public GameObject coordinate;
     public Text promptText;
-    public GameObject  PointParent;
+    public GameObject PointParent;
     private void Awake()
     {
         Instance = this;
@@ -75,7 +75,7 @@ public class TimeBenchmarkManage : MonoBehaviour
 
     private List<PositionList> ParseLineChartInfo(List<PositionList> PosList)
     {
-        List<PositionList>  newList = new List<PositionList>();
+        List<PositionList> newList = new List<PositionList>();
         if (PosList == null) return newList;
         if (PosList.Count == 0) return newList;
 
@@ -96,7 +96,7 @@ public class TimeBenchmarkManage : MonoBehaviour
             else
             {
                 newList.Add(PosList[i]);
-               
+
             }
         }
 
@@ -111,11 +111,15 @@ public class TimeBenchmarkManage : MonoBehaviour
             TimeLineChart.pointImageList.Clear();
             ClearLinePoint();
         }
+        promptText.text = "";
+        pegeTotalText.text = "1";
+       
         DeleteLinePrefabs();
         LineChartYvalue.DateY(0);
         TimeLineChart.yMax = 0;
         List<float> data = new List<float>();
         TimeLineChart.UpdateData(data);
+        PersonnelTimeBenchmark.Instance.NullData();
         return;
     }
     public void ShowLineChartInfo(List<PositionList> posList)
@@ -124,42 +128,46 @@ public class TimeBenchmarkManage : MonoBehaviour
         {
             NullDate();
         }
-        TimeLineChart.pointImageList.Clear();
-        DateTime start = DateTime.Now;
-        DeleteLinePrefabsX();
-        var posListNew = ParseLineChartInfo(posList);//按时间排序，删除错误数据
-        List<float> data = GetDayLineChartData(posListNew);//得到按天折线图的数据
-        SetHourLineChartDate(posListNew, TimeData, data.Count );//设置小时折线图
-        promptText.text = Convert.ToDateTime(posListNew[0].Name).ToString("yyyy年MM月dd日") + "起定位数据量折线图"; ;
-        posListNew.Sort((x, y) =>
-        {
-            return x.Count.CompareTo(y.Count);
-        });//根据数量排列
-        float Width = data.Count *86f;
-        scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 340);
-        Panel.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 340);
-        coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 273);
-        LineChartYvalue.DateY(posListNew[posListNew.Count - 1].Count);
-        TimeLineChart.yMax = (float)posListNew[posListNew.Count - 1].Count;
-        //LineChartYvalue.DateY(posListNew[0].Count);
-        //TimeLineChart.yMax = (float)posListNew[0].Count;
-        TimeLineChart.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 266f);
-        if (TimeLineChart.pointImageList.Count !=0)
+        else
         {
             TimeLineChart.pointImageList.Clear();
-            ClearLinePoint();
-        }
-       
-        TimeLineChart.width = (float)Width;
-        TimeLineChart.UpdateData(data);
+            DateTime start = DateTime.Now;
+            DeleteLinePrefabsX();
+            var posListNew = ParseLineChartInfo(posList);//按时间排序，删除错误数据
+            List<float> data = GetDayLineChartData(posListNew);//得到按天折线图的数据
+            SetHourLineChartDate(posListNew, TimeData, data.Count);//设置小时折线图
+            promptText.text = Convert.ToDateTime(posListNew[0].Name).ToString("yyyy年MM月dd日") + "起定位数据量折线图"; ;
+            posListNew.Sort((x, y) =>
+            {
+                return x.Count.CompareTo(y.Count);
+            });//根据数量排列
+            float Width = data.Count * 86f;
+            scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 340);
+            Panel.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 340);
+            coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 273);
+            LineChartYvalue.DateY(posListNew[posListNew.Count - 1].Count);
+            TimeLineChart.yMax = (float)posListNew[posListNew.Count - 1].Count;
+            //LineChartYvalue.DateY(posListNew[0].Count);
+            //TimeLineChart.yMax = (float)posListNew[0].Count;
+            TimeLineChart.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 266f);
+            if (TimeLineChart.pointImageList.Count != 0)
+            {
+                TimeLineChart.pointImageList.Clear();
+                ClearLinePoint();
+            }
 
-        Debug.LogError("--------------------ShowLineChartInfo:" + (DateTime.Now - start).TotalMilliseconds + "ms");
+            TimeLineChart.width = (float)Width;
+            TimeLineChart.UpdateData(data);
+
+            Debug.LogError("--------------------ShowLineChartInfo:" + (DateTime.Now - start).TotalMilliseconds + "ms");
+        }
+
     }
     public void ClearLinePoint()
     {
         for (int i = 0; i <= PointParent.transform.childCount; i++)
         {
-            DestroyImmediate(PointParent.transform.GetChild(i ).gameObject);
+            DestroyImmediate(PointParent.transform.GetChild(i).gameObject);
         }
     }
     private List<float> GetDayLineChartData(List<PositionList> posList)
@@ -169,7 +177,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         DateTime dt = Convert.ToDateTime(posList[posList.Count - 1].Name);
         DateTime MinDt = Convert.ToDateTime(posList[0].Name);
         int DifferencetIME = int.Parse((dt - MinDt).TotalDays.ToString());
-        DateTime start = DateTime.Now;      
+        DateTime start = DateTime.Now;
         for (int i = 0; i <= DifferencetIME; i++)
         {
             DateTime DayAdd = MinDt.AddDays(i);
@@ -186,7 +194,7 @@ public class TimeBenchmarkManage : MonoBehaviour
             }
             TimeInstantiateLine();
         }
-        Debug.LogError("--------------------GetDayLineChartData:" + (DateTime.Now - start).TotalMilliseconds+"ms");
+        Debug.LogError("--------------------GetDayLineChartData:" + (DateTime.Now - start).TotalMilliseconds + "ms");
         return data;
     }
 
@@ -194,9 +202,9 @@ public class TimeBenchmarkManage : MonoBehaviour
     /// 设置折线图日期
     /// </summary>
     /// <param name="DataList"></param>
-    private void SetHourLineChartDate(List<PositionList> DataList, UGUI_LineChartDateFill LineChart,int Num)
+    private void SetHourLineChartDate(List<PositionList> DataList, UGUI_LineChartDateFill LineChart, int Num)
     {
-        if (DataList != null&& DataList.Count !=0)
+        if (DataList != null && DataList.Count != 0)
         {
             //LastTime = long.Parse(DataList[DataList.Count - 1].RecordTime);
             DateTime dt = Convert.ToDateTime(DataList[DataList.Count - 1].Name);
@@ -207,7 +215,7 @@ public class TimeBenchmarkManage : MonoBehaviour
     public void GetTimeBenchmarkList(List<PositionList> PosList)
     {
         AllPositionList = new List<PositionList>();
-        if(PosList!=null)AllPositionList.AddRange(PosList);
+        if (PosList != null) AllPositionList.AddRange(PosList);
         TotaiLine();
         GetPageData(PosList);
         pegeNumTex.text = "1";
@@ -226,12 +234,12 @@ public class TimeBenchmarkManage : MonoBehaviour
         DeleteLinePrefabs();
         for (int i = 0; i < PosList.Count; i++)
         {
-           
+
             GameObject Obj = InstantiateLine();
             TimeBenchmarkItem item = Obj.GetComponent<TimeBenchmarkItem>();
             Items.Add(item);
             item.ShowTimeBenchmarkInfo(PosList[i]);
-           
+
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -246,7 +254,7 @@ public class TimeBenchmarkManage : MonoBehaviour
     }
     public void SetScelectItem(List<PositionList> PosList)
     {
-        if (string .IsNullOrEmpty(CurrentTime))
+        if (string.IsNullOrEmpty(CurrentTime))
         {
             grid.transform.GetChild(0).GetComponent<Toggle>().isOn = true;
         }
@@ -254,7 +262,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         {
             for (int i = 0; i < grid.transform.childCount; i++)
             {
-                string  Items = grid.transform.GetChild(i).GetChild(0).GetComponent<Text>().text;
+                string Items = grid.transform.GetChild(i).GetChild(0).GetComponent<Text>().text;
                 if (Items == CurrentTime)
                 {
                     grid.transform.GetChild(i).GetComponent<Toggle>().isOn = true;
@@ -297,7 +305,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         }
         StartPageNum = currentPage - 1;
         PageNum = currentPage;
-        
+
         GetPageData(AllPositionList);
 
     }
@@ -315,7 +323,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         {
             StartPageNum -= 1;
         }
-      
+
     }
     public void MinusTimeBenchmarkPage()
     {
@@ -333,7 +341,7 @@ public class TimeBenchmarkManage : MonoBehaviour
                 pegeNumTex.text = PageNum.ToString();
             }
         }
-        
+
     }
     /// <summary>
     /// 得到第几页数据
@@ -378,7 +386,7 @@ public class TimeBenchmarkManage : MonoBehaviour
     {
         GameObject o = Instantiate(TimeObj);
         o.SetActive(true);
-        o.transform.parent = TimeGrid .transform;
+        o.transform.parent = TimeGrid.transform;
         o.transform.localScale = Vector3.one;
         o.transform.localPosition = new Vector3(o.transform.localPosition.x, o.transform.localPosition.y, 0);
         return o;
@@ -403,10 +411,10 @@ public class TimeBenchmarkManage : MonoBehaviour
     string CurrentTime;
     public void JudgeCurrentSelectItem()
     {
-        for (int i=0;i < grid.transform .childCount;i++)
+        for (int i = 0; i < grid.transform.childCount; i++)
         {
             Toggle Items = grid.transform.GetChild(i).GetComponent<Toggle>();
-            if (Items .isOn ==true)
+            if (Items.isOn == true)
             {
                 CurrentTime = grid.transform.GetChild(i).GetChild(0).GetComponent<Text>().text;
             }
@@ -439,7 +447,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         TimeBenchmarkWindow.SetActive(b);
     }
     // Update is called once per frame
-    
+
     void Update()
     {
 

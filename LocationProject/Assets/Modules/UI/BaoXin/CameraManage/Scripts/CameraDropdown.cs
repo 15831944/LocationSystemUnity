@@ -18,9 +18,11 @@ public class CameraDropdown : MonoBehaviour {
         string n = "告警类型";
         string n1 = "火警";
         string n2 = "未戴安全帽";
+        string n3 = "烟雾";
         AlarmTypeList.Add(n);
         AlarmTypeList.Add(n1);
         AlarmTypeList.Add(n2);
+        AlarmTypeList.Add(n3);
         SetDropdownData(AlarmTypeList);
     }
 

@@ -41,6 +41,7 @@ public class AreaBenchmarkManage : MonoBehaviour {
     {
         int TotalNum = 0;
         AddColor();
+        if (InfoList == null || InfoList.Count == 0) return;
         BenchmarkmanageList = new List<PositionList>();
         for (int i=0;i < InfoList.Count;i++)
         {

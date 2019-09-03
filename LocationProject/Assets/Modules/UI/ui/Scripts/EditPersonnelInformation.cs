@@ -254,8 +254,23 @@ public class EditPersonnelInformation : MonoBehaviour
     /// </summary>
     public void GetModifyPersonnelData()
     {
-
-        CreatPersonnel.TagId = 0;
+        if (string.IsNullOrEmpty(WorkNum.text) || string.IsNullOrEmpty(Name.text))
+        {
+            UGUIMessageBox.Show("人员必填信息不完整，请补充完整在进行提交！", null, null);
+        }
+        else
+        {
+            Personnel Per = PersonnelList.Find(i => i.WorkNumber == WorkNum.text);
+            if (Per == null)
+            {
+                CreatPersonnel.Name = Name.text;
+                CreatPersonnel.WorkNumber = WorkNum.text;            
+            }
+            else
+            {
+                UGUIMessageBox.Show("该工号已存在！", "确定", "", null, null, null);
+            }
+        }
         CreatPersonnel.Tag = null;
         if (EditDepartmentTreeViewManger.Instance.DepBut.isOn)
         {

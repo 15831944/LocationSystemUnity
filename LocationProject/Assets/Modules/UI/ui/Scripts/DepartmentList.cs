@@ -371,6 +371,7 @@ public class DepartmentList : MonoBehaviour
     }
     public void CloseDepartmentListUI()
     {
+        DepSelected.text = "";
         DepartmentListWindow.SetActive(false);
     }
     /// <summary>

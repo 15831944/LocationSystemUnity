@@ -79,7 +79,7 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
     }
     public void NullDate()
     {
-        if (PersonnelLineChart.pointImageList.Count != 0)
+        if (PersonnelLineChart.pointImageList!=null &&PersonnelLineChart.pointImageList.Count != 0)
         {
             PersonnelLineChart.pointImageList.Clear();
             ClearLinePoint();

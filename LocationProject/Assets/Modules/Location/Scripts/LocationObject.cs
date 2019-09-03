@@ -457,6 +457,7 @@ public class LocationObject : MonoBehaviour
         //posInfo.TargetPos = targetPosNew;
         DepNode depnode = null;
         if (tagPos.AreaId!=null) depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId);
+        SetAreaByServer(depnode);//根据服务端数据，设置漂浮UI的区域名称
         posInfo.TargetPos = ChangePosWhenExpandBuilding(targetPosNew, depnode);       
         Vector3 targetPosTemp = targetPosNew;
         dataPos = targetPosNew;
@@ -1850,25 +1851,41 @@ public class LocationObject : MonoBehaviour
     /// </summary>
     public void SetArea()
     {
-        PhysicalTopology pty = GetAreaPhysicalTopologyByType(AreaTypes.机房);
+        //PhysicalTopology pty = GetAreaPhysicalTopologyByType(AreaTypes.机房);
 
-        pty = pty == null ? GetAreaPhysicalTopologyByType(AreaTypes.楼层) : pty;
-        pty = pty == null ? GetAreaPhysicalTopologyByType(AreaTypes.大楼) : pty;
-        pty = pty == null ? GetAreaPhysicalTopologyByType(AreaTypes.区域) : pty;
-
-        if (personInfoUI != null)
+        //pty = pty == null ? GetAreaPhysicalTopologyByType(AreaTypes.楼层) : pty;
+        //pty = pty == null ? GetAreaPhysicalTopologyByType(AreaTypes.大楼) : pty;
+        //pty = pty == null ? GetAreaPhysicalTopologyByType(AreaTypes.区域) : pty;
+        //if (personInfoUI != null)
+        //{
+        //    if (pty != null)
+        //    {
+        //        personInfoUI.SetTxtAreaName(pty.Name);
+        //    }
+        //    else
+        //    {
+        //        SetNearBuildingName();
+        //    }
+        //}
+       
+    }
+    /// <summary>
+    /// 根据服务端信息，设置所在区域
+    /// </summary>
+    /// <param name="node"></param>
+    private void SetAreaByServer(DepNode node)
+    {
+        if (personInfoUI == null) return;
+        if (node != null)
         {
-            if (pty != null)
-            {
-                personInfoUI.SetTxtAreaName(pty.Name);
-            }
-            else
-            {
-                SetNearBuildingName();
-                //personInfoUI.SetTxtAreaName("厂区内");
-            }
+            personInfoUI.SetTxtAreaName(node.NodeName);
+        }
+        else
+        {
+            personInfoUI.SetTxtAreaName("厂区内");
         }
     }
+
     /// <summary>
     /// 人员靠近的建筑
     /// </summary>

@@ -74,6 +74,12 @@ public class FloorBenchmark : MonoBehaviour
         GetPageData(PosList);
        
     }
+    public void NullData()
+    {
+        pegeTotalText.text = "1";
+        pegeNumTex.text = "1";
+        DeleteLinePrefabs();
+    }
     public void ShowFloorBenchmarkInfo(List<PositionList> PosList)
     {
         DeleteLinePrefabs();
@@ -132,7 +138,7 @@ public class FloorBenchmark : MonoBehaviour
         {
             currentPage = int.Parse(pegeNumTex.text);
         }
-
+        if (AllPositionList == null) return;
         int maxPage = (int)Math.Ceiling((double)(AllPositionList.Count) / (double)pageSize);
         if (currentPage > maxPage)
         {

@@ -95,6 +95,7 @@ public class EntranceTween : MonoBehaviour {
     /// </summary>
     public void CreateForthTweener()
     {
+        if (ForthTransform==null )return ;
         ForthTweener = ForthTransform.GetComponent<RectTransform>().DOLocalMoveY(10, 0.38f);
         ForthTweener.SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
         ForthTweener.Pause();
@@ -105,6 +106,7 @@ public class EntranceTween : MonoBehaviour {
     /// </summary>
     public void CreateFiveTweener()
     {
+        if (FiveTransform == null) return;
         FiveTweener = FiveTransform.GetComponent<RectTransform>().DOLocalMoveY(10, 0.38f);
         FiveTweener.SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
         FiveTweener.Pause();
@@ -128,11 +130,11 @@ public class EntranceTween : MonoBehaviour {
         {
             ThirdTransform.GetComponent<RectTransform>().DOLocalMoveY(50, 0.6f).SetEase(Ease.InOutSine).OnComplete(ThirdTweener.PlayForward);
         }
-        else if (obj == ForthTransform)
+        else if (ForthTransform!=null &&obj == ForthTransform)
         {
             ForthTransform.GetComponent<RectTransform>().DOLocalMoveY(50, 0.6f).SetEase(Ease.InOutSine).OnComplete(ForthTweener.PlayForward);
         }
-        else if (obj ==FiveTransform)
+        else if (FiveTransform!=null&&obj == FiveTransform)
         {
             FiveTransform.GetComponent<RectTransform>().DOLocalMoveY(50, 0.6f).SetEase(Ease.InOutSine).OnComplete(FiveTweener.PlayForward);
         }
@@ -161,13 +163,13 @@ public class EntranceTween : MonoBehaviour {
            ThirdTransform.GetComponent<RectTransform>().DOLocalMoveY(0, 0.38f).SetEase(Ease.OutSine);
            ThirdTweener.Pause();
         }
-        else if (obj ==ForthTransform)
+        else if (ForthTransform!=null&&obj == ForthTransform)
         {
             DOTween.Pause(ForthTransform.GetComponent<RectTransform>());
             ForthTransform.GetComponent<RectTransform>().DOLocalMoveY(0, 0.38f).SetEase(Ease.OutSine);
             ForthTweener.Pause();
         }
-        else if (obj ==FiveTransform)
+        else if (FiveTransform!=null&&obj == FiveTransform)
         {
             DOTween.Pause(FiveTransform.GetComponent<RectTransform>());
             FiveTransform.GetComponent<RectTransform>().DOLocalMoveY(0, 0.38f).SetEase(Ease.OutSine);

@@ -149,7 +149,16 @@ public class AreaPersonnelBenchmarkOneDay : MonoBehaviour {
         PersonnelLineChart.enabled = false;//这样处理不用点击一下Inspector里面的东西，柱状图才可以出来
         PersonnelLineChart.enabled = true;
     }
-
+    public void NullData()
+    {
+        DeleteLinePrefabs();
+        LineChart_Y_value.DateY(0);
+        List<float> data = new List<float>();
+        PersonnelLineChart.Inject(data);
+        PersonnelLineChart.enabled = false;//这样处理不用点击一下Inspector里面的东西，柱状图才可以出来
+        PersonnelLineChart.enabled = true;
+        return;
+    }
   
     private void SetHourLineChartDate(List<PositionList> DataList, DateTime DT, int count)
     {

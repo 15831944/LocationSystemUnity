@@ -486,8 +486,9 @@ public class CameraAlarmFollowUI : MonoBehaviour
 
             if (currentCameraAlarmInfo.Count == 0)
             {
-                VideoTog.isOn = true;
-                //ShowCameraVedioWindow(true);
+                if (!VideoTog.isOn) VideoTog.isOn = true;
+                else ShowCameraVedioWindow(true);
+               
                 PictureInfo.text = "";
                 Picture.sprite = PictureWindow.Instance.TransperantBack;
                 NewstAlarmTag.SetActive(false);
@@ -695,8 +696,8 @@ public class CameraAlarmFollowUI : MonoBehaviour
         {
             CameraAlarmManage.Instance.IsPrompt = false;
             CameraAlarmManage.Instance.ShowCameraVedio(CurrentCameraDev, this);
-            VideoTog.isOn = false;
-            //ShowCameraVedioWindow(false);
+            if (!VideoTog.isOn) VideoTog.isOn = true;
+            else ShowCameraVedioWindow(true);
         }
         else if (AlarmTog.isOn)
         {

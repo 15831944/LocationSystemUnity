@@ -244,6 +244,7 @@ public class JobList : MonoBehaviour
     }
     public void CloseJobListWindow()
     {
+        JobSelected.text = "";
         JobListUI.SetActive(false);
     }
     /// <summary>

@@ -27,8 +27,8 @@ public class PersonnelDetailItem : MonoBehaviour
     public void ShowPersonnelDetailInfo(Personnel per, List<Personnel> peraonnelList, List<LocationObject> listT)
     {
         LocationObject locationObjectT = listT.Find((item) => item.personnel.TagId == per.TagId);
-        nameT.text = per.Name;
-        sex.text = per.Sex;
+        nameT.text = per.Name.Trim();
+        sex.text = per.Sex.Trim();
 
         if (string.IsNullOrEmpty(per.WorkNumber))
         {
@@ -36,7 +36,7 @@ public class PersonnelDetailItem : MonoBehaviour
         }
         else
         {
-            workNumber.text = per.WorkNumber;
+            workNumber.text = per.WorkNumber.Trim();
         }
         if (string.IsNullOrEmpty(per.Pst))
         {
@@ -44,12 +44,12 @@ public class PersonnelDetailItem : MonoBehaviour
         }
         else
         {
-            post.text = per.Pst;
+            post.text = per.Pst.Trim();
         }
         if (per.Parent != null)
         {
 
-            department.text = per.Parent.Name;
+            department.text = per.Parent.Name.Trim();
         }
         else
         {
@@ -60,8 +60,8 @@ public class PersonnelDetailItem : MonoBehaviour
 
         if (per.Tag != null)
         {
-            tagName.text = per.Tag.Name;
-            tagNum.text = per.Tag.Code;//编号不是Id是code
+            tagName.text = per.Tag.Name.Trim();
+            tagNum.text = per.Tag.Code.Trim();//编号不是Id是code
         }
         else
         {
@@ -70,7 +70,7 @@ public class PersonnelDetailItem : MonoBehaviour
         }
         if (per.AreaName != null)
         {
-            area.text = per.AreaName.ToString();
+            area.text = per.AreaName.ToString().Trim();
         }
         else
         {
@@ -83,15 +83,22 @@ public class PersonnelDetailItem : MonoBehaviour
         }
         else
         {
-            phone.text = per.PhoneNumber.ToString();
+            phone.text = per.PhoneNumber.ToString().Trim();
         }
-        if (locationObjectT == null)
+        if (locationObjectT == null|| per.Tag ==null )
         {
             standbyTime.text = "--";
         }
         else
         {
-            standbyTime.text = locationObjectT.personInfoUI.infoStandbyTime.text;
+            if (locationObjectT.personInfoUI.infoStandbyTime.gameObject.activeSelf)
+            {
+                standbyTime.text = locationObjectT.personInfoUI.infoStandbyTime.text.Trim();
+            }
+            else
+            {
+                standbyTime.text = "--";
+            }
         }
 
         LocationBut.onClick.AddListener(() =>

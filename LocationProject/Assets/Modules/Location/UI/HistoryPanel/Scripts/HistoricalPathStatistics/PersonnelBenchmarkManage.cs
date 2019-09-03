@@ -6,7 +6,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PersonnelBenchmarkManage : MonoBehaviour {
+public class PersonnelBenchmarkManage : MonoBehaviour
+{
     public static PersonnelBenchmarkManage Instance;
     public GameObject PersonnelBenchmarkWindow;
     /// <summary>
@@ -16,7 +17,7 @@ public class PersonnelBenchmarkManage : MonoBehaviour {
     /// 存放预设生成的集合
     /// </summary>
     public GridLayoutGroup grid;
- 
+
     /// <summary>
     /// 每页显示的条数
     /// </summary>
@@ -51,7 +52,8 @@ public class PersonnelBenchmarkManage : MonoBehaviour {
     public List<PositionList> ShowList;
     List<PositionList> AllPositionList;
     string CurrentTime;
-    void Start () {
+    void Start()
+    {
         AddPageBut.onClick.AddListener(AddPerBenchmarkPage);
         MinusPageBut.onClick.AddListener(MinusPerBenchmarkPage);
         pegeNumTex.onValueChanged.AddListener(InputPerBenchmarkPage);
@@ -62,14 +64,28 @@ public class PersonnelBenchmarkManage : MonoBehaviour {
     }
     public void PersonnelBenchmarkList(List<PositionList> PosList)
     {
-        AllPositionList = new List<PositionList>();
-        AllPositionList.AddRange(PosList);
-        TotaiLine();
-        GetPageData(PosList);
-        pegeNumTex.text = "1";
+        if (PosList != null && PosList.Count != 0)
+        {
+            AllPositionList = new List<PositionList>();
+            AllPositionList.AddRange(PosList);
+            TotaiLine();
+            GetPageData(PosList);
+            pegeNumTex.text = "1";
+        }
+        else
+        {
+            NullData();
+        }
     }
-   
-  
+    public void NullData()
+    {
+        pegeTotalText.text = "1";
+        pegeNumTex.text = "1";
+        DeleteLinePrefabs();
+        PersonnelBenchmarkOneDay.Instance.NullDate();
+        PersonnelBenchmarkMonths.Instance.NullDate();
+    }
+
     public void ShowPersonnelBenchmarkInfo(List<PositionList> PosList)
     {
         DeleteLinePrefabs();
@@ -128,7 +144,7 @@ public class PersonnelBenchmarkManage : MonoBehaviour {
         {
             currentPage = int.Parse(pegeNumTex.text);
         }
-
+        if (AllPositionList == null) return;
         int maxPage = (int)Math.Ceiling((double)(AllPositionList.Count) / (double)pageSize);
         if (currentPage > maxPage)
         {

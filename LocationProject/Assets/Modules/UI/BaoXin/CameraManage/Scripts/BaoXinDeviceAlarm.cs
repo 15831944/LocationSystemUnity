@@ -6,7 +6,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BaoXinDeviceAlarm : MonoBehaviour {
+public class BaoXinDeviceAlarm : MonoBehaviour
+{
     public static BaoXinDeviceAlarm Instance;
     /// <summary>
     /// 每页显示的条数
@@ -53,13 +54,14 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
     public CalendarChange EndcalendarDay;
     private int AlarmType = 0;
     string DevKey;
-    DateTime StartTime ;
+    DateTime StartTime;
     DateTime EndTime;
-    void Start () {
+    void Start()
+    {
         Instance = this;
         AddPageBut.onClick.AddListener(AddDevAlarmPage);
         MinusPageBut.onClick.AddListener(MinDevAlarmPage);
-        CloseBut.onClick.AddListener(()=>
+        CloseBut.onClick.AddListener(() =>
         {
             ShowDevAlarm(false);
         });
@@ -76,10 +78,10 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
         string currenttime = CurrentTime.ToString("yyyy年MM月dd日");
         StartTimeText.text = DateTime.Now.Year.ToString() + "年01月01日"; ;
         EndTimeText.text = currenttime;
-        StartTime = Convert.ToDateTime( DateTime.Now.Year.ToString() + "年01月01日");
+        StartTime = Convert.ToDateTime(DateTime.Now.Year.ToString() + "年01月01日");
         EndTime = CurrentTime;
-        ScreenDevAlarmList = new List<CameraAlarmInfo>();       
-        ScreenDevAlarmList.AddRange(AllDevAlarmList);       
+        ScreenDevAlarmList = new List<CameraAlarmInfo>();
+        ScreenDevAlarmList.AddRange(AllDevAlarmList);
         SaveSelection();
         GetDevAlarmPageData(AllDevAlarmList);
         TotaiLine(AllDevAlarmList);
@@ -114,7 +116,7 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
         for (int i = 0; i < AlarmData.Count; i++)
         {
             GameObject obj = InstantiateLine();
-            CameraAlarmFollowUIItem item = obj.GetComponent<CameraAlarmFollowUIItem>();              
+            CameraAlarmFollowUIItem item = obj.GetComponent<CameraAlarmFollowUIItem>();
             item.GetCameraAlarmData(AlarmData[i]);
             if (i % 2 == 0)
             {
@@ -214,7 +216,7 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
 
 
     }
-    public void GetScreenAlarmInfo(int level,string key, DateTime startTime, DateTime endTime)
+    public void GetScreenAlarmInfo(int level, string key, DateTime startTime, DateTime endTime)
     {
         pegeNumText.text = "1";
         SaveSelection();
@@ -223,7 +225,12 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
 
         for (int i = 0; i < AllDevAlarmList.Count; i++)
         {
-            string devName = AllDevAlarmList[i].DevName.ToLower();
+            string devName = "";
+            if (!string.IsNullOrEmpty(AllDevAlarmList[i].DevName))
+            {
+                devName = AllDevAlarmList[i].DevName.ToLower();
+            }
+
             string devIP = AllDevAlarmList[i].cid_url.ToString().ToLower();
             DateTime AlarmTime = GetDataTime(AllDevAlarmList[i].time_stamp);
             bool IsTime = DateTime.Compare(startTime, NewEndTime) < 0;
@@ -236,7 +243,7 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
                 }
                 if (ScreenTime && DevAlarmType(AllDevAlarmList[i].AlarmType, AlarmType))
                 {
-                    if (string .IsNullOrEmpty(DevKey))
+                    if (string.IsNullOrEmpty(DevKey))
                     {
                         ScreenDevAlarmList.Add(AllDevAlarmList[i]);
                     }
@@ -247,7 +254,7 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
                             ScreenDevAlarmList.Add(AllDevAlarmList[i]);
                         }
                     }
-                    
+
                 }
             }
             else
@@ -284,13 +291,13 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
             GetDevAlarmPageData(ScreenDevAlarmList);
         }
     }
-  public bool  DevAlarmType(int typr, int devType)
+    public bool DevAlarmType(int typr, int devType)
     {
         if (devType == 0)
         {
             return true;
         }
-        else 
+        else
         {
             if (typr == devType)
             {
@@ -301,9 +308,9 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
                 return false;
             }
         }
-              
-       
-        
+
+
+
     }
     /// <summary>
     /// 每一行的预设
@@ -357,8 +364,8 @@ public class BaoXinDeviceAlarm : MonoBehaviour {
     public void ShowDevAlarm(bool b)
     {
         DevAlarmWindow.SetActive(b);
-        InputKey.text  = "";
-        if (b ==false)
+        InputKey.text = "";
+        if (b == false)
         {
             //DevSubsystemManage.Instance.ChangeImage(false, DevSubsystemManage.Instance.QueryToggle);
             //DevSubsystemManage.Instance.QueryToggle.isOn = false;
