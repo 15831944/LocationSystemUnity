@@ -46,11 +46,13 @@ public class NavAgentControllerBase : MonoBehaviour {
 
     protected void SetSpeedByDistance()
     {
+        if (targetPos == Vector3.zero) return;//总不会那么巧，目标位置就是原点吧。
         //bool r = agent.SetDestination(followTarget.position);
         if (!isPosInfoSet) return;
         distance = Vector3.Distance(targetPos, transform.position);
         //if(printDistance)
         //    Debug.Log("distance:" + distance);
+        //Log.Info("NavAgentControllerBase.SetSpeedByDistance",string.Format("{0}->{1},distance:{2}", transform.position,targetPos,distance));
         SetSpeed(distance);
 
         if (enableJump)
@@ -150,7 +152,7 @@ public class NavAgentControllerBase : MonoBehaviour {
        
     }
 
-    public Vector3 targetPos;
+    public Vector3 targetPos = Vector3.zero;
 
     public float rate = 1;
 
@@ -193,9 +195,16 @@ public class NavAgentControllerBase : MonoBehaviour {
 
     //public bool UseShowPos = false;
 
-    public void UpdatePosition()
+    public void UpdatePosition(Action callback)
     {
-        if (posInfo == null) return;
+        if (posInfo == null)
+        {
+            //if (callback != null)
+            //{
+            //    callback();
+            //}
+            return;
+        }
         DateTime start = DateTime.Now;
 
         var posNew = posInfo.TargetPos; //实际的点
@@ -227,47 +236,98 @@ public class NavAgentControllerBase : MonoBehaviour {
         //  会被柜子挡住，NavMesh无法移动到柜子后面的目的地。
 
         InitNavMeshAgent();
-        if (SetDestination(targetPos))
+        SetDestination(targetPos, r =>
+         {
+             if (r)
+             {
+                 PrintTimeInfo();
+             }
+
+
+             if (callback != null)
+             {
+                 callback();
+             }
+         });
+    }
+
+    private void PrintTimeInfo()
+    {
+        HisPosInfo hisPosInfo = posInfo as HisPosInfo; //假如是历史数据
+        if (hisPosInfo != null)
         {
-            HisPosInfo hisPosInfo = posInfo as HisPosInfo; //假如是历史数据
-            if (hisPosInfo != null)
+            var current = hisPosInfo.CurrentPosInfo;
+            var next = current.Next;
+
+            if (next != null)
             {
-                var current = hisPosInfo.CurrentPosInfo;
-                var next = current.Next;
+                TimeSpan time = next.Time - current.Time; //下一个点的时间
+                float distance = Vector3.Distance(next.Vec, current.Vec); //下一个点的距离
 
-                if (next != null)
-                {
-                    TimeSpan time = next.Time - current.Time; //下一个点的时间
-                    float distance = Vector3.Distance(next.Vec, current.Vec); //下一个点的距离
+                Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("{0}=>{1},time:{2},distance:{3}", current.Vec, next.Vec, time, distance));
 
-                    Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("{0}=>{1},time:{2},distance:{3}",current.Vec,next.Vec, time, distance));
+                MultHistoryTimeStamp timeStamp = LocationHistoryUITool.GetTimeStamp();
+                double timesum = timeStamp.timeSum;
+                DateTime showPointTime = timeStamp.showPointTime;
+                float currentSpeedT = timeStamp.currentSpeed;
 
-                    MultHistoryTimeStamp timeStamp = LocationHistoryUITool.GetTimeStamp();
-                    double timesum = timeStamp.timeSum;
-                    DateTime showPointTime = timeStamp.showPointTime;
-                    float currentSpeedT = timeStamp.currentSpeed;
-
-                    Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("t1:{0},t2:{1},t3{2}", current.Time.ToString("HH:mm:ss.f"), next.Time.ToString("HH:mm:ss.f"), showPointTime.ToString("HH:mm:ss.f")));
-                }
-
+                Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("t1:{0},t2:{1},t3{2}", current.Time.ToString("HH:mm:ss.f"), next.Time.ToString("HH:mm:ss.f"), showPointTime.ToString("HH:mm:ss.f")));
             }
+
         }
     }
 
-    protected Vector3 lastPos;
+    protected Vector3 lastPos = Vector3.zero;
 
     protected bool EnableUpdate = false;
 
-    protected bool SetDestination(Vector3 pos)
+    protected void SetDestination(Vector3 pos,Action<bool> callback)
     {
-        if (lastPos == pos) return false;//坐标不变，不用计算处理。
+        Log.Info("NavAgentControllerBase.SetDestination", string.Format("{0}->{1},obj:{2}", transform.position, pos, this));
+        if (lastPos == pos)//坐标不变，不用计算处理。
+        {
+            if (callback != null)
+            {
+                callback(false);
+            }
+            return;
+        }
+        //if (lastPos == Vector3.zero)//说明是第一次，直接跳过去吧
+        //{
+        //    lastPos = pos;
+        //    Vector3 posNew=NavMeshHelper.GetClosetPointEx(pos, agent);
+        //    if (agent != null)
+        //    {
+        //        if (agent.gameObject.activeInHierarchy)
+        //        {
+        //           
+        //        }
+        //        else
+        //        {
+        //            transform.position = posNew;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        transform.position = posNew;
+        //    }
+        //            if (callback != null)
+        //    {
+        //        callback(true);
+        //    }
+        //    return;
+        //}
         lastPos = pos;
 
         //Log.Info("NavAgentControllerBase.SetDestination", string.Format("pos:{0},obj:{1}",pos,this));
         if (IsBusyUpdatePosition)
         {
             //Log.Info("NavAgentControllerBase.UpdatePosition", "IsBusyUpdatePosition");
-            return false;
+            if (callback != null)
+            {
+                callback(false);
+            }
+            return;
         }
         DateTime start = DateTime.Now;
         IsBusyUpdatePosition = true;
@@ -289,33 +349,41 @@ public class NavAgentControllerBase : MonoBehaviour {
                 {
                     if (agent.gameObject.activeInHierarchy)
                     {
-                        string posTTT = agent.transform.position.ToString();
-                        bool r = agent.SetDestination(destination);//Agent被关闭或者被销毁，调用这个方法会报错
-                        if (r == false)//人物物体不在NavMesh上，立刻跳到目标位置
+                        if (EnableUpdate == false)//代表第一次
                         {
-                            Log.Info("NavAgentControllerBase.SetDestination", string.Format("Wrap pos:{0},obj:{1}", pos, this));
-                            //this.transform.position = destination;
-                            agent.Warp(destination);//要用这个,用上面那句话，"不在NavMesh上"的问题会一直出现，要用Warp才会重新计算
+                            Log.Info("NavAgentControllerBase.SetDestination", string.Format("First Wrap!! pos:{0},obj:{1}", pos, this));
+                            agent.Warp(destination);
                         }
                         else
                         {
-                            HisPosInfo hisPosInfo = posInfo as HisPosInfo; //假如是历史数据
-                            if (hisPosInfo != null)
+                            bool r = agent.SetDestination(destination);//Agent被关闭或者被销毁，调用这个方法会报错
+                            if (r == false)//人物物体不在NavMesh上，立刻跳到目标位置
                             {
-                                var current = hisPosInfo.CurrentPosInfo;
-                                var next = current.Next;
-
-                                if (next != null)
+                                Log.Info("NavAgentControllerBase.SetDestination", string.Format("Wrap pos:{0},obj:{1}", pos, this));
+                                //this.transform.position = destination;
+                                agent.Warp(destination);//要用这个,用上面那句话，"不在NavMesh上"的问题会一直出现，要用Warp才会重新计算
+                            }
+                            else
+                            {
+                                HisPosInfo hisPosInfo = posInfo as HisPosInfo; //假如是历史数据
+                                if (hisPosInfo != null)
                                 {
-                                    TimeSpan t = next.Time - current.Time; //下一个点的时间
-                                                                           //float distance = Vector3.Distance(next.Vec, current.Vec); //下一个点的距离
+                                    var current = hisPosInfo.CurrentPosInfo;
+                                    var next = current.Next;
 
-                                    //Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("{0}=>{1},time:{2},distance:{3}", current.Vec, next.Vec, time, distance));
-                                    this.timespan = t.TotalSeconds;//时间越长，走的越慢
+                                    if (next != null)
+                                    {
+                                        TimeSpan t = next.Time - current.Time; //下一个点的时间
+                                                                               //float distance = Vector3.Distance(next.Vec, current.Vec); //下一个点的距离
+
+                                        //Log.Info("NavAgentControllerBase.UpdatePosition", string.Format("{0}=>{1},time:{2},distance:{3}", current.Vec, next.Vec, time, distance));
+                                        this.timespan = t.TotalSeconds;//时间越长，走的越慢
+                                    }
+
                                 }
-
                             }
                         }
+
                         EnableUpdate = true;
                     }
                     else
@@ -336,9 +404,16 @@ public class NavAgentControllerBase : MonoBehaviour {
             {
                 IsBusyUpdatePosition = false;
                 TimeSpan time = DateTime.Now - start;
+
+                if (callback != null)
+                {
+                    callback(false);
+                }
+
             }
             
             
+
             //Log.Info("NavAgentControllerBase.UpdatePosition", NavMeshHelper.Log);
             //Log.Info("NavAgentControllerBase.SetDestination", "UpdatePosition End time:" +time.TotalMilliseconds+"ms");
         });
@@ -361,7 +436,7 @@ public class NavAgentControllerBase : MonoBehaviour {
         ////Log.Info("NavAgentControllerBase.UpdatePosition", NavMeshHelper.Log);
         //Log.Info("NavAgentControllerBase.UpdatePosition", "UpdatePosition End time:" + time.TotalMilliseconds + "ms");
 
-        return true;
+        //return true;
     }
 
     void OnDestroy()

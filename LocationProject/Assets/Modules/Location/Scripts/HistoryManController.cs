@@ -291,6 +291,11 @@ public class HistoryManController : MonoBehaviour
         }
         foreach (var render in renderers)
         {
+            if (render == null)
+            {
+                Log.Error("HistoryManController", "EnableRenderer render == null");
+                continue;
+            }
             render.enabled = true;
         }
     }
@@ -304,7 +309,25 @@ public class HistoryManController : MonoBehaviour
         }
         foreach (var render in renderers)
         {
+            if (render == null)
+            {
+                Log.Error("HistoryManController", "DisableRenderer render == null");
+                continue;
+            }
             render.enabled = false;
+        }
+    }
+
+    [ContextMenu("DestroyRenderer")]
+    public void DestroyRenderer()
+    {
+        if (renderers == null)
+        {
+            renderers = gameObject.GetComponentsInChildren<Renderer>();
+        }
+        foreach (var render in renderers)
+        {
+            GameObject.Destroy(render);
         }
     }
 }

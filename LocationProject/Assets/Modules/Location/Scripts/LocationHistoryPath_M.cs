@@ -172,6 +172,7 @@ public class LocationHistoryPath_M : LocationHistoryPathBase
 
     protected override void StartInit()
     {
+        Log.Error("LocationHistoryPath_M", "StartInit");
         lines = new List<VectorLine>();
         dottedlines = new List<VectorLine>();
         CreatePathParent();
@@ -197,6 +198,11 @@ public class LocationHistoryPath_M : LocationHistoryPathBase
         historyPathDrawing = gameObject.AddMissingComponent<HistoryPathDrawing>();
         historyPathDrawing.Init(pathParent, color);
         historyPathDrawing.PauseDraw();
+
+        if (navAgentFollow != null)
+        {
+            historyPathDrawing.target = navAgentFollow.transform;
+        }
     }
 
     /// <summary>
@@ -309,11 +315,17 @@ public class LocationHistoryPath_M : LocationHistoryPathBase
 
     public override void SetRenderIsEnable(bool isEnable)
     {
+        Log.Info("LocationHistoryPath_M", "SetRenderIsEnable:" + isEnable);
         //base.SetRenderIsEnable(isEnable);
         if (IsShowRenderer != isEnable)
         {
             foreach (Renderer render in renders)
             {
+                if (render == null)
+                {
+                    Log.Error("LocationHistoryPath_M", "render == null");
+                    continue;
+                }
                 render.enabled = isEnable;
             }
             bool isMouseDragSliderT = LocationHistoryUITool.GetIsMouseDragSlider();

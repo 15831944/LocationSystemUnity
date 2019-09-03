@@ -1585,7 +1585,7 @@ public class MultHistoryPlayUINew : MonoBehaviour
         if (modet == HistoryMode.Normal)
         {
             SwithMode(HistoryMode.Normal);
-            //modeName.text = "轨道模式";
+            //modeName.text = "轨迹模式";
 
             SetHistoryLineDrawing(false);
 

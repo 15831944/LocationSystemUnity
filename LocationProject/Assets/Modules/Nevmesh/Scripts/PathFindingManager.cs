@@ -133,12 +133,14 @@ public class PathFindingManager : MonoBehaviour
 #if UNITY_EDITOR
                 man.gameObject.SetTransparent(0.5f);
 #else
-    man.DisableRenderer();
+    //man.DisableRenderer();
+    man.DestroyRenderer();
 #endif
             }
             else
             {
-                man.DisableRenderer();
+                //man.DisableRenderer();
+                man.DestroyRenderer();//直接删除不需要再出现了
             }
 
 
@@ -249,12 +251,16 @@ public class PathFindingManager : MonoBehaviour
             {
                 if (o.navAgentFollow == null)
                 {
+                    Log.Debug("PathFindingManager.SetNavAgent",string.Format("{0},{1},{2}",o.name,o.transform.position,o.gameObject.activeInHierarchy));
+
                     var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent);//创建一个Agent跟随
                     agent.name = o.gameObject.name + "(Nav)";
                     agent.gameObject.layer = o.gameObject.layer;
                     agent.gameObject.tag = o.gameObject.tag;
                     //agent.transform.parent = o.CreatePathParent();
+                    agent.transform.position = o.transform.position;
                     agent.transform.parent = o.transform.parent;
+
 
                     o.navAgentFollow = agent;
                     agent.SetFollowTarget(o.transform);
@@ -274,6 +280,7 @@ public class PathFindingManager : MonoBehaviour
 
     public void SetNavAgent(LocationHistoryPathBase o)
     {
+        Log.Error("PathFindingManager", "SetNavAgent");
         if (SystemSettingHelper.locationSetting.EnableNavMesh == false) return;//不启用NavMesh
         if (o == null) return;
         if (useNavAgent)
@@ -287,16 +294,29 @@ public class PathFindingManager : MonoBehaviour
             {
                 if (o.navAgentFollow == null)
                 {
+
+
                     var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent);//创建一个Agent跟随
                     agent.name = o.gameObject.name + "(Nav)";
                     agent.gameObject.layer = o.gameObject.layer;
                     agent.gameObject.tag = o.gameObject.tag;
 
+                    agent.transform.position = o.transform.position;
                     agent.transform.parent = o.CreatePathParent();
                     o.navAgentFollow = agent;
                     agent.SetFollowTarget(o.transform);
 
                     agent.gameObject.SetActive(false);
+
+                    if (o is LocationHistoryPath_M)
+                    {
+                        LocationHistoryPath_M path = o as LocationHistoryPath_M;
+                        if (path.historyPathDrawing != null)
+                        {
+                            path.historyPathDrawing.target = agent.transform;//绘图目标修改
+                        }
+
+                    }
                 }
             }
         }

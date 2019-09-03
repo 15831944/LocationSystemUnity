@@ -38,13 +38,27 @@ public class NavAgentFollowPerson : NavAgentControllerBase
             //    SetDestination(followTarget.position);
             //}
         }
-        
+
     }
+
+    public bool FirstUpdate = true;
 
     void Update()
     {
-        UpdateSpeed();
-        UpdatePosition();
+        if (gameObject.activeInHierarchy == false)
+        {
+            return;
+        }
+        if (FirstUpdate)
+        {
+
+            FirstUpdate = false;
+        }
+
+        UpdatePosition(() =>
+        {
+            UpdateSpeed();
+        });
     }
 
     protected override void UpdateSpeed()

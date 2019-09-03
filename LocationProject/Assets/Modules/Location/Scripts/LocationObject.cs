@@ -189,6 +189,7 @@ public class LocationObject : MonoBehaviour
 
     void OnEnable()
     {
+        Log.Debug("LocationObject",string.Format("OnEnable:{0},{1}",this.name,transform.position));
         //人员预设物体状态必须为未激活的 不然在AddComponent<LocationObject>()后 在Init()前 OnEnable就会被调用 此时Tag等数据还未设置
         transform.position = targetPos;
         if (navAgentFollow != null)
@@ -209,6 +210,7 @@ public class LocationObject : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        Log.Debug("LocationObject", string.Format("Start:{0},{1}", this.name, transform.position));
         titleTag = transform.Find("TitleTag");
         DoubleClickEventTrigger_u3d lis = DoubleClickEventTrigger_u3d.Get(gameObject);
         lis.onDoubleClick = On_DoubleClick;
@@ -225,10 +227,14 @@ public class LocationObject : MonoBehaviour
         SetRendererEnable(true);
         //FollowUINormalOn();
 
+        //处理宝信待机人员显示在一个初始位置的问题。
+        //UpdatePosition();//马上就设置一下位置，Update可能进不去
+        SetPosition(posInfo);//直接用这个，用上面那个，因为动画停止，会返回。
     }
 
     void OnDisable()
     {
+        Log.Debug("LocationObject", string.Format("OnDisable:{0},{1}", this.name, transform.position));
         ClearAreas();
         FollowUIOff();
         try
@@ -331,6 +337,11 @@ public class LocationObject : MonoBehaviour
 
     // Update is called once per frame
     void Update()
+    {
+        UpdatePosition();
+    }
+
+    private void UpdatePosition()
     {
         if (ViewState.人员定位 != ActionBarManage.Instance.CurrentState) return;
         //GetAlignTarget();
@@ -442,6 +453,8 @@ public class LocationObject : MonoBehaviour
     /// </summary>
     public void SetPositionInfo(TagPosition tagPos)
     {
+        
+
         posInfo = new TagPosInfo(tagPos);
         posInfo.CurrentPos = transform.position;
         tagPosInfo = tagPos;
@@ -454,6 +467,9 @@ public class LocationObject : MonoBehaviour
         //Vector3 offset = LocationManager.Instance.GetPosOffset();
         Vector3 posOrigin = new Vector3((float)tagPosInfo.X, (float)tagPosInfo.Y, (float)tagPosInfo.Z);
         Vector3 targetPosNew = LocationManager.GetRealVector(posOrigin);
+
+        //Log.Debug("LocationObject", string.Format("SetPositionInfo:{0},{1}=>{2}", this.name, transform.position, targetPosNew));
+
         //posInfo.TargetPos = targetPosNew;
         DepNode depnode = null;
         if (tagPos.AreaId!=null) depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId);
@@ -887,11 +903,12 @@ public class LocationObject : MonoBehaviour
 
         
 
-        if (isStopAnimation)
+        if (isStopAnimation)//动画停止中
         {
             //StopAnimation();
             SwitchUIByState(tagPosInfo);
             StartWait(true);//人停止移动后才显示待机UI
+
             return;
         }
 

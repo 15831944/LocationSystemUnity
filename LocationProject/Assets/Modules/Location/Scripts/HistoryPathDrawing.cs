@@ -45,30 +45,34 @@ public class HistoryPathDrawing : MonoBehaviour
         time = Time.time;
     }
 
+    public Transform target;
+
     float time;
 
     void Update()
     {
-
         if (running && WaitForSeconds(.05f)&&MultHistoryPlayUINew.Instance.isPlay)
         {
-            float dist = Vector3.Distance(lastPoint, transform.position);
+            float dist = Vector3.Distance(lastPoint, target.position);
             if (dist > 50)
             {
                 int i = 0;
             }
-            if (lastPoint == transform.position) return;
-            lastPoint = transform.position;
+            if (lastPoint == target.position) return;
+            lastPoint = target.position;
             allPointsNum++;
             pathIndex++;
-            pathLine.points3.Add(transform.position + new Vector3(0, hOffset, 0));
+
+            var posNew = target.position + new Vector3(0, hOffset, 0);
+
+            pathLine.points3.Add(posNew);
             if (pathIndex == maxPoints)
             {
                 AddLine();
                 //running = false;
             }
 
-            //Debug.LogError("Drawing。。。");
+            Log.Error("SamplePoints", "Add:" + posNew);
 
             //yield return new WaitForSeconds(.05f);
 
@@ -133,34 +137,38 @@ public class HistoryPathDrawing : MonoBehaviour
         SetRunning(false);
     }
 
-    IEnumerator SamplePoints(Transform thisTransform)
-    {
-        // Gets the position of the 3D object at intervals (20 times/second)
-        //running = true;
-        Vector3 lastPoint = Vector3.zero;
-        while (running)
-        {
-            if (lastPoint == thisTransform.position) continue;
-            lastPoint = thisTransform.position;
-            allPointsNum++;
-            pathIndex++;
-            pathLine.points3.Add(thisTransform.position);
-            if (pathIndex == maxPoints)
-            {
-                AddLine();
-                //running = false;
-            }
+    //IEnumerator SamplePoints(Transform thisTransform)
+    //{
+    //    // Gets the position of the 3D object at intervals (20 times/second)
+    //    //running = true;
+    //    Vector3 lastPoint = Vector3.zero;
+    //    while (running)
+    //    {
+    //        if (lastPoint == thisTransform.position) continue;
+    //        lastPoint = thisTransform.position;
+    //        allPointsNum++;
+    //        pathIndex++;
+    //        pathLine.points3.Add(thisTransform.position);
 
-            //Debug.LogError("Drawing。。。");
+    //        //Debug.LogError("Drawing。。。");
+    //        Log.Error("SamplePoints", "Add:" + thisTransform.position);
 
-            yield return new WaitForSeconds(.05f);
+    //        if (pathIndex == maxPoints)
+    //        {
+    //            AddLine();
+    //            //running = false;
+    //        }
 
-            if (continuousUpdate)
-            {
-                pathLine.Draw3D();
-            }
-        }
-    }
+    //        //Debug.LogError("Drawing。。。");
+
+    //        yield return new WaitForSeconds(.05f);
+
+    //        if (continuousUpdate)
+    //        {
+    //            pathLine.Draw3D();
+    //        }
+    //    }
+    //}
 
     private void SetRunning(bool b)
     {

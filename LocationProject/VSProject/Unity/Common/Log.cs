@@ -111,6 +111,10 @@ public static class Log
             {
                 UnityEngine.Debug.LogError(text);
             }
+            else if (level == LogLevel.Debug)
+            {
+                UnityEngine.Debug.LogError(text);
+            }
             else// (level == LogLevel.Warning)
             {
                 UnityEngine.Debug.Log(text);
