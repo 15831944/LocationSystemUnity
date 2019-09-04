@@ -68,7 +68,10 @@ public class NavMeshSceneLoader : MonoBehaviour
                 NavMeshHelper.RefreshNavMeshInfo();//这个要更新，不然算出来的位置就有问题
                 if (LocationManager.Instance != null)
                 {
-                    LocationManager.Instance.ShowLocation();//开始计算位置信息
+                    if(ActionBarManage.Instance!=null&&ActionBarManage.Instance.PersonnelToggle.isOn)
+                    {
+                        LocationManager.Instance.ShowLocation();//开始计算位置信息
+                    }                    
                 }
             };
             currentScene = sceneName;

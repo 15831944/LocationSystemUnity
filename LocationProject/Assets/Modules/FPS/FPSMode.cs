@@ -140,6 +140,10 @@ public class FPSMode : MonoBehaviour {
         {
             FollowTargetManage.Instance.CloseDepCameraUI();
         }
+        if(PictureWindow.Instance)
+        {
+            PictureWindow.Instance.Close();
+        }
         //if(CameraVideoManage.Instance)
         //{
         //    CameraVideoManage.Instance.RecoverParent();

@@ -20,6 +20,8 @@ public class RoamFollowMange : MonoBehaviour {
     public bool isCameraUIShow;
     private float MaxUIDis = 50;
     public Camera RoamCamera;
+
+    public GameObject FixedFollowContainer;
     
     // Use this for initialization
     void Start () {

@@ -86,6 +86,7 @@ public class CameraAlarmFollowUIItem : MonoBehaviour
     }
     public void ShowPictureWindow(bool b)
     {
+        SetParentTransform();
         PictureWindow.Instance.PictureWindowUI.SetActive(b);
         if (b)
         {
@@ -104,6 +105,27 @@ public class CameraAlarmFollowUIItem : MonoBehaviour
         }
        
     }
+
+    private void SetParentTransform()
+    {
+        PictureWindow pic = PictureWindow.Instance;
+        if (pic == null || pic.PictureWindowUI == null) return;
+        GameObject uiT = pic.PictureWindowUI;
+        if (DevSubsystemManage.IsRoamState)
+        {
+            Transform parentRoam = RoamFollowMange.Instance == null ? transform : RoamFollowMange.Instance.gameObject.transform;
+            uiT.transform.SetParent(parentRoam);
+            uiT.transform.localScale = new Vector3(0.8f,0.8f,0.8f);
+            uiT.transform.localPosition = Vector3.zero;
+        }
+        else
+        {
+            uiT.transform.SetParent(pic.transform);
+            uiT.transform.localPosition = Vector3.zero;
+            uiT.transform.localScale =Vector3.one;
+        }
+    }
+
     public byte[] PictureDataInfo(string picture)
     {
         picture = picture.Replace("data:image/png;base64,", "").Replace("data:image/jgp;base64,", "").Replace("data:image/jpg;base64,", "").Replace("data:image/jpeg;base64,", "");//将base64头部信息替换

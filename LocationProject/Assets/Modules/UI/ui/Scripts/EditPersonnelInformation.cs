@@ -260,10 +260,10 @@ public class EditPersonnelInformation : MonoBehaviour
         }
         else
         {
+            CreatPersonnel.Name = Name.text;
             Personnel Per = PersonnelList.Find(i => i.WorkNumber == WorkNum.text);
             if (Per == null)
-            {
-                CreatPersonnel.Name = Name.text;
+            {              
                 CreatPersonnel.WorkNumber = WorkNum.text;            
             }
             else

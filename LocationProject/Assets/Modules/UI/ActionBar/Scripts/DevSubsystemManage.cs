@@ -133,6 +133,7 @@ public class DevSubsystemManage : MonoBehaviour {
     /// <param name="isOn"></param>
     private void OnRoamToggleChange(bool isOn)
     {
+        //Debug.LogError("RoamToggleChange:"+isOn);
         if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
         ParkInformationManage.Instance.ClosePerAndDevAlarmWindow();
         ParkInformationManage.Instance.ShowParkInfoUI(!isOn);
@@ -145,9 +146,14 @@ public class DevSubsystemManage : MonoBehaviour {
        // AlarmPushManage.Instance.IsShow.isOn = !isOn ;
         ChangeDefaultAlign(isOn);
         RoomFactory.Instance.FocusNode(FactoryDepManager.Instance,()=> 
-        {           
+        {    
+            if(RoamToggle.isOn!=isOn)
+            {
+                Debug.LogErrorFormat("AfterFoucusNode,RoamToggle.ison:{0}  BeforeFocus.ison:{1}",RoamToggle.isOn,isOn);
+                isOn = RoamToggle.isOn;
+            }       
             ChangeImage(isOn, RoamToggle);
-            Debug.Log("OnRoamToggleChange:" + isOn);
+            //Debug.LogError("OnRoamToggleChange:" + isOn);
             FPSMode.Instance.SetColliderState(isOn);
             FPSMode.Instance.SetBorder(isOn);
             if (roamManager)

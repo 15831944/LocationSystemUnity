@@ -14,8 +14,15 @@ public class CameraAlarmFollowUILocation : MonoBehaviour {
 		
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+	public GameObject GetCameraFollowUIWindow()
+    {
+        if(DevSubsystemManage.IsRoamState&&RoamFollowMange.Instance!=null&&RoamFollowMange.Instance.FixedFollowContainer!=null)
+        {
+            return RoamFollowMange.Instance.FixedFollowContainer;
+        }
+        else
+        {
+            return CameraAlarmFollowUILocationWindow;
+        }
+    }
 }

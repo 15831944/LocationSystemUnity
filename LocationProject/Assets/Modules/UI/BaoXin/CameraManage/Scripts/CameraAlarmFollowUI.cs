@@ -496,7 +496,9 @@ public class CameraAlarmFollowUI : MonoBehaviour
             else
             {
                 currentCameraAlarmInfo.Reverse();
-                PictureTog.isOn = true;
+
+                if (!PictureTog.isOn) PictureTog.isOn = true;
+                else ShowSmallPictureWindow(true);
                 if (!SmallPictureWindow.activeSelf)
                 {
                     SmallPictureWindow.SetActive(true);
@@ -702,14 +704,16 @@ public class CameraAlarmFollowUI : MonoBehaviour
         else if (AlarmTog.isOn)
         {
             CameraAlarmManage.Instance.ShowCurrentCameraDevAlarm(CurrentCameraDevID, this, CurrentCameraDev);
-            AlarmTog.isOn = false;
-            ShowCameraAlarmWindow(false);
+            if (!AlarmTog.isOn) PictureTog.isOn = true;
+            else ShowCameraAlarmWindow(true );
+     
         }
         else if (PictureTog.isOn)
         {
             CameraAlarmManage.Instance.ShowPictureInfo(CurrentCameraDev, this, RefreshCameraAlarmListInfo);
-            PictureTog.isOn = false;
-            ShowSmallPictureWindow(false);
+            if (!PictureTog.isOn) PictureTog.isOn = true;
+            else ShowSmallPictureWindow(true);
+            
         }
     }
     public void ShowSmallPictureWindow(bool b)
@@ -725,9 +729,15 @@ public class CameraAlarmFollowUI : MonoBehaviour
     {
         if (b)
         {
+            GameObject transT = CameraAlarmFollowUILocation.Instance.GetCameraFollowUIWindow();
+            if (transT==null)
+            {
+                Log.Error("CameraAlarmFollowUI.FixedParent is null...");
+                return;
+            }
             this.gameObject.AddComponent<UGUIWindowDrag>();
             FollowParentPos = this.gameObject.GetComponent<RectTransform>().localPosition;
-            this.gameObject.transform.parent = CameraAlarmFollowUILocation.Instance.CameraAlarmFollowUILocationWindow.transform;
+            transform.parent = transT.transform;           
             FixedTog.GetComponent<ControlMenuToolTip>().TipContent = "拖动并固定";
         }
         else

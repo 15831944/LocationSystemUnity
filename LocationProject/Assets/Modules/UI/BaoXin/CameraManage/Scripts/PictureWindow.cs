@@ -13,6 +13,13 @@ public class PictureWindow : MonoBehaviour {
     {
         Instance = this;
     } 
+
+    public void Close()
+    {
+        if(Picture)Picture.sprite = TransperantBack;
+        if (PictureWindowUI) PictureWindowUI.SetActive(false);
+    }
+
     void Start () {
 		
 	}
