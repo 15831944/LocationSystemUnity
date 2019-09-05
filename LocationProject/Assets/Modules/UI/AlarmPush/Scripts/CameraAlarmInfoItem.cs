@@ -57,7 +57,7 @@ public class CameraAlarmInfoItem : MonoBehaviour
             AlarmTypeImage.sprite = smogInfo;
             message.text = "烟雾";
         }
-       
+        cid.text = cameraAlarm.CameraAlarmInfor.cid.ToString();
         AlarmObj.transform.GetComponent<Button>().onClick.AddListener(() =>
         {
             int? DevID = CommunicationObject.Instance.GetCameraDevIdByURL(cameraAlarm.CameraAlarmInfor.cid_url);
@@ -67,7 +67,7 @@ public class CameraAlarmInfoItem : MonoBehaviour
                 Log.Error("Dev.ParentId is null...");
                 return;
             }
-            cid.text = DevID.ToString();
+            
             DevInfo Dev = GetDevInfoByid((int)DevID);
             if (Dev == null)
             {
