@@ -46,8 +46,8 @@ public class AsyncLoadScene : MonoBehaviour
             currentProgressValue = 0;
             targetProgressValue = 0;
             //loadingSlider.value = 0.0f;
-            ProgressbarLoad.Instance.Show(0f);
-
+            if(ProgressbarLoad.Instance) ProgressbarLoad.Instance.Show(0f);
+            if (LoadingAnimationPlay.Instance) LoadingAnimationPlay.Instance.Play();
             if (SceneManager.GetActiveScene().name.Contains("Loading"))
             {
                 //启动协程
@@ -85,7 +85,8 @@ public class AsyncLoadScene : MonoBehaviour
         {
             backImage.gameObject.SetActive(false);
         }
-        ProgressbarLoad.Instance.Hide();
+        if (ProgressbarLoad.Instance) ProgressbarLoad.Instance.Hide();
+        if (LoadingAnimationPlay.Instance) LoadingAnimationPlay.Instance.Close();
         Debug.LogError("加载场景：" + nextSceneName + "完成");
 
         if (callAction != null)
@@ -111,7 +112,8 @@ public class AsyncLoadScene : MonoBehaviour
         {
             //插值运算
             currentProgressValue = Mathf.Lerp(currentProgressValue, targetProgressValue, Time.deltaTime * loadingSpeed);
-            ProgressbarLoad.Instance.Show(currentProgressValue);
+            if (ProgressbarLoad.Instance) ProgressbarLoad.Instance.Show(currentProgressValue);
+            if (LoadingAnimationPlay.Instance) LoadingAnimationPlay.Instance.SetProgress(currentProgressValue);
             //Debug.LogError("currentProgressValue:" + currentProgressValue);
             //if (Mathf.Abs(currentProgressValue - targetProgressValue) < 0.01f)
             //{
@@ -178,7 +180,7 @@ public class AsyncLoadScene : MonoBehaviour
             return;
         }
         callAction = callActionT;
-        ProgressbarLoad.Instance.Show(0);
+        if (ProgressbarLoad.Instance) ProgressbarLoad.Instance.Show(0);
         StartCoroutine(AsyncLoadingAdd());
 
     }

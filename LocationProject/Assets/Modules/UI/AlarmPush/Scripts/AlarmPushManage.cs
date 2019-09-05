@@ -91,6 +91,7 @@ public class AlarmPushManage : MonoBehaviour
 
     private void CameraAlarmHub_OnCameraAlarmsRecieved(List<CameraAlarmInfo> CameraInfo)
     {
+      
         try
         {
             if (CameraInfo == null || CameraInfo.Count == 0) return;
@@ -122,7 +123,11 @@ public class AlarmPushManage : MonoBehaviour
 
             Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved", "AllCameraAlarmPush:" + AllCameraAlarmPush.Count);
             if (mainPage && mainPage.IsFullView) return;
+            if (ScreenFlashesRedAndAudio.Instance != null)
+            {
 
+                ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerPlay();
+            }
             foreach (var camAlarm in AllCameraAlarmPush)
             {
                 NewestCameraAlarmPush.Add(camAlarm);
@@ -278,6 +283,7 @@ public class AlarmPushManage : MonoBehaviour
     /// <param name="LocationaList"></param>
     public void OnLocationAlarmRecieved(List<LocationAlarm> LocationaList)
     {
+      
         FullViewController mainPage = FullViewController.Instance;
         AllPerAlarmPushInfo = new List<LocationAlarm>();
         if (mainPage && mainPage.IsFullView)
@@ -298,6 +304,11 @@ public class AlarmPushManage : MonoBehaviour
         }
         else
         {
+            if (ScreenFlashesRedAndAudio.Instance != null)
+            {
+
+                ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerPlay();
+            }
             foreach (var alarm in LocationaList)
             {
                 AllPerAlarmPushInfo.Add(alarm);
@@ -342,9 +353,8 @@ public class AlarmPushManage : MonoBehaviour
     {
 
         if (CurrentAlarmPushInfoList.Count == 0 || isPushInfo) return;
-
-        isPushInfo = true;
        
+        isPushInfo = true;     
         AlarmPushInfo value = CurrentAlarmPushInfoList[0];
         ShowAlarmLevel(value);
 
@@ -739,6 +749,11 @@ public class AlarmPushManage : MonoBehaviour
                 {
                     AlarmTw = ObjY.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                     {
+                        //if (ScreenFlashesRedAndAudio.Instance != null)
+                        //{
+                        //    ScreenFlashesRedAndAudio.Instance.StopAudio();
+                        //    ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerStop();
+                        //}
                         isPushInfo = false;
                     //    BaoXinDelete_ClickAlarm();
                     });
@@ -801,6 +816,11 @@ public class AlarmPushManage : MonoBehaviour
                             float posY = ObjY.anchoredPosition3D.y + mun;
                             AlarmTw = ObjY.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                             {
+                                //if (ScreenFlashesRedAndAudio.Instance != null)
+                                //{
+                                //    ScreenFlashesRedAndAudio.Instance.StopAudio ();
+                                //    ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerStop();
+                                //}
                                 isPushInfo = false;
 
                                
@@ -830,6 +850,11 @@ public class AlarmPushManage : MonoBehaviour
                                     float posY = Objy.anchoredPosition3D.y + mun;
                                     AlarmTw = Objy.DOAnchorPos(new Vector2(0, posY), 0.1F).OnComplete(() =>
                                     {
+                                        //if (ScreenFlashesRedAndAudio.Instance != null)
+                                        //{
+                                        //    ScreenFlashesRedAndAudio.Instance.StopAudio();
+                                        //    ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerStop();
+                                        //}
                                         isPushInfo = false;
                                         return;
                                     });
@@ -1047,6 +1072,11 @@ public class AlarmPushManage : MonoBehaviour
     }
     public void PerAlarmBut_Click(string tagNum)
     {
+        if (ScreenFlashesRedAndAudio.Instance != null)
+        {
+           
+            ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerStop_Click();
+        }
         int tagID = int.Parse(tagNum);
         LocationManager.Instance.FocusPersonAndShowInfo(tagID);
     }
@@ -1253,29 +1283,36 @@ public class AlarmPushManage : MonoBehaviour
     /// </summary>
     public void BaoXinDelete_ClickAlarm()
     {
-        if (!isPushInfo)
+        if (isPushInfo==false )
         {
-            if (ClickAlarmList.Count == 0) return;
-            isPushInfo = true;
-          
+            Debug.LogError( " BaoXinDelete_ClickAlarm");
+            isPushInfo =true ;
             if (grid.transform.childCount == 0)
             {
                 isPushInfo = false;
 
             }
-            for (int i = 0; i < grid.transform.childCount; i++)
-            {
-                string AlarmID = ClickAlarmList.Find(N => N == grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text);
-                if (!string.IsNullOrEmpty(AlarmID))
+            string ID = "";
+            int k = 0;
+            string CurrentId = "";
+                for (int i = 0; i < grid.transform.childCount; i++)
                 {
-                    int k = i;
+                    if ( CurrentId == ClickAlarmList.Find(N => N == grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text))
+                    {
+                        ID = CurrentId;
+                        k = i;
+                    }
+                }          
+                if (!string.IsNullOrEmpty(ID))
+                { 
+                    
                     if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
                     {
                         if (grid.transform.childCount == 1)//只有一条告警
                         {
                             DestroyImmediate(grid.transform.GetChild(k).gameObject);
-
-                        }
+                        isPushInfo = false;
+                    }
                         else
                         {
                           
@@ -1286,10 +1323,15 @@ public class AlarmPushManage : MonoBehaviour
                     {
                         RemoveChildTween(k);
                     }
-                    ClickAlarmList.Remove(AlarmID);
+                    ClickAlarmList.Remove(ID);
                 }
+                else
+            {
+                isPushInfo = false;
             }
-        }
+
+            }
+        
 
     }
     public List<string> ClickAlarmList;

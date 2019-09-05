@@ -249,6 +249,7 @@ public class LoginManage : MonoBehaviour {
                                      {
                                          Debug.Log("download:"+ info.LocationURL);
                                          CommunicationObject.Instance.DebugLog("download:" + info.LocationURL);
+                                         if (HttpDownloadCheck.Instance) HttpDownloadCheck.Instance.EnableCheck = true;
                                          downLoad.Download(info.LocationURL);
                                      }
                                      else
@@ -465,7 +466,6 @@ public class LoginManage : MonoBehaviour {
                 o.SetActive(true);
             }
         }
-
         if (AfterLoginSuccessfullyAction != null)
         {
             Debug.LogFormat("AfterLoginSuccessfullyAction");

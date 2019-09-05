@@ -60,6 +60,11 @@ public class CameraAlarmInfoItem : MonoBehaviour
         cid.text = cameraAlarm.CameraAlarmInfor.cid.ToString();
         AlarmObj.transform.GetComponent<Button>().onClick.AddListener(() =>
         {
+            if (ScreenFlashesRedAndAudio.Instance != null)
+            {
+               
+                ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerStop_Click ();
+            }
             int? DevID = CommunicationObject.Instance.GetCameraDevIdByURL(cameraAlarm.CameraAlarmInfor.cid_url);
             if (DevID == null)
             {
@@ -114,11 +119,14 @@ public class CameraAlarmInfoItem : MonoBehaviour
 
     public void LocationDev(string devId, int DepID, string devName)
     {
+      
         if (AlarmPushManage.Instance.ClickAlarmList == null)
         {
             AlarmPushManage.Instance.ClickAlarmList = new List<string>();
         }
-        AlarmPushManage.Instance.ClickAlarmList.Add(DepID.ToString());
+        AlarmPushManage.Instance.ClickAlarmList.Add(cid.text );
+        Debug.LogError(AlarmPushManage.Instance.ClickAlarmList.Count + " AlarmPushManage.Instance.ClickAlarmList");
+        //AlarmPushManage.Instance.BaoXinDelete_ClickAlarm();
         RoomFactory.Instance.FocusDev(devId, DepID, result =>
         {
             if (!result)

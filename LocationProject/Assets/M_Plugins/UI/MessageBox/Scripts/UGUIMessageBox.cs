@@ -72,6 +72,9 @@ public class UGUIMessageBox : MonoBehaviour,IMessageBox {
         txtMsg.text = msg;
         sureBtnTxt.text = "确定";
         cancelBtnTxt.text = "取消";
+        Instance.SureCallAction = null;
+        Instance.CancelCallAction = null;
+        Instance.CloseCallAction = null;
         SetWindowActive(true);
     }
 
