@@ -91,7 +91,7 @@ public class AlarmPushManage : MonoBehaviour
 
     private void CameraAlarmHub_OnCameraAlarmsRecieved(List<CameraAlarmInfo> CameraInfo)
     {
-      
+
         try
         {
             if (CameraInfo == null || CameraInfo.Count == 0) return;
@@ -132,38 +132,29 @@ public class AlarmPushManage : MonoBehaviour
             {
                 NewestCameraAlarmPush.Add(camAlarm);
                 AlarmPushInfo AlarmInformation = new AlarmPushInfo();
-               AlarmInformation.SetAlarmInfo(camAlarm);
+                AlarmInformation.SetAlarmInfo(camAlarm);
                 CameraAlarmInfo CurrentCameraAlarm = new CameraAlarmInfo();
                 AlarmPushInfo CompleteCameraAlarm = new AlarmPushInfo();
-
-                
                 AlarmPushInfo nullData = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null);
                 if (nullData != null)
                 {
-                  //  CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i =>i.CameraAlarmInfor!=null && i.CameraAlarmInfor.cid == camAlarm.cid);
                     if (camAlarm.AlarmType == 2)
                     {
-                      //  CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid && i.FlameData == camAlarm.FlameData);
                         CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null && i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.FlameData != null);
                     }
                     else if (camAlarm.AlarmType == 1)
                     {
-                        //CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
                         CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null && i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.HeadData != null);
 
                     }
                     else if (camAlarm.AlarmType == 3)
                     {
-                      //  CurrentCameraAlarm = NewestCameraAlarmPush.Find(i => i.cid == camAlarm.cid);
                         CompleteCameraAlarm = CompleteAlarmPushInfoList.Find(i => i.CameraAlarmInfor != null && i.CameraAlarmInfor.cid == camAlarm.cid && i.CameraAlarmInfor.SmogData != null);
                     }
-                    if ( CompleteCameraAlarm == null)
+                    if (CompleteCameraAlarm == null)
                     {
                         CurrentAlarmPushInfoList.Add(AlarmInformation);
                         CameraAlarmPushList.AddRange(AllCameraAlarmPush);
-                        Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved", "CurrentAlarmPushInfoList:" + CurrentAlarmPushInfoList.Count);
-
-                        Log.Info("CameraAlarmHub_OnCameraAlarmsRecieved", "CameraAlarmPushList:" + CameraAlarmPushList.Count);
                     }
                 }
                 else
@@ -283,7 +274,6 @@ public class AlarmPushManage : MonoBehaviour
     /// <param name="LocationaList"></param>
     public void OnLocationAlarmRecieved(List<LocationAlarm> LocationaList)
     {
-      
         FullViewController mainPage = FullViewController.Instance;
         AllPerAlarmPushInfo = new List<LocationAlarm>();
         if (mainPage && mainPage.IsFullView)
@@ -304,11 +294,7 @@ public class AlarmPushManage : MonoBehaviour
         }
         else
         {
-            if (ScreenFlashesRedAndAudio.Instance != null)
-            {
-
-                ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerPlay();
-            }
+          
             foreach (var alarm in LocationaList)
             {
                 AllPerAlarmPushInfo.Add(alarm);
@@ -331,6 +317,11 @@ public class AlarmPushManage : MonoBehaviour
                 }
                 else
                 {
+                    if (ScreenFlashesRedAndAudio.Instance != null)
+                    {
+
+                        ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerPlay();
+                    }
                     AlarmPushInfo CurrentAlarm = CurrentAlarmPushInfoList.Find(m => m.AlarmType == AlarmPushInfoType.locationAlarm && m.locationAlarmInfo.Id == per.Id && m.locationAlarmInfo.AlarmLevel == per.AlarmLevel);
                     if (CurrentAlarm == null)
                     {
@@ -353,8 +344,8 @@ public class AlarmPushManage : MonoBehaviour
     {
 
         if (CurrentAlarmPushInfoList.Count == 0 || isPushInfo) return;
-       
-        isPushInfo = true;     
+
+        isPushInfo = true;
         AlarmPushInfo value = CurrentAlarmPushInfoList[0];
         ShowAlarmLevel(value);
 
@@ -495,7 +486,7 @@ public class AlarmPushManage : MonoBehaviour
             List<AlarmPushInfo> perAlarm = new List<AlarmPushInfo>();
             if (nullData != null)
             {
-                
+
                 foreach (var item in ShowAlarmPushInfoList)
                 {
                     if (item.locationAlarmInfo != null)
@@ -504,7 +495,7 @@ public class AlarmPushManage : MonoBehaviour
                     }
                 }
                 AlarmPushInfo showAlarm = perAlarm.Find(m => m.locationAlarmInfo.Id == alarm.locationAlarmInfo.Id);
-              
+
                 string ID = "";
                 int k = 0;
                 if (showAlarm != null)
@@ -515,8 +506,8 @@ public class AlarmPushManage : MonoBehaviour
                         if (CurrentId == grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text)
                         {
                             ID = CurrentId;
-                             k = i;
-                        }                      
+                            k = i;
+                        }
                     }
                     if (string.IsNullOrEmpty(ID))
                     {
@@ -525,34 +516,34 @@ public class AlarmPushManage : MonoBehaviour
                     else
                     {
                         CompleteAlarmPushInfoList.Remove(alarm);
-                        grid.transform.GetChild(k ).DOScaleX(0, 0.1f).OnComplete(() =>
-                        {
-                            if (grid.transform.childCount != 0)
-                            {
-                                if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
-                                {
-                                    if (grid.transform.childCount == 1)//只有一条告警
-                                    {
+                        grid.transform.GetChild(k).DOScaleX(0, 0.1f).OnComplete(() =>
+                       {
+                           if (grid.transform.childCount != 0)
+                           {
+                               if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
+                               {
+                                   if (grid.transform.childCount == 1)//只有一条告警
+                                   {
 
-                                        DestroyImmediate(grid.transform.GetChild(0).gameObject);
-                                        isPushInfo = false;
+                                       DestroyImmediate(grid.transform.GetChild(0).gameObject);
+                                       isPushInfo = false;
 
-                                        Debug.LogError("能否推送" + isPushInfo);
-                                    }
-                                    else //大于1小于6条告警
-                                    {
-                                        
-                                        RemoveAlarmTween(k);
-                                    }
-                                }
-                                else if (grid.transform.childCount <= 5 && TitleObj.activeSelf)//告警条数标题栏存在
-                                {
-                                   
-                                    RemoveChildTween(k);
+                                       Debug.LogError("能否推送" + isPushInfo);
+                                   }
+                                   else //大于1小于6条告警
+                                   {
 
-                                }
-                            }
-                        });
+                                       RemoveAlarmTween(k);
+                                   }
+                               }
+                               else if (grid.transform.childCount <= 5 && TitleObj.activeSelf)//告警条数标题栏存在
+                               {
+
+                                   RemoveChildTween(k);
+
+                               }
+                           }
+                       });
                     }
                 }
                 else
@@ -575,7 +566,7 @@ public class AlarmPushManage : MonoBehaviour
             {
                 isPushInfo = false;
             }
-            
+
 
         }
         if (grid.transform.childCount == 0)
@@ -627,7 +618,7 @@ public class AlarmPushManage : MonoBehaviour
                                         }
                                         else //大于1小于6条告警
                                         {
-                                           
+
                                             RemoveAlarmTween(k);
                                         }
                                     }
@@ -678,7 +669,7 @@ public class AlarmPushManage : MonoBehaviour
             item.GetCameraAlarmData(cameraAlarm);
             item.MoveTween();
         }
-        CompleteAlarmPushInfoList.Add(cameraAlarm);
+
     }
     public void ShowTitleObj()
     {
@@ -755,7 +746,7 @@ public class AlarmPushManage : MonoBehaviour
                         //    ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerStop();
                         //}
                         isPushInfo = false;
-                    //    BaoXinDelete_ClickAlarm();
+                        //    BaoXinDelete_ClickAlarm();
                     });
                 }
                 else
@@ -823,7 +814,7 @@ public class AlarmPushManage : MonoBehaviour
                                 //}
                                 isPushInfo = false;
 
-                               
+
                             });
                         }
                     }
@@ -961,7 +952,7 @@ public class AlarmPushManage : MonoBehaviour
     public void SetTween(AlarmPushInfo alarm, GameObject Item)
     {
         ShowAlarmPushInfoList.Add(alarm);
-       
+
         Vector3 V3 = new Vector3(1, 1, 1);
         Vector3 scale = new Vector3(1.2f, 1.2f, 1.2f);
         try
@@ -1074,7 +1065,7 @@ public class AlarmPushManage : MonoBehaviour
     {
         if (ScreenFlashesRedAndAudio.Instance != null)
         {
-           
+
             ScreenFlashesRedAndAudio.Instance.FlashesRedTweenerStop_Click();
         }
         int tagID = int.Parse(tagNum);
@@ -1100,18 +1091,17 @@ public class AlarmPushManage : MonoBehaviour
     /// </summary>
     public void RemoveAlarmTween(int num)
     {
-        if (grid.transform.GetChild(num).gameObject!=null)
+        if (grid.transform.GetChild(num).gameObject != null)
         {
             GameObject removeObj = grid.transform.GetChild(num).gameObject;
             DestroyImmediate(removeObj);
-           
+
         }
         for (int i = 0; i < grid.transform.childCount; i++)
         {
-            if (grid.transform.GetChild(i).gameObject !=null)
+            if (grid.transform.GetChild(i).gameObject != null)
             {
                 RectTransform ObjY = grid.transform.GetChild(i).GetComponent<RectTransform>();
-
                 if (num - 1 > i)
                 {
                     if (ObjY != null)
@@ -1129,8 +1119,6 @@ public class AlarmPushManage : MonoBehaviour
                         {
                             isPushInfo = false;
                             return;
-                         
-
                         });
                     }
                 }
@@ -1143,6 +1131,7 @@ public class AlarmPushManage : MonoBehaviour
             else
             {
                 isPushInfo = false;
+                return;
             }
         }
     }
@@ -1281,60 +1270,52 @@ public class AlarmPushManage : MonoBehaviour
     /// <summary>
     /// 删除点击过的告警
     /// </summary>
-    public void BaoXinDelete_ClickAlarm()
+    public void BaoXinDelete_ClickAlarm(AlarmPushInfo cameraAlarm, GameObject Obj)
     {
-        if (isPushInfo==false )
+        if (isPushInfo == false)
         {
-            Debug.LogError( " BaoXinDelete_ClickAlarm");
-            isPushInfo =true ;
+            Debug.LogError(" BaoXinDelete_ClickAlarm");
+            isPushInfo = true;
             if (grid.transform.childCount == 0)
             {
                 isPushInfo = false;
-
             }
-            string ID = "";
-            int k = 0;
-            string CurrentId = "";
-                for (int i = 0; i < grid.transform.childCount; i++)
+            string CurrendCid = "";
+            int k = Obj .transform .GetSiblingIndex();
+            //for (int i = 0; i < grid.transform.childCount; i++)
+            //{
+            //    AlarmPushInfo AlarmCamera = ClickAlarmList.Find(N => N.CameraAlarmInfor != null && N.CameraAlarmInfor.AlarmType == cameraAlarm.CameraAlarmInfor.AlarmType && N.CameraAlarmInfor.cid == grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text);
+            //    if (AlarmCamera != null)
+            //    {
+            //        CurrendCid = AlarmCamera.CameraAlarmInfor.cid;
+            //        k = i;
+            //    }
+            //}
+           
+                ClickAlarmList.Remove(cameraAlarm);
+                CompleteAlarmPushInfoList.Remove(cameraAlarm);
+                if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
                 {
-                    if ( CurrentId == ClickAlarmList.Find(N => N == grid.transform.GetChild(i).GetChild(3).GetComponent<Text>().text))
+                    if (grid.transform.childCount == 1)//只有一条告警
                     {
-                        ID = CurrentId;
-                        k = i;
-                    }
-                }          
-                if (!string.IsNullOrEmpty(ID))
-                { 
-                    
-                    if (grid.transform.childCount <= 5 && !TitleObj.activeSelf)
-                    {
-                        if (grid.transform.childCount == 1)//只有一条告警
-                        {
-                            DestroyImmediate(grid.transform.GetChild(k).gameObject);
+                        DestroyImmediate(grid.transform.GetChild(k ).gameObject);
                         isPushInfo = false;
-                    }
-                        else
-                        {
-                          
-                            RemoveAlarmTween(k);
-                        }
                     }
                     else
                     {
-                        RemoveChildTween(k);
+
+                        RemoveAlarmTween(k );
                     }
-                    ClickAlarmList.Remove(ID);
                 }
                 else
-            {
-                isPushInfo = false;
+                {
+                    RemoveChildTween(k );
+                }
             }
-
-            }
+          
         
-
     }
-    public List<string> ClickAlarmList;
+    public List<AlarmPushInfo> ClickAlarmList;
     /// <summary>
     /// 通过rtspUrl获取设备ID
     /// </summary>

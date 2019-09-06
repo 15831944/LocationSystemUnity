@@ -58,7 +58,9 @@ public class CameraAlarmInfoItem : MonoBehaviour
             message.text = "烟雾";
         }
         cid.text = cameraAlarm.CameraAlarmInfor.cid.ToString();
-        AlarmObj.transform.GetComponent<Button>().onClick.AddListener(() =>
+        Button but = AlarmObj.transform.GetComponent<Button>();
+        but.onClick.RemoveAllListeners();
+        but.onClick.AddListener(() =>
         {
             if (ScreenFlashesRedAndAudio.Instance != null)
             {
@@ -79,7 +81,7 @@ public class CameraAlarmInfoItem : MonoBehaviour
                 Debug.LogError("Dev is null...");
                 return;
             }
-            LocationDev(DevID.ToString(), (int)Dev.ParentId, devName);
+            LocationDev(DevID.ToString(), (int)Dev.ParentId, devName, cameraAlarm);
 
         });
     }
@@ -117,16 +119,16 @@ public class CameraAlarmInfoItem : MonoBehaviour
         return null;
     }
 
-    public void LocationDev(string devId, int DepID, string devName)
+    public void LocationDev(string devId, int DepID, string devName, AlarmPushInfo cameraAlarm)
     {
       
         if (AlarmPushManage.Instance.ClickAlarmList == null)
         {
-            AlarmPushManage.Instance.ClickAlarmList = new List<string>();
+            AlarmPushManage.Instance.ClickAlarmList = new List<AlarmPushInfo>();
         }
-        AlarmPushManage.Instance.ClickAlarmList.Add(cid.text );
+        AlarmPushManage.Instance.ClickAlarmList.Add(cameraAlarm);
         Debug.LogError(AlarmPushManage.Instance.ClickAlarmList.Count + " AlarmPushManage.Instance.ClickAlarmList");
-        //AlarmPushManage.Instance.BaoXinDelete_ClickAlarm();
+        AlarmPushManage.Instance.BaoXinDelete_ClickAlarm(cameraAlarm,this .gameObject );
         RoomFactory.Instance.FocusDev(devId, DepID, result =>
         {
             if (!result)

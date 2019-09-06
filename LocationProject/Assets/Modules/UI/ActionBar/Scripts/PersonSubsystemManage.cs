@@ -296,6 +296,13 @@ public class PersonSubsystemManage : MonoBehaviour
     /// <param name="isOn"></param>
     private void OnEditAreaToggleChange(bool isOn)
     {
+        if (isOn&&IsRangeMode())
+        {
+            Debug.LogError("当前处于非楼层模式");
+            UGUIMessageBox.Show("当前处于区域层级!\n请点击左下角的返回上一层按钮，再进行区域编辑。");
+            EditAreaToggle.isOn = false;
+            return;
+        }
         if (ConfigButton.instance) ConfigButton.instance.ChoseConfigView();//关闭打开的配置界面
         ParkInformationManage.Instance.ShowParkInfoUI(!isOn);
         ParkInformationManage.Instance.ClosePerAndDevAlarmWindow();
@@ -303,7 +310,7 @@ public class PersonSubsystemManage : MonoBehaviour
         Debug.Log("OnMonitoringToggleChange:" + isOn);
         IsOnEditArea = isOn;
         if (isOn)
-        {
+        {           
             LocationManager.Instance.HideLocation();
             AlarmPushManage.Instance.CloseAlarmPushWindow(false);        
             ObjectsEditManage.Instance.SetEditorGizmoSystem(true);
@@ -332,6 +339,22 @@ public class PersonSubsystemManage : MonoBehaviour
             FunctionSwitchBarManage.Instance.SetWindow(true);
             ActionBarManage.Instance.Show();
             RangeEditWindow.Instance.Hide();
+        }
+    }
+    /// <summary>
+    /// 是否聚焦楼层下区域
+    /// </summary>
+    /// <returns></returns>
+    private bool IsRangeMode()
+    {
+        DepNode currentNode = FactoryDepManager.currentDep;
+        if(currentNode!=null&&(currentNode is RangeController||currentNode is RoomController))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
     public bool IsOnBenchmarking;
