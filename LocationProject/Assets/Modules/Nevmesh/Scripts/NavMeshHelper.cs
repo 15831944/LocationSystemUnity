@@ -253,6 +253,8 @@ public static class NavMeshHelper
 
     public static void GetClosetPointAsync(Vector3 target, string name, NavMeshAgent agent, Action<Vector3, GameObject> callback)
     {
+        //Debug.LogError("GetClosetPointAsync:" + target);
+
         if (target.y > 1)
         {
             target = target + globalOffset;
@@ -266,7 +268,7 @@ public static class NavMeshHelper
         ClearTestPoints();
         NavPointList psList = GetSampleAndEdgeEx(target, agent);
 
-        //CreatePoint(target, "target", 0.1f, Color.green);//目标点
+        CreatePoint(target, "target", 0.1f, Color.green);//目标点
 
         if (navMeshInfo == null)
             navMeshInfo = new NavMeshInfo();
@@ -280,28 +282,39 @@ public static class NavMeshHelper
                 //p2 = GetClosetPointBySegment(target);
 
                 p1 = GetClosetPointByMesh(target);
+                //Debug.LogError("GetClosetPointByMesh:" + p1);
 
                 //if(p1.y>target.y|| psList.Sample.Position.y > target.y)
+
                 {
-                    p2 = GetDownMesh(target,downCount,downStep);
+                    p2 = GetDownMesh(target, downCount, downStep);
+                    //Debug.LogError("GetDownMesh:" + p2);
                 }
-               
+
             }
             catch (Exception e)
             {
-                Debug.LogError("GetClosetPointAsync:" + e.ToString());
+                //Debug.LogError("GetClosetPointAsync:" + e.ToString());
             }
         }, () =>
         {
             try
             {
+                //Debug.LogError("GetSamplePosition ByMesh1:" + p1);
                 p1 = GetSamplePosition(p1);
+                //Debug.LogError("GetSamplePosition ByMesh2:" + p1);
                 psList.Mesh = new NavPoint("ByMesh", p1, target, Color.red, agent);
+
+                //GetDownCast(p1, "ByMesh");
 
                 if (p2 != Vector3.zero)
                 {
+                    //Debug.LogError("GetSamplePosition Down1:" + p2);
                     p2 = GetSamplePosition(p2);
+                    //Debug.LogError("GetSamplePosition Down2:" + p2);
                     psList.Down = new NavPoint("Down", p2, target, Color.yellow, agent);
+
+                    //GetDownCast(p2, "Down");
                 }
 
                 //var p3 = GetDownSample(target);
@@ -313,9 +326,14 @@ public static class NavMeshHelper
                 //var r = GetClosedPoint(psList.ToArray(), target, agent);
                 //var p = CreatePoint(r, "Closed", 0.1f, Color.cyan);//前面这些点中的最近的点，及结果。
 
+                //Debug.LogError("psList.GetMinDistancePoint");
                 var r = psList.GetMinDistancePoint(target, agent);
-                //var closedObj = CreatePoint(r.Position, "Closed", 0.2f, Color.black);
-                //closedObj.AddComponent<NavTestInfo>().agent = agent;
+                if (IsDebug)
+                {
+                    var closedObj = CreatePoint(r.Position, "Closed", 0.2f, Color.black);
+                    closedObj.AddComponent<NavTestInfo>().agent = agent;
+                }
+                
 
                 if (callback != null)
                 {
@@ -392,6 +410,8 @@ public static class NavMeshHelper
             NavPoint navP = new NavPoint("Edge", hitInfo.position, target, Color.green, agent);
             //psList.Add(navP);
             psList.Edge = navP;
+
+            GetDownCast(hitInfo.position, "Edge");
         }
         else
         {
@@ -406,6 +426,8 @@ public static class NavMeshHelper
                 NavPoint navP = new NavPoint("Sample", hitInfo.position, target, Color.blue, agent);
                 //psList.Add(navP);
                 psList.Sample = navP;
+
+                GetDownCast(hitInfo.position, "Sample");
             }
         }
         else
@@ -490,8 +512,8 @@ public static class NavMeshHelper
         return d;
     }
 
-    public static int downCount = 15;
-    public static float downStep = 0.15f;
+    public static int downCount = 10;
+    public static float downStep = 0.2f;
 
 
 
@@ -510,6 +532,78 @@ public static class NavMeshHelper
     //}
 
     public static Vector3 GetSamplePosition(Vector3 r)
+    {
+        NavMeshHit hitInfo;
+        if (NavMesh.SamplePosition(r, out hitInfo, 100, -1))
+        {
+            r = hitInfo.position;
+
+
+        }
+        else
+        {
+            //Debug.LogError("GetClosetPointByVertices No SamplePosition ");
+        }
+
+        return r;
+    }
+
+    public static int downcastmask = LayerMask.GetMask(Layers.Floor, Layers.Wall, Layers.Railing);
+
+    public static Vector3 GetDownCast(Vector3 r,string name)
+    {
+        var p1 = r + new Vector3(0, 0.1f, 0);
+        var direction = new Vector3(0, -1, 0);
+        var p2 = p1 + direction * 0.3f;
+
+        if (IsDebug)
+        {
+            CreatePoint(p1, name + "_CastStart", 0.1f, Color.black);
+            CreatePoint(p2, name + "_CastEnd", 0.1f, Color.black);
+        }
+
+
+        RaycastHit hitInfo2;
+        if (Physics.Raycast(p1, direction, out hitInfo2, 0.3f, downcastmask))
+        {
+            string layer = LayerMask.LayerToName(hitInfo2.transform.gameObject.layer);
+            CreatePoint(hitInfo2.point, name + "_CastHit_"+ layer, 0.1f, Color.black);
+            return hitInfo2.point;
+        }
+        else
+        {
+            return r;
+        }
+    }
+
+    public static string GetLayer(Vector3 r)
+    {
+        try
+        {
+            var p1 = r + new Vector3(0, 0.1f, 0);
+            var direction = new Vector3(0, -1, 0);
+            //var p2 = p1 + direction * 0.3f;
+
+            RaycastHit hitInfo;
+            if (Physics.Raycast(p1, direction, out hitInfo, 0.3f, downcastmask))
+            {
+                string layer = LayerMask.LayerToName(hitInfo.transform.gameObject.layer);
+                return layer;
+            }
+            else
+            {
+                return "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error("NavMeshHelper.GetLayer", ex);
+            return "";
+        }
+
+    }
+
+    public static Vector3 GetSamplePositionEx(Vector3 r)
     {
         NavMeshHit hitInfo;
         if (NavMesh.SamplePosition(r, out hitInfo, 100, -1))
@@ -549,11 +643,13 @@ public static class NavMeshHelper
         {
             Vector3 r1 = new Vector3(r.x, r.y - i * step, r.z);
             var p = GetClosetPointByMeshEx(r1);
-//#if UNITY_EDITOR
-//            var t1=NavMeshHelper.CreatePoint(r1, "DownTarget" + i, 0.1f, Color.red);
-//           var t2= NavMeshHelper.CreatePoint(p, "DownTarget_Mesh" + i, 0.1f, Color.red);
-//            t2.transform.parent = t1.transform;
-//#endif
+
+            if (IsDebug)
+            {
+                var t1 = NavMeshHelper.CreatePoint(r1, "DownTarget" + i, 0.1f, Color.red);
+                var t2 = NavMeshHelper.CreatePoint(p, "DownTarget_Mesh" + i, 0.1f, Color.red);
+                t2.transform.parent = t1.transform;
+            }
 
             if (p.y < r.y)
             {
@@ -577,17 +673,20 @@ public static class NavMeshHelper
         Vector3 down = r;
         float distance = float.MaxValue;
         float floorHeight = 0;
-        for (int i = 0; i < count; i++)
+        for (int i = 1; i <= count; i++)
         {
             Vector3 r1 = new Vector3(r.x, r.y - i * step, r.z);
-            //var t1 = NavMeshHelper.CreatePoint(r1, "DownTarget" + i, 0.1f, Color.red);
 
             var p = GetClosetPointByMesh(r1);
 
-            //var t2 = NavMeshHelper.CreatePoint(p, "DownTarget_Mesh" + i, 0.1f, Color.red);
-            //t2.transform.parent = t1.transform;
+            //if (IsDebug)
+            //{
+            //    var t1 = NavMeshHelper.CreatePoint(r1, "DownTarget" + i, 0.1f, Color.red);
+            //    var t2 = NavMeshHelper.CreatePoint(p, "DownTarget_Mesh" + i, 0.1f, Color.red);
+            //    t2.transform.parent = t1.transform;
+            //}
 
-            if (p.y < r.y)
+                if (p.y < r.y)
             {
                 if (floorHeight == 0)
                 {
@@ -818,7 +917,7 @@ public static class NavMeshHelper
 
     public static bool IsDebug = false;
 
-    public static GameObject CreatePoint2(Vector3 v, string name, float scale, Color color)
+    public static GameObject CreatePoint(Vector3 v, string name, float scale, Color color)
     {
         if (IsDebug)
         {
@@ -1029,18 +1128,23 @@ public class NavPoint
 
     public float distanceOffset = 0;
 
+    public string Layer;
+
     public NavPoint(string n, Vector3 p,Vector3 target, Color color, NavMeshAgent agent)
     {
         Name = n;
         Position = p;
         Color = color;
 
-//#if UNITY_EDITOR
-//        var t01 = NavMeshHelper.CreatePoint(p, n, 0.1f, color);
-//        NavTestInfo info = t01.AddComponent<NavTestInfo>();
-//        info.agent = agent;
-//        info.Target = target;
-//#endif
+        if (NavMeshHelper.IsDebug)
+        {
+            var t01 = NavMeshHelper.CreatePoint(p, n, 0.1f, color);
+            NavTestInfo info = t01.AddComponent<NavTestInfo>();
+            info.agent = agent;
+            info.Target = target;
+        }
+
+        Layer = NavMeshHelper.GetLayer(p);
     }
 
     public override string ToString()
@@ -1071,7 +1175,7 @@ public class NavPointList
         NavPoint r = null;
         if (Sample == null)
         {
-            //Debug.Log(string.Format("Route01"));
+            Debug.Log(string.Format("Route01"));
             r = GetMinDistancePoint(ps, target);
             return r;
         }
@@ -1081,7 +1185,18 @@ public class NavPointList
             Mesh.distanceOffset = meshDisOff;
         }
 
-       
+
+        foreach (var item in ps)
+        {
+            if (item == null) continue;
+            //Log.Error("GetMinDistancePoint", string.Format("name:{0},layer:{1},pos:{2},target:{3}", item.Name, item.Layer, item.Position, target));
+            if (item.Layer == "Railing")
+            {
+                return item;//在楼梯上时以楼梯为优先，宝信1楼到2楼楼梯 3楼到4楼楼梯
+            }
+        }
+
+
         if (Sample.Position.y > target.y || Mesh.Position.y > target.y)//避免从1楼飘到2楼
         {
             if(Sample.Position.y > target.y + floorOffsetY)
@@ -1094,6 +1209,7 @@ public class NavPointList
                 ps.Remove(Mesh);
             }
 
+
             //if (Sample.Position.y > target.y+ floorOffsetY && Mesh.Position.y> target.y + floorOffsetY)//避免上到二楼就不下一楼了
             //{
             //    Debug.Log(string.Format("Route1"));
@@ -1101,7 +1217,7 @@ public class NavPointList
             //}
             //else
             //{
-            //Debug.Log(string.Format("Route2"));
+            Debug.Log(string.Format("Route2"));
                 float dis = float.MaxValue;
 
                 foreach (NavPoint i in ps)
@@ -1132,7 +1248,7 @@ public class NavPointList
         }
         else
         {
-            //Debug.Log(string.Format("Route3"));
+            Debug.Log(string.Format("Route3"));
             r = GetMinDistancePoint(ps, target);
         }
         //Debug.Log(string.Format("ClosedPoint={0}", r));

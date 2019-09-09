@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -236,7 +237,7 @@ public class PathFindingManager : MonoBehaviour
         }
     }
 
-    public void SetNavAgent(LocationObject o)
+    public void SetNavAgent(LocationObject o,Action callback)
     {
         if (SystemSettingHelper.locationSetting.EnableNavMesh == false) return;//不启用NavMesh
         if (o == null) return;
@@ -251,24 +252,19 @@ public class PathFindingManager : MonoBehaviour
             {
                 if (o.navAgentFollow == null)
                 {
-                    Log.Debug("PathFindingManager.SetNavAgent",string.Format("{0},{1},{2}",o.name,o.transform.position,o.gameObject.activeInHierarchy));
+                    Log.Debug("PathFindingManager.SetNavAgent", string.Format("{0},{1},{2}", o.name, o.transform.position, o.gameObject.activeInHierarchy));
 
-                    var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent);//创建一个Agent跟随
-                    agent.name = o.gameObject.name + "(Nav)";
-                    agent.gameObject.layer = o.gameObject.layer;
-                    agent.gameObject.tag = o.gameObject.tag;
-                    //agent.transform.parent = o.CreatePathParent();
-                    agent.transform.position = o.transform.position;
-                    agent.transform.parent = o.transform.parent;
+                    //var pos = o.transform.position;
+                    //InstantiateNavAgent(o, pos);
 
-
-                    o.navAgentFollow = agent;
-                    agent.SetFollowTarget(o.transform);
-                    //agent.gameObject.SetActive(false);
-
-                    //o.uiTarget = agent.gameObject;//UI跟谁的目标
-
-                    DisableRenderer(o.gameObject);
+                    NavMeshHelper.GetClosetPointAsync(o.transform.position, o.name, null, (pos, obj) =>
+                    {
+                        InstantiateNavAgent(o, pos);
+                        if (callback != null)
+                        {
+                            callback();
+                        }
+                    });
                 }
             }
         }
@@ -276,6 +272,29 @@ public class PathFindingManager : MonoBehaviour
         {
             //不使用NavMesh
         }
+    }
+
+    private void InstantiateNavAgent(LocationObject o, Vector3 pos)
+    {
+        //创建一个Agent跟随，这里要直接设置position，因为不设置的话，NavAgent必须在NavMesh上面初始化。
+        var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent, pos, Quaternion.identity, o.transform.parent);
+        agent.name = o.gameObject.name + "(Nav)";
+        agent.gameObject.layer = o.gameObject.layer;
+        agent.gameObject.tag = o.gameObject.tag;
+
+        //agent.transform.parent = o.CreatePathParent();
+
+        //agent.transform.position = o.transform.position;
+        //agent.transform.parent = o.transform.parent;
+
+
+        o.navAgentFollow = agent;
+        agent.SetFollowTarget(o.transform);
+        //agent.gameObject.SetActive(false);
+
+        //o.uiTarget = agent.gameObject;//UI跟谁的目标
+
+        DisableRenderer(o.gameObject);
     }
 
     public void SetNavAgent(LocationHistoryPathBase o)
@@ -295,14 +314,14 @@ public class PathFindingManager : MonoBehaviour
                 if (o.navAgentFollow == null)
                 {
 
-
-                    var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent);//创建一个Agent跟随
+                    //创建一个Agent跟随，这里要直接设置position，因为不设置的话，NavAgent必须在NavMesh上面初始化。
+                    var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent, o.transform.position,Quaternion.identity, o.CreatePathParent());
                     agent.name = o.gameObject.name + "(Nav)";
                     agent.gameObject.layer = o.gameObject.layer;
                     agent.gameObject.tag = o.gameObject.tag;
 
-                    agent.transform.position = o.transform.position;
-                    agent.transform.parent = o.CreatePathParent();
+                    //agent.transform.position = o.transform.position;
+                    //agent.transform.parent = o.CreatePathParent();
                     o.navAgentFollow = agent;
                     agent.SetFollowTarget(o.transform);
 

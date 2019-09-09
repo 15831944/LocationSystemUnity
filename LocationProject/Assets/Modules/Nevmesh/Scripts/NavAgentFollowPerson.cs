@@ -18,12 +18,14 @@ public class NavAgentFollowPerson : NavAgentControllerBase
     }
     private void OnEnable()
     {
+        Log.Info("NavAgentFollowPerson.OnEnable",""+this.name);
         isOnEnableWrap = true;
         MovePerson();
     }
 
     private void OnDisable()
     {
+        Log.Info("NavAgentFollowPerson.OnEnable", "" + this.name);
         isPosInfoSet = false;
     }
 

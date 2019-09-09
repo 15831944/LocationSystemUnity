@@ -31,7 +31,9 @@ public class PlaybackWindow : MonoBehaviour
 
         Client.Player = Player;
         Client.ProgressChanged += Client_ProgressChanged;
-        Client.PlayAction = url => { Play(); };
+        Client.PlayAction = url => {
+            Play();
+        };
         InitUI();
     }
 
@@ -150,13 +152,50 @@ public class PlaybackWindow : MonoBehaviour
 
     public void Play()
     {
+        Log.Info("PlaybackWindow.Play1",
+            string.Format("IsPlaying:{0},AbleToPlay:{1},IsReady:{2},Length:{3},AutoPlay:{4}",
+            Player.IsPlaying,
+            Player.AbleToPlay,
+            Player.IsReady, Player.Length, Player.AutoPlay));
+
+        if (Player.IsPlaying)
+        {
+            Player.Stop();
+
+            Log.Info("PlaybackWindow.Play", "Stop");
+        }
+
+        //Player.Play();
+        //ContentMask.SetActive(false);
+
+
+
+        Player.AutoPlay = true;
         Player.Play();
         ContentMask.SetActive(false);
+
+        StartPlay = true;
+
+        Log.Info("PlaybackWindow.Play2",
+            string.Format("IsPlaying:{0},AbleToPlay:{1},IsReady:{2},Length:{3},AutoPlay:{4}",
+            Player.IsPlaying,
+            Player.AbleToPlay,
+            Player.IsReady, Player.Length, Player.AutoPlay));
     }
+
+    public bool StartPlay = false;
 
     public void Stop()
     {
+        StartPlay = false;
         Player.Stop();
+        ContentMask.SetActive(true);
+        LengthText.text = "";
+    }
+
+    public void Pause()
+    {
+        Player.Pause();
         ContentMask.SetActive(true);
         LengthText.text = "";
     }
@@ -181,21 +220,51 @@ public class PlaybackWindow : MonoBehaviour
     {
         if (Player.IsPlaying)
         {
-            Debug.Log(string.Format("position:{0},length:{1}ms", Player.Position, Player.Length));
-
             TimeSpan time1 = TimeSpan.FromMilliseconds(Player.Length * Player.Position);
             PositionText.text = GetTimeText(time1);
-
             TimeSpan time2 = TimeSpan.FromMilliseconds(Player.Length);
             LengthText.text = GetTimeText(time2);
 
+            if(ShowUpdateLog)
+                Debug.Log(string.Format("position:{0}({1},length:{2}ms({3})", Player.Position, Player.Length, PositionText.text, LengthText.text));
             //要先手动移除Editor里面添加的事件
             ProgressSlider.onValueChanged.RemoveAllListeners();//不知道有没有必要
-
             ProgressSlider.value = Player.Position;
-
-            //ProgressSlider.onValueChanged.AddListener(SetPostion);//不知道有没有必要
+            ProgressSlider.onValueChanged.AddListener(OnSliderChanged);//不知道有没有必要
+            Position = Player.Position;
         }
+        else
+        {
+            if (StartPlay)
+            {
+                if(Player.AbleToPlay && Player.IsReady)
+                {
+                    //Player.Play();
+                    //ContentMask.SetActive(false);
+                    StartPlay = false;
+                }
+                else
+                {
+                   // Log.Info("PlaybackWindow.Play2",
+                   //string.Format("IsPlaying:{0},AbleToPlay:{1},IsReady:{2},Length:{3},AutoPlay:{4}",
+                   //Player.IsPlaying,
+                   //Player.AbleToPlay,
+                   //Player.IsReady, Player.Length, Player.AutoPlay));
+                }
+            }
+        }
+
+        
+    }
+
+    public bool ShowUpdateLog = false;
+
+    public float Position;
+
+    public void OnSliderChanged(float value)
+    {
+        Debug.Log(string.Format("OnSliderChanged:{0},Position:{1}", value, Position));
+        SetPostion(value);
     }
 
     private void SetPostion(float v)
@@ -247,6 +316,7 @@ public class PlaybackWindow : MonoBehaviour
         dInfo.EndTime = end.ToString("yyyy-MM-dd HH:mm:ss");
         //dInfo.Channel = TbChannel.text;
         //dInfo.Ip = TbIp.text;
+        Stop();
         Client.Download(dInfo);
     }
 

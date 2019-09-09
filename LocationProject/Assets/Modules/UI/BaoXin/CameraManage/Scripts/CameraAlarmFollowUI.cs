@@ -570,20 +570,32 @@ public class CameraAlarmFollowUI : MonoBehaviour
     /// <param name="rtspUrl"></param>
     public void ShowVideo(string rtspUrl, UniversalMediaPlayer vedioPlayer)
     {
-        if (connectBg) connectBg.SetActive(true);
-        if (vedioPlayer)
+        try
         {
+            if (connectBg) connectBg.SetActive(true);
+            if (vedioPlayer)
+            {
+                if (vedioPlayer.Player == null)
+                {
+                    Debug.LogError("Error : RtspVideo.ShowVideo-> vedioPlayer.Player == null!");
+                    return;
+                }
+                if (vedioPlayer.IsPlaying) vedioPlayer.Stop();
+                vedioPlayer.Path = rtspUrl;
+                vedioPlayer.Volume = 100;
+                vedioPlayer.PlayRate = 1;
+                vedioPlayer.Play();
+            }
+            else
+            {
+                Debug.LogError("Error : RtspVideo.ShowVideo-> UniversalMediaPlayer is null!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error : RtspVideo.ShowVideo-> "+ex);
+        }
 
-            if (vedioPlayer.IsPlaying) vedioPlayer.Stop();
-            vedioPlayer.Path = rtspUrl;
-            vedioPlayer.Volume = 100;
-            vedioPlayer.PlayRate = 1;
-            vedioPlayer.Play();
-        }
-        else
-        {
-            Debug.LogError("Error : RtspVideo.ShowVideo-> UniversalMediaPlayer is null!");
-        }
     }
     /// <summary>
     /// 绑定播放错误事件

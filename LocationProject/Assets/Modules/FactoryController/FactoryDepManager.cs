@@ -359,6 +359,8 @@ public class FactoryDepManager : DepNode {
     {
         if (Facotory.activeInHierarchy)
         {
+            LocationObject.SetParentNull(Facotory.transform);//先把人员移动出去
+
             Facotory.SetActive(false);
             FactoryDevContainer.SetActive(false);
         }          

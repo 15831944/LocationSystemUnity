@@ -454,6 +454,7 @@ public class LocationManager : MonoBehaviour
         //OnDisable();
         OnDestroy();
         code_character.ClearCharacter(); //清除人物
+        //code_character.HideCharacter();
     }
 
     /// <summary>
@@ -795,21 +796,46 @@ public class LocationManager : MonoBehaviour
                 this.showCount; //数量相同
             if (isSameCount == false)
             {
-                Log.Info(string.Format("IsChanged 1:{0}->{1}", last.showCount, showCount));
+                Log.Info("LocationManager.IsChanged",string.Format("人数:{0}->{1}", last.showCount, showCount));
                 return true; //人数不同
             }
 
             bool isSameShow = this.showTagIds == last.showTagIds;
             if (isSameShow == false)
             {
-                Log.Info(string.Format("IsChanged 2:{0}->{1}", last.showTagIds, showTagIds));
+                Log.Info("LocationManager.IsChanged",string.Format("显示人员:{0}->{1}", last.showTagIds, showTagIds));
                 return true; //显示人员不同
             }
 
             bool isSameArea = this.tagToAreasIds == last.tagToAreasIds;
             if (isSameArea == false)
             {
-                Log.Info(string.Format("IsChanged 3:{0}->{1}", last.tagToAreasIds,tagToAreasIds));
+                //列出详细的区域变化
+                StringBuilder changed = new StringBuilder();
+                foreach (var item in this.tagToArea)
+                {
+                    var tag = item.Key;
+                    var area2 = 0;
+                    var area = item.Value;
+                    if (last.tagToArea.ContainsKey(tag))
+                    {
+                        area2 = last.tagToArea[tag];
+                        last.tagToArea.Remove(tag);
+                    }
+                    if (area != area2)
+                    {
+                        changed.Append(string.Format("({0},{1}->{2});", tag, area2, area));
+                    }
+                }
+                foreach (var item in last.tagToArea)
+                {
+                    var tag = item.Key;
+                    var area = item.Value;
+                    changed.Append(string.Format("({0},{1}->{2});", tag, area, "NULL"));
+                }
+                Log.Info("LocationManager.IsChanged", string.Format("所在区域:{0}", changed));
+
+                //Log.Info("LocationManager.IsChanged",string.Format("所在区域:{0}->{1}", last.tagToAreasIds,tagToAreasIds));
                 return true; //所在区域不同
             }
 
@@ -913,14 +939,22 @@ public class LocationManager : MonoBehaviour
         Transform tran = CreateCharacter(tagT);
         LocationObject locationObject = tran.gameObject.AddComponent<LocationObject>();//这里就会脚本中的
 
+        locationObject.SetTagPostion(tagpT);//要放到SetNavAgent前面
         if (PathFindingManager.Instance != null)
         {
-            PathFindingManager.Instance.SetNavAgent(locationObject);//要放到init前面,init里面有设置跟谁UI的地方
+            //SetNavAgent要放到init前面,init里面有设置跟谁UI的地方
+            PathFindingManager.Instance.SetNavAgent(locationObject,()=>
+            {
+                locationObject.Init(tagT);
+            });
+            code_character.Add(tagT.Code, locationObject);
         }
-
-        locationObject.SetTagPostion(tagpT);
-        locationObject.Init(tagT);
-        code_character.Add(tagT.Code, locationObject);
+        else//老的方式
+        {
+            locationObject.Init(tagT);
+            code_character.Add(tagT.Code, locationObject);
+        }
+        
     }
 
     bool isBusy;
@@ -1438,7 +1472,6 @@ public class LocationManager : MonoBehaviour
                 locationObjectT = code_character.GetByTagId(tagId);
                 SetCurrentLocationFocusObj(locationObjectT);
             }
-            if (locationObjectT == null) return;
             FocusPerson(locationObjectT.AlignTarget, () =>
              {
                 //CameraThroughWallManage.Instance.SetIsCanThroughWall(false);

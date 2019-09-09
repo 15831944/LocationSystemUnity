@@ -34,4 +34,14 @@ public static class Layers
     /// 地板
     /// </summary>
     public const string Floor = "Floor";
+
+    /// <summary>
+    /// Wall
+    /// </summary>
+    public const string Wall = "Wall";
+
+    /// <summary>
+    /// Railing
+    /// </summary>
+    public const string Railing = "Railing";
 }

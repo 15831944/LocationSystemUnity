@@ -315,7 +315,7 @@ public class LocationHistoryPath_M : LocationHistoryPathBase
 
     public override void SetRenderIsEnable(bool isEnable)
     {
-        Log.Info("LocationHistoryPath_M", "SetRenderIsEnable:" + isEnable);
+        //Log.Info("LocationHistoryPath_M", "SetRenderIsEnable:" + isEnable);
         //base.SetRenderIsEnable(isEnable);
         if (IsShowRenderer != isEnable)
         {

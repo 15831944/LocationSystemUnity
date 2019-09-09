@@ -25,7 +25,8 @@ public class TagPosInfo: PosInfo
 
 public class PosInfo
 {
-    public Vector3 TargetPos;
+    private Vector3 _targetPos;
+    public Vector3 TargetPos { get; set; }
     public Vector3 ShowPos;
     public Vector3 CurrentPos;
 }

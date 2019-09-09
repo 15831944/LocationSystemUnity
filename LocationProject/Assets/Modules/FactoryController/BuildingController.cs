@@ -1028,7 +1028,7 @@ public class BuildingController : DepNode {
     private void DisplayFloor(FloorController controller)
     {
         controller.SetTransform(FactoryDepManager.Instance.FactoryRoomContainer.transform);
-        if (ShowUnderFloors)
+        if (ShowUnderFloors)//显示当前楼层下面的楼层 贯通结构的情况下
         {
             foreach (var item in ChildNodes)
             {

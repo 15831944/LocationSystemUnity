@@ -472,30 +472,6 @@ public class MultHistoryPlayUINew : MonoBehaviour
     public void SetHistoryLineDrawing(bool isDrawing, bool isAddLine = false)
     {
         LocationHistoryManager.Instance.PathList.SetHistoryLineDrawing(mode, isDrawing, isAddLine);
-        //foreach (LocationHistoryPath_M h in LocationHistoryManager.Instance.historyPath_Ms)
-        //{
-        //    if (isAddLine)
-        //    {
-        //        h.historyPathDrawing.AddLine();
-        //    }
-        //    if (isDrawing)
-        //    {
-        //        if (mode == HistoryMode.Drawing)
-        //        {
-        //            h.historyPathDrawing.Drawing();
-        //            //if (isAddLine)
-        //            //{
-        //            //    h.historyPathDrawing.AddLine();
-        //            //}
-        //        }
-        //    }
-        //    else
-        //    {
-
-        //        h.historyPathDrawing.PauseDraw();
-        //    }
-        //}
-
     }
 
     ///// <summary>
@@ -1566,7 +1542,7 @@ public class MultHistoryPlayUINew : MonoBehaviour
     /// </summary>
     public void SwitchMode(HistoryMode modet)
     {
-
+        Log.Info("SwitchMode", mode + "->" + modet);
         //Stop();
 
         RefleshProcessSlider(false);

@@ -15,6 +15,10 @@ public class ProgressbarLoad : MonoBehaviour {
     public Slider slider;//进度条
     public Text txtValue;//进度条
 
+    public Text progressText;//进度条
+
+    public string initText;
+
     void Awake()
     {
         Instance = this;
@@ -30,6 +34,10 @@ public class ProgressbarLoad : MonoBehaviour {
 
         slider.onValueChanged.AddListener(Slider_OnValueChanged);
 
+        if (progressText != null)
+        {
+            initText = progressText.text;
+        }
     }
 	
 	// Update is called once per frame
@@ -41,7 +49,7 @@ public class ProgressbarLoad : MonoBehaviour {
     /// 显示进度条
     /// </summary>
     /// <param name="v"></param>
-    public void Show(float v)
+    public void Show(float v,string txt=null)
     {
         //if (v >= 0.1f)
         //{
@@ -51,6 +59,20 @@ public class ProgressbarLoad : MonoBehaviour {
         //{
         //    slider.value = 0.1f;
         //}
+        if (!string.IsNullOrEmpty(txt))
+        {
+            if (progressText != null)
+            {
+                progressText.text = txt;
+            }
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(initText))
+            {
+                progressText.text = initText;
+            }
+        }
         SetWindow(true);
     }
 

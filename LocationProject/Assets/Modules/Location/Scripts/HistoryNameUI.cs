@@ -37,9 +37,9 @@ public class HistoryNameUI : MonoBehaviour {
     {
         CameraFollowToggleButton.gameObject.SetActive(isActive);
 
-        //if (isActive)
-        {
-            CameraFollowToggleButton.SetToggle(isActive);//->CameraFollowToggleButton_OnValueChanged(true)->Cinemachine On 这里会切换摄像机控制权
-        }
+        ////if (isActive)
+        //{
+        //    CameraFollowToggleButton.SetToggle(isActive);//->CameraFollowToggleButton_OnValueChanged(true)->Cinemachine On 这里会切换摄像机控制权
+        //}
     }
 }

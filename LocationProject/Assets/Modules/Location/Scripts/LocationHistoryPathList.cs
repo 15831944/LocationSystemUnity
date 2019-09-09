@@ -201,6 +201,7 @@ public class LocationHistoryPathList
     /// </summary>
     public void SetHistoryLineDrawing(HistoryMode mode,bool isDrawing, bool isAddLine = false)
     {
+        //Log.Info("SetHistoryLineDrawing", string.Format(""));
         foreach (LocationHistoryPath_M h in Items)
         {
             if (isAddLine)

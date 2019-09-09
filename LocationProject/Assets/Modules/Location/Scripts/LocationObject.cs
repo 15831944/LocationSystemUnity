@@ -453,220 +453,239 @@ public class LocationObject : MonoBehaviour
     /// </summary>
     public void SetPositionInfo(TagPosition tagPos)
     {
-        
-
-        posInfo = new TagPosInfo(tagPos);
-        posInfo.CurrentPos = transform.position;
-        tagPosInfo = tagPos;
-        SetState(tagPosInfo);//根据信息修改显示的信息（包括待机时间）
-        areaState = tagPosInfo.AreaState.ToString();        
-        //if (personInfoUI != null && personInfoUI.state == PersonInfoUIState.Leave) return; //人员处于离开状态，就不移动了
-        //tagPosInfo = tagPos;
-        SetisInRange(true);
-        //Vector3 targetPosVT;
-        //Vector3 offset = LocationManager.Instance.GetPosOffset();
-        Vector3 posOrigin = new Vector3((float)tagPosInfo.X, (float)tagPosInfo.Y, (float)tagPosInfo.Z);
-        Vector3 targetPosNew = LocationManager.GetRealVector(posOrigin);
-
-        //Log.Debug("LocationObject", string.Format("SetPositionInfo:{0},{1}=>{2}", this.name, transform.position, targetPosNew));
-
-        //posInfo.TargetPos = targetPosNew;
-        DepNode depnode = null;
-        if (tagPos.AreaId!=null) depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId);
-        SetAreaByServer(depnode);//根据服务端数据，设置漂浮UI的区域名称
-        posInfo.TargetPos = ChangePosWhenExpandBuilding(targetPosNew, depnode);       
-        Vector3 targetPosTemp = targetPosNew;
-        dataPos = targetPosNew;
-
-        DepNode currentDepNodeTemp = currentDepNode;
-        //bool isFloorChanged = false;//是否是切换楼层，从一个楼层切换到另一个楼层
-        //float halfHeight = gameObject.GetSize().y / 2;//当胶囊体时
-        float halfoffest = 0;//当人物模型时
-        GameObject floorCubeTt;       
-        if (tagPos.AreaId != null)
+        try
         {
-            //depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId);
-            //Transform floorCubeT = GetFloorCube(depnode);
-            if (depnode == null)
-            {
-                //Debug.LogError("LocationObject.SetPositionInfo depnode == null this:"+this+",areaId:"+ tagPos.AreaId);
-                //depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId,true);
-            }
-            else
-            {
-                if (depnode.IsUnload)
-                {
-                    Debug.LogError("LocationObject.SetPositionInfo depnode.IsUnLoad this:" + this + ",areaId:" + tagPos.AreaId);
-                }
-            }
+            //Log.Info("LocatoinObject.SetPositionInfo", "Start" + tagPos.X + "," + tagPos.Y + "," + tagPos.Z);
 
-            if (currentDepNode != depnode || LocationManager.Instance.currentLocationFocusObj != this)
+            posInfo = new TagPosInfo(tagPos);
+            posInfo.CurrentPos = transform.position;
+            tagPosInfo = tagPos;
+            SetState(tagPosInfo);//根据信息修改显示的信息（包括待机时间）
+            areaState = tagPosInfo.AreaState.ToString();
+            //if (personInfoUI != null && personInfoUI.state == PersonInfoUIState.Leave) return; //人员处于离开状态，就不移动了
+            //tagPosInfo = tagPos;
+            SetisInRange(true);
+            //Vector3 targetPosVT;
+            //Vector3 offset = LocationManager.Instance.GetPosOffset();
+            Vector3 posOrigin = new Vector3((float)tagPosInfo.X, (float)tagPosInfo.Y, (float)tagPosInfo.Z);
+            Vector3 targetPosNew = LocationManager.GetRealVector(posOrigin);
+            //if (targetPosNew == dataPos && dataPos != Vector3.zero)
+            //{
+            //    //Log.Debug("LocationObject", string.Format("targetPosNew == dataPos:", targetPosNew));
+            //    return;
+            //}
+            //Log.Debug("LocationObject", string.Format("SetPositionInfo:{0},{1}=>{2}", this.name, transform.position, targetPosNew));
+
+            //posInfo.TargetPos = targetPosNew;
+            DepNode depnode = null;
+            if (tagPos.AreaId != null) depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId);
+            SetAreaByServer(depnode);//根据服务端数据，设置漂浮UI的区域名称
+
+            var targetPosNew2 = ChangePosWhenExpandBuilding(targetPosNew, depnode);
+
+            Log.Debug("LocationObject", string.Format("SetPositionInfo:{0},dep:{1},{2}=>({3},{4})", this.name, depnode.NodeName, transform.position, targetPosNew, targetPosNew2));
+            posInfo.TargetPos = targetPosNew2;
+            Vector3 targetPosTemp = targetPosNew;
+            dataPos = targetPosNew;
+
+            DepNode currentDepNodeTemp = currentDepNode;
+            //bool isFloorChanged = false;//是否是切换楼层，从一个楼层切换到另一个楼层
+            //float halfHeight = gameObject.GetSize().y / 2;//当胶囊体时
+            float halfoffest = 0;//当人物模型时
+            GameObject floorCubeTt;
+            if (tagPos.AreaId != null)
             {
-                isOnTriggerStayOnce = false;
-                bool b = IsBelongtoCurrentDep();
-                if (b)
+                //depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId);
+                //Transform floorCubeT = GetFloorCube(depnode);
+                if (depnode == null)
                 {
-                    SetRendererEnable(true);
+                    //Debug.LogError("LocationObject.SetPositionInfo depnode == null this:"+this+",areaId:"+ tagPos.AreaId);
+                    //depnode = RoomFactory.Instance.GetDepNodeById((int)tagPos.AreaId,true);
                 }
                 else
                 {
-                    SetRendererEnable(false);//切换区域时判断人员的显示隐藏
+                    if (depnode.IsUnload)
+                    {
+                        Debug.LogError("LocationObject.SetPositionInfo depnode.IsUnLoad this:" + this + ",areaId:" + tagPos.AreaId);
+                    }
                 }
-            }
-            currentDepNode = depnode;
-            dataCurrentDepNode = currentDepNode;
-            DepNode depnodeT = MonitorRangeManager.Instance.GetDoZhuchangfang(depnode, targetPosTemp.y);
-            if (depnodeT != null)
-            {
-                currentDepNode = depnodeT;
-            }
 
-            FloorCubeInfo floorCubeT = GetFloorCube(currentDepNode);
-            if (floorCubeT != null)
-            {
-                floorCubeTt = floorCubeT.gameObject;
-            }
+                if (currentDepNode != depnode || LocationManager.Instance.currentLocationFocusObj != this)
+                {
+                    isOnTriggerStayOnce = false;
+                    bool b = IsBelongtoCurrentDep();
+                    if (b)
+                    {
+                        SetRendererEnable(true);
+                    }
+                    else
+                    {
+                        SetRendererEnable(false);//切换区域时判断人员的显示隐藏
+                    }
+                }
+                currentDepNode = depnode;
+                dataCurrentDepNode = currentDepNode;
+                DepNode depnodeT = MonitorRangeManager.Instance.GetDoZhuchangfang(depnode, targetPosTemp.y);
+                if (depnodeT != null)
+                {
+                    currentDepNode = depnodeT;
+                }
 
-            if (currentDepNode == null)
-            {
-                currentDepNode = FactoryDepManager.Instance;//如果人员的区域节点为空，就默认把他设为园区节点
-            }
-
-            if (LocationManager.Instance.isSetPersonObjParent)
-            {
-                SetParent(currentDepNode);
-            }
-
-            //isFloorChanged = IsDifferentFloor(currentDepNodeTemp, currentDepNode);
-
-            //bool isboolT = MonitorRangeManager.Instance.IsBelongDepNodeByName("主厂房", currentDepNode) && currentDepNode.NodeName != "主厂房";//主厂房子区域
-
-            //聚焦人员切换楼层控制
-            //if (!isboolT)
-            //{
-            ChangeDep();
-            //}
-
-            //Debug.LogFormat("名称:{0},类型:{1}", depnode.name, depnode.NodeObject);
-            if (depnode != null && floorCubeT != null)//二层267
-            {
+                FloorCubeInfo floorCubeT = GetFloorCube(currentDepNode);
                 if (floorCubeT != null)
                 {
-                    halfoffest = targetPosNew.y - floorCubeT.pos.y;
-                    //halfoffestttt = halfoffest;
-                    //floorCubeTttt = floorCubeT.gameObject;
-                    //ttttt = halfoffest + floorCubeT.transform.position.y;
-                    Vector3 targetPosT = new Vector3(targetPosNew.x, halfoffest + floorCubeT.transform.position.y, targetPosNew.z);
-                    if (currentDepNode.monitorRangeObject)
-                    {
-                        bool isInRangeT = currentDepNode.monitorRangeObject.IsInRange(targetPosT.x, targetPosT.z);
-                        //if (isInRangeT)
-                        //{
-                        //    isInRangeT = currentDepNode.monitorRangeObject.IsOnLocationArea;
-                        //}
-                        SetisInRange(isInRangeT);
+                    floorCubeTt = floorCubeT.gameObject;
+                }
 
+                if (currentDepNode == null)
+                {
+                    currentDepNode = FactoryDepManager.Instance;//如果人员的区域节点为空，就默认把他设为园区节点
+                }
+
+
+
+                //isFloorChanged = IsDifferentFloor(currentDepNodeTemp, currentDepNode);
+
+                //bool isboolT = MonitorRangeManager.Instance.IsBelongDepNodeByName("主厂房", currentDepNode) && currentDepNode.NodeName != "主厂房";//主厂房子区域
+
+                //聚焦人员切换楼层控制
+                //if (!isboolT)
+                //{
+                ChangeDep();
+                //}
+
+                if (LocationManager.Instance.isSetPersonObjParent)
+                {
+                    SetParent(currentDepNode);
+                }
+
+                //Debug.LogFormat("名称:{0},类型:{1}", depnode.name, depnode.NodeObject);
+                if (depnode != null && floorCubeT != null)//二层267
+                {
+                    if (floorCubeT != null)
+                    {
+                        halfoffest = targetPosNew.y - floorCubeT.pos.y;
+                        //halfoffestttt = halfoffest;
+                        //floorCubeTttt = floorCubeT.gameObject;
+                        //ttttt = halfoffest + floorCubeT.transform.position.y;
+                        Vector3 targetPosT = new Vector3(targetPosNew.x, halfoffest + floorCubeT.transform.position.y, targetPosNew.z);
+                        if (currentDepNode.monitorRangeObject)
+                        {
+                            bool isInRangeT = currentDepNode.monitorRangeObject.IsInRange(targetPosT.x, targetPosT.z);
+                            //if (isInRangeT)
+                            //{
+                            //    isInRangeT = currentDepNode.monitorRangeObject.IsOnLocationArea;
+                            //}
+                            SetisInRange(isInRangeT);
+
+                        }
+                        targetPosNew = targetPosT;
                     }
-                    targetPosNew = targetPosT;
+                    else
+                    {
+                        Debug.LogError("建筑物没有加楼层地板！！！");
+                    }
                 }
                 else
                 {
-                    Debug.LogError("建筑物没有加楼层地板！！！");
+                    targetPosNew = new Vector3(targetPosNew.x, LocationManager.Instance.axisZero.y + halfoffest, targetPosNew.z);
                 }
             }
             else
             {
+                if (LocationManager.Instance.isSetPersonObjParent)
+                {
+                    SetParent(null);
+                }
+                //if (currentDepNode != null)
+                //{
+                //    currentDepNode = null;
+                //    //isOnTriggerStayOnce = false;//大数据测试修改
+                //}
+                //else
+                //{
+                currentDepNode = FactoryDepManager.Instance;//如果人员的区域节点为空，就默认把他设为园区节点
+                                                            //}
+
                 targetPosNew = new Vector3(targetPosNew.x, LocationManager.Instance.axisZero.y + halfoffest, targetPosNew.z);
             }
-        }
-        else
-        {
-            if (LocationManager.Instance.isSetPersonObjParent)
+            isStartOnTrigger = true;
+            //targetPos = new Vector3(-targetPos.z, targetPos.y, targetPos.x);
+            //targetPos = targetPos + offset;
+            //targetPos = targetPos;
+            //print(string.Format("name:{0}||位置:x({1}),y({2}),z({3})", name, targetPos.x, targetPos.y, targetPos.z));
+
+            if (LocationManager.Instance.isShowRealLocationHeight)
             {
-                SetParent(null);
+                targetPosNew = new Vector3(targetPosNew.x, targetPosTemp.y + halfoffest, targetPosNew.z);
             }
-            //if (currentDepNode != null)
-            //{
-            //    currentDepNode = null;
-            //    //isOnTriggerStayOnce = false;//大数据测试修改
-            //}
-            //else
-            //{
-            currentDepNode = FactoryDepManager.Instance;//如果人员的区域节点为空，就默认把他设为园区节点
-            //}
-
-            targetPosNew = new Vector3(targetPosNew.x, LocationManager.Instance.axisZero.y + halfoffest, targetPosNew.z);
-        }
-        isStartOnTrigger = true;
-        //targetPos = new Vector3(-targetPos.z, targetPos.y, targetPos.x);
-        //targetPos = targetPos + offset;
-        //targetPos = targetPos;
-        //print(string.Format("name:{0}||位置:x({1}),y({2}),z({3})", name, targetPos.x, targetPos.y, targetPos.z));
-
-        if (LocationManager.Instance.isShowRealLocationHeight)
-        {
-            targetPosNew = new Vector3(targetPosNew.x, targetPosTemp.y + halfoffest, targetPosNew.z);
-        }
-        if (LocationManager.Instance.currentLocationFocusObj == this)
-        {
-            ShowArchors();
-        }
-        else
-        {
-            FlashingOffArchors();
-        }
-
-
-        if (isInCurrentRange == false)//如果位置点不在当前所在区域范围内部
-        {
-            if (currentDepNode.monitorRangeObject && currentDepNode.monitorRangeObject.IsOnLocationArea)
+            if (LocationManager.Instance.currentLocationFocusObj == this)
             {
-                if (!LocationManager.Instance.isShowLeavePerson)
+                ShowArchors();
+            }
+            else
+            {
+                FlashingOffArchors();
+            }
+
+
+            if (isInCurrentRange == false)//如果位置点不在当前所在区域范围内部
+            {
+                if (currentDepNode.monitorRangeObject && currentDepNode.monitorRangeObject.IsOnLocationArea)
                 {
-                    Vector2 v = currentDepNode.monitorRangeObject.PointForPointToPolygon(new Vector2(targetPosNew.x, targetPosNew.z));
-                    targetPosNew = new Vector3(v.x, targetPosNew.y, v.y);
+                    if (!LocationManager.Instance.isShowLeavePerson)
+                    {
+                        Vector2 v = currentDepNode.monitorRangeObject.PointForPointToPolygon(new Vector2(targetPosNew.x, targetPosNew.z));
+                        targetPosNew = new Vector3(v.x, targetPosNew.y, v.y);
+                    }
+                    else
+                    {
+                        ////区域状态，0:在定位区域，1:不在定位区域
+                        //if (tagPosInfo.AreaState == 1)
+                        //{
+                        //    Vector2 v = currentDepNode.monitorRangeObject.PointForPointToPolygon(new Vector2(targetPosVT.x, targetPosVT.z));
+                        //    targetPosVT = new Vector3(v.x, targetPosVT.y, v.y);
+                        //}
+                    }
                 }
-                else
-                {
-                    ////区域状态，0:在定位区域，1:不在定位区域
-                    //if (tagPosInfo.AreaState == 1)
-                    //{
-                    //    Vector2 v = currentDepNode.monitorRangeObject.PointForPointToPolygon(new Vector2(targetPosVT.x, targetPosVT.z));
-                    //    targetPosVT = new Vector3(v.x, targetPosVT.y, v.y);
-                    //}
-                }
+
             }
+            targetPos = targetPosNew;
+            //posInfo.ShowPos = targetPosNew;
 
-        }                   
-        targetPos = targetPosNew;
-        //posInfo.ShowPos = targetPosNew;
-
-        if (gameObject.activeInHierarchy)
-        {
-            if (LocationManager.Instance.isSetPersonHeightByRay)
+            if (gameObject.activeInHierarchy)
             {
-                SetPersonHeightByRay();
+                if (LocationManager.Instance.isSetPersonHeightByRay)
+                {
+                    SetPersonHeightByRay();
+                }
+                //if (isFloorChanged)
+                //{
+                //    transform.position = targetPos;
+                //}
             }
-            //if (isFloorChanged)
-            //{
-            //    transform.position = targetPos;
-            //}
-        }
-        else//人员隐藏时直接修改位置
-        {
-            transform.position = targetPos;
-        }
+            else//人员隐藏时直接修改位置
+            {
+                transform.position = targetPos;
+            }
 
-        if (ViewState.人员定位 != ActionBarManage.Instance.CurrentState)
-        {
-            transform.position = targetPos;
-        }
-        if (SystemSettingHelper.systemSetting.IsDebug)
-        {
-            ShowPositionSphereTest(targetPos);
-        }
+            if (ViewState.人员定位 != ActionBarManage.Instance.CurrentState)
+            {
+                transform.position = targetPos;
+            }
+            if (SystemSettingHelper.systemSetting.IsDebug)
+            {
+                ShowPositionSphereTest(targetPos);
+            }
 
-        //Log.Info("SetPositionInfo", string.Format("{0},{1},{2},{3}", this.name, posInfo.TargetPos, posInfo.ShowPos, LocationManager.Instance.UseShowPos));
+
+            //Log.Info("SetPositionInfo End", string.Format("{0},{1},{2},{3}", this.name, posInfo.TargetPos, posInfo.ShowPos, LocationManager.Instance.UseShowPos));
+        }
+        catch (Exception ex)
+        {
+            Log.Error("SetPositionInfo Exception", string.Format("{0},{1},{2},{3}", this.name, posInfo.TargetPos, posInfo.ShowPos, LocationManager.Instance.UseShowPos));
+        }
+       
     }
     /// <summary>
     /// 获取楼层展开时的高度
@@ -716,6 +735,7 @@ public class LocationObject : MonoBehaviour
     /// </summary>
     public void SetParent(DepNode depNodeT)
     {
+        
         //if (transform.parent.name == "J1_F1" && Tag.Code == "0997")
         //{
         //    Debug.LogError("location_SetParent_J1_F1");
@@ -727,7 +747,11 @@ public class LocationObject : MonoBehaviour
         {
             newParent = depNodeT.NodeObject.transform;
         }
-        transform.SetParent(newParent);
+        if (transform.parent == newParent) return;
+
+        Log.Info("LocationObject.SetParent", string.Format("{0} p:{1} -> {2}", this.name, transform.parent, newParent));
+
+        transform.SetParent(newParent);//会导致Disable->Enable
 
         if (navAgentFollow)
         {
@@ -2521,4 +2545,24 @@ public class LocationObject : MonoBehaviour
     /// 跟随的
     /// </summary>
     public NavAgentFollowPerson navAgentFollow;
+
+    public static void SetParentNull(Transform parent)
+    {
+        LocationObject[] objs = null;
+        if (parent != null)
+        {
+            objs = parent.GetComponentsInChildren<LocationObject>(true);
+            
+        }
+       else
+        {
+            objs = GameObject.FindObjectsOfType<LocationObject>();
+        }
+
+        if(objs!=null)
+            foreach (LocationObject item in objs)
+            {
+                item.SetParent(null);
+            }
+    }
 }

@@ -66,7 +66,7 @@ public class NVSPlayerClient : MonoBehaviour
             return r;
         }, (r) =>
         {
-            Debug.Log("Info==null?"+info==null+ transform.name);
+            Debug.Log("Info==null?"+(info==null)+ transform.name);
             if (r != null)
             {
                 WriteLog(r.Result + "|" + r.Message + "|" + r.Url);
@@ -87,15 +87,18 @@ public class NVSPlayerClient : MonoBehaviour
                     if (r.Message == "It is downloading!")//有文件在下载
                     {
                         //todo:等待，休眠1s，并重新尝试下载。重试次数10次，还是这样则提示，并不重试。
+                        UGUIMessageBox.Show("文件正在下载");
                     }
                     else
                     {
                         //todo:提示Message内容
+                        UGUIMessageBox.Show("下载失败");
                     }
                 }
             }
             else
             {
+                UGUIMessageBox.Show("下载失败");
                 WriteLog("结果为空");
             }
         }, "");
@@ -135,6 +138,18 @@ public class NVSPlayerClient : MonoBehaviour
                CancelInvoke("GetProgress");
                WriteLog("下载完成:"+progress.Url);
                Play(progress.Url);
+
+                if (ProgressbarLoad.Instance)
+                {
+                    ProgressbarLoad.Instance.Hide();
+                }
+            }
+            else
+            {
+                if (ProgressbarLoad.Instance)
+                {
+                    ProgressbarLoad.Instance.Show(progress.Progress/100f, "加载进度:" + progress.ProgressText); ;
+                }
             }
         }
         else
@@ -176,6 +191,7 @@ public class NVSPlayerClient : MonoBehaviour
         }
         else
         {
+            Player.Stop();
             Player.Play();
             PlayVideo();
         }

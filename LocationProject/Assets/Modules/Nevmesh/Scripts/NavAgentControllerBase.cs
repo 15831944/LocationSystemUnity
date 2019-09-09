@@ -59,25 +59,30 @@ public class NavAgentControllerBase : MonoBehaviour {
         {
             if (distance > MaxDistance||isOnEnableWrap)//距离太远了，直接飞过去
             {
-                isOnEnableWrap = false;
+
                 //if (useWrap)
                 //{
-                Vector3 destination = GetDestination(targetPos);
-                //Vector3 destination = NavMeshHelper.GetClosetPointEx(targetPos, agent);
-                if (destination == Vector3.zero)
-                {
+                //Vector3 destination = GetDestination(targetPos);
+                ////Vector3 destination = NavMeshHelper.GetClosetPointEx(targetPos, agent);
+                //if (destination == Vector3.zero)
+                //{
 
-                }
-                else
-                {
-                    var r=agent.Warp(destination);//要用这个
-                    Debug.Log("Jump(Warp) distance:" + distance + "|" + this + "|" + destination + "|" + r);
-                }
                 //}
                 //else
                 //{
-                //    transform.position = targetPos;//这个会导致人飞到一个位置后，又按原来路径去走回去。
+                //    var r=agent.Warp(destination);//要用这个
+                //    Log.Info("NavAgentControllerBase.SetSpeedByDistance", string.Format("Jump(Warp) distance:{0}|name:{1}|destination:{2}|wrap:{3}|isOnEnableWrap:{4}", 
+                //        distance , this.name , destination , r, isOnEnableWrap));
                 //}
+
+                NavMeshHelper.GetClosetPointAsync(targetPos, this.name, agent, (destination, o) =>
+                {
+                    var r = agent.Warp(destination);//要用这个
+                    Log.Info("NavAgentControllerBase.SetSpeedByDistance", string.Format("Jump(Warp) distance:{0}|name:{1}|destination:{2}|wrap:{3}|isOnEnableWrap:{4}",
+                        distance , this.name , destination , r, isOnEnableWrap));
+                });
+
+                isOnEnableWrap = false;
             }
         }
     }
@@ -169,7 +174,12 @@ public class NavAgentControllerBase : MonoBehaviour {
 
     public void SetDestination(PosInfo posInfo, float rateT)
     {
-        if (gameObject.activeInHierarchy == false) return;
+        Log.Info("SetDestination","posInfo:"+posInfo.TargetPos+",rateT:"+rateT);
+        if (gameObject.activeInHierarchy == false)
+        {
+            Log.Info("SetDestination", "gameObject.activeInHierarchy == false");
+            return;
+        }
         this.rate = rateT;
         this.posInfo = posInfo;
         //这里设置坐标信息，然后到Update->UpdatePosition 执行移动坐标
@@ -213,15 +223,16 @@ public class NavAgentControllerBase : MonoBehaviour {
             posNew = posInfo.ShowPos; //原来的算法的人移动的点
         }
 
-        //Log.Info("UpdatePosition", string.Format("{0},{1},{2},{3}", this.name, posInfo.TargetPos, posInfo.ShowPos, LocationManager.Instance.UseShowPos));
-
         //Log.Info("NavAgentControllerBase.UpdatePosition");
         if (this.targetPos == posNew)//用TargetPos，可以优化性能，用ShowPos，这里就没什么用了
         {
-            //Log.Info("NavAgentControllerBase.UpdatePosition","this.targetPos == hisPosInfo.ShowPos");
+            //Log.Info("NavAgentControllerBase.UpdatePosition", "this.targetPos == posNew : " + targetPos);
             isPosInfoSet = true;
             return;
-        }        
+        }
+
+        Log.Info("UpdatePosition", string.Format("{0},{1},{2},{3}", this.name, posInfo.TargetPos, posInfo.ShowPos, LocationManager.Instance.UseShowPos));
+
         this.targetPos = posNew;
         isPosInfoSet = true;
         //1.实际的点，独立往目标点移动的效果。

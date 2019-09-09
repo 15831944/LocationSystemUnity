@@ -278,7 +278,7 @@ public class HistoryPath : MonoBehaviour {
     /// <returns></returns>
     public IEnumerator RefleshDrawLineOP()
     {
-        Debug.Log("HistoryPath.RefleshDrawLineOP");
+        //Debug.Log("HistoryPath.RefleshDrawLineOP");
 
         if (LocationHistoryManager.Instance.LineSetting.IsAuto == false)
         {

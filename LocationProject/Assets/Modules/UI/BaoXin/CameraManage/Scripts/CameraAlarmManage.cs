@@ -107,6 +107,7 @@ public class CameraAlarmManage : MonoBehaviour
 
     public void ShowCameraVideo()
     {
+        ShowMaxCameraALarmWindow(true);
         ShowCameraVedio(currentCameraDev, SmallCameraAlarmFollow);
     }
 
@@ -116,6 +117,7 @@ public class CameraAlarmManage : MonoBehaviour
     /// <param name="cameraDev"></param>
     public void ShowCameraVedio(CameraDevController cameraDev, CameraAlarmFollowUI SmallUI)
     {
+        Log.Debug("ShowCameraVedio",string.Format("{0},{1}",cameraDev,SmallUI));
         if(VedioPrompt!=null)VedioPrompt.text = "视频连接中...";
         SmallCameraAlarmFollow = SmallUI;
         currentCameraDev = cameraDev;
@@ -498,11 +500,15 @@ public class CameraAlarmManage : MonoBehaviour
         ShowMaxCameraALarmWindow(false);
         VedioWindow.SetActive(false);
         ShowAlarmWindow(false);
-        SmallCameraAlarmFollow.RecoverFollowParentPos();
-        SmallCameraAlarmFollow.CloseSelectFollowUI();
-        SmallCameraAlarmFollow.FixedTog.isOn = false;
-        SmallCameraAlarmFollow.FollowParentObj = null;
-        SmallCameraAlarmFollow = null;
+        if (SmallCameraAlarmFollow != null)
+        {
+            SmallCameraAlarmFollow.RecoverFollowParentPos();
+            SmallCameraAlarmFollow.CloseSelectFollowUI();
+            SmallCameraAlarmFollow.FixedTog.isOn = false;
+            //SmallCameraAlarmFollow.FollowParentObj = null;
+        }
+        
+        //SmallCameraAlarmFollow = null;
     }
     public void SetInfo(CameraAlarmFollowUI followUI, CameraDevController dev)
     {
@@ -511,6 +517,7 @@ public class CameraAlarmManage : MonoBehaviour
     }
     public void ShowMaxCameraALarmWindow(bool b)
     {
+        Log.Debug("CameraAlarmManage", "ShowMaxCameraALarmWindow:"+b);
         pegeNumText.text = "1";
         pegeTotalText.text = "1";
         CameraAlarmWindow.SetActive(b);
@@ -634,7 +641,7 @@ public class CameraAlarmManage : MonoBehaviour
         ShowMaxCameraALarmWindow(false);
         VedioWindow.SetActive(false);
         ShowAlarmWindow(false);
-        SmallCameraAlarmFollow = null;
+        //SmallCameraAlarmFollow = null;
 
     }
     /// <summary>

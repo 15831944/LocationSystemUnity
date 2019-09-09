@@ -101,6 +101,16 @@ public class FloorController : DepNode
         }
     }
 
+    private void OnEnable()
+    {
+        Log.Info("FloorController.OnEnable", this.name);
+    }
+
+    private void OnDisable()
+    {
+        Log.Info("FloorController.OnDisable", this.name);
+    }
+
     private void OnClick()
     {
         //if (IsClickUGUIorNGUI.Instance && IsClickUGUIorNGUI.Instance.isOverUI) return;
@@ -306,7 +316,10 @@ public class FloorController : DepNode
     public void RecoverPosInBuilding()
     {
         if (transform.parent == FloorParent) return;//避免重复
-        transform.parent = FloorParent;
+
+        LocationObject.SetParentNull(transform);//先把人员移动出去
+
+        transform.parent = FloorParent;//将楼层重新放回到（隐藏了的）建筑里面会，导致当前楼层里面的人员隐藏掉，触发OnDisable
         transform.position = FloorPos;
         transform.localScale = FloorLossyScale;
 
