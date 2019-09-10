@@ -263,7 +263,7 @@ public class CameraAlarmFollowUI : MonoBehaviour
             if (CameraHistoryAlarm != null)
             {
 
-                CameraHistoryAlarm.Reverse();
+                //CameraHistoryAlarm.Reverse();
                 ShowCurrentCameraAlarm(CameraHistoryAlarm);
             }
         }, "ShowCameraAlarmList");       

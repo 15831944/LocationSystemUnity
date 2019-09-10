@@ -251,7 +251,7 @@ public class CameraAlarmManage : MonoBehaviour
                 }
             }
         }
-        CurrentCameraHistoryAlarm.Reverse();
+        //CurrentCameraHistoryAlarm.Reverse();
         if (CurrentCameraHistoryAlarm.Count == 0)
         {
             pegeNumText.text = "1";
