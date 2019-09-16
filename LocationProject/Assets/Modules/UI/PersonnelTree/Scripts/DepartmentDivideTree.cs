@@ -153,16 +153,21 @@ public class DepartmentDivideTree : MonoBehaviour
     /// <returns></returns>
     public List<Personnel> GetPersonnelFromServer()
     {
+        Log.Error("DepartmentDivideTree.GetPersonnelFromServer","Start");
         if (CommunicationObject.Instance == null) return new List<Personnel>();
         Personnel[] personGroup = CommunicationObject.Instance.GetPersonnels();
+        List<Personnel> result = null;
         if (personGroup != null && personGroup.Length != 0)
         {
-            return personGroup.ToList();
+            result= personGroup.ToList();
         }
         else
         {
-            return new List<Personnel>();
+            result= new List<Personnel>();
         }
+
+        Log.Error("DepartmentDivideTree.GetPersonnelFromServer", "End");
+        return result;
     }
     /// <summary>
     /// 获取区域数据（实际作用：刷新部门树）

@@ -77,19 +77,12 @@ public class AddDepartmentList : MonoBehaviour {
         MinusPageBut.onClick.AddListener(MinusDepartmentPage);
         pegeNumText.onValueChanged.AddListener(InputDepartmentPage);
         selectedBut.onClick.AddListener(SetDepartment_Click);
-       
+        DepSelected.onValueChanged.AddListener(SetDepartment_Input);
         CloseDepartmentList.onClick.AddListener(()=>
         {
-            UGUIMessageBox.Show("关闭部门信息！",
-    () =>
-    {
-        CloseDepartmentListUI();
-        AddPersonnel.Instance.ShowAddPerWindow();
-    }, ()=> {
-        CloseDepartmentListUI();
-        AddPersonnel.Instance.ShowAddPerWindow();
-    });
-           
+            CloseDepartmentListUI();
+            AddPersonnel.Instance.ShowAddPerWindow();
+
         });
         AddDep.onClick.AddListener(() =>
       {
@@ -237,24 +230,34 @@ public class AddDepartmentList : MonoBehaviour {
         PageNum = currentPage;
         GetPageData(ScreenList);
     }
+    string Key = "";
+    public void SetDepartment_Input(string key)
+    {
+        Key= key.ToLower();
+        ScreenDepartmentInfo();
+    }
     /// <summary>
     /// 筛选部门
     /// </summary>
     public void SetDepartment_Click()
+    {
+        ScreenDepartmentInfo();
+    }
+    public void ScreenDepartmentInfo()
     {
         StartPageNum = 0;
         PageNum = 1;
         pegeNumText.text = "1";
         ScreenList.Clear();
         SaveSelection();
-        string key = DepSelected.text.ToString().ToLower();
+      
         for (int i = 0; i < DepartmentData.Count; i++)
         {
             string Name = DepartmentData[i].Name;
             string SuperiorName;
             if (string.IsNullOrEmpty(DepartmentData[i].ParentId.ToString()))
             {
-                if (Name.ToLower().Contains(key))
+                if (Name.ToLower().Contains(Key))
                 {
                     ScreenList.Add(DepartmentData[i]);
                 }
@@ -267,7 +270,7 @@ public class AddDepartmentList : MonoBehaviour {
                     if (id == per.Id)
                     {
                         SuperiorName = per.Name.ToString();
-                        if (Name.ToLower().Contains(key) || SuperiorName.ToLower().Contains(key))
+                        if (Name.ToLower().Contains(Key) || SuperiorName.ToLower().Contains(Key))
                         {
                             ScreenList.Add(DepartmentData[i]);
                         }
@@ -314,6 +317,7 @@ public class AddDepartmentList : MonoBehaviour {
     }
     public void ShowDepartmentListUI()
     {
+        Key = "";
         DepartmentListWindow.SetActive(true);
         AddPersonnel.Instance.CloseAddPerWindow();
     }

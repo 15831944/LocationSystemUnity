@@ -22,28 +22,28 @@ public class TheThirdPersonCamera : MonoBehaviour {
 
     void Update()
     {
-        if (follow != null)
-        {
-            // setting the target position to be the correct offset from the 
-            m_TargetPosition = follow.position + Vector3.up * distanceUp - follow.forward * distanceAway;
+        //if (follow != null)
+        //{
+        //    // setting the target position to be the correct offset from the 
+        //    m_TargetPosition = follow.position + Vector3.up * distanceUp - follow.forward * distanceAway;
 
-            // making a smooth transition between it's current position and the position it wants to be in
-            //transform.position = Vector3.Lerp(transform.position, m_TargetPosition, Time.deltaTime * smooth);
+        //    // making a smooth transition between it's current position and the position it wants to be in
+        //    //transform.position = Vector3.Lerp(transform.position, m_TargetPosition, Time.deltaTime * smooth);
 
-            if (CameraSceneManager.Instance.alignCamera.isCameraCollider)
-            {
-                SetPosition(m_TargetPosition);
-            }
-            else
-            {
-                transform.position = Vector3.Lerp(transform.position, m_TargetPosition, Time.deltaTime * smooth);
-            }
+        //    if (CameraSceneManager.Instance.alignCamera.isCameraCollider)
+        //    {
+        //        SetPosition(m_TargetPosition);
+        //    }
+        //    else
+        //    {
+        //        transform.position = Vector3.Lerp(transform.position, m_TargetPosition, Time.deltaTime * smooth);
+        //    }
 
-            // make sure the camera is looking the right way!
-            transform.LookAt(follow);
+        //    // make sure the camera is looking the right way!
+        //    transform.LookAt(follow);
 
 
-        }
+        //}
     }
 
     void LateUpdate()

@@ -62,6 +62,7 @@ public class TimeBenchmarkManage : MonoBehaviour
     public GameObject coordinate;
     public Text promptText;
     public GameObject PointParent;
+    
     private void Awake()
     {
         Instance = this;
@@ -141,22 +142,22 @@ public class TimeBenchmarkManage : MonoBehaviour
             {
                 return x.Count.CompareTo(y.Count);
             });//根据数量排列
-            float Width = data.Count * 86f;
-            scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 340);
-            Panel.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 340);
-            coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 273);
+            float Width = data.Count * 120f;
+            scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count+1) * 120f, 340);
+            Panel.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 340);
+            coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 273);
             LineChartYvalue.DateY(posListNew[posListNew.Count - 1].Count);
             TimeLineChart.yMax = (float)posListNew[posListNew.Count - 1].Count;
             //LineChartYvalue.DateY(posListNew[0].Count);
             //TimeLineChart.yMax = (float)posListNew[0].Count;
-            TimeLineChart.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 266f);
+            TimeLineChart.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(((data.Count - 1) * 120f), 266f);
             if (TimeLineChart.pointImageList.Count != 0)
             {
                 TimeLineChart.pointImageList.Clear();
                 ClearLinePoint();
             }
 
-            TimeLineChart.width = (float)Width;
+            TimeLineChart.width = (float)((data.Count - 1) * 120f);
             TimeLineChart.UpdateData(data);
 
             Debug.LogError("--------------------ShowLineChartInfo:" + (DateTime.Now - start).TotalMilliseconds + "ms");
@@ -178,6 +179,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         DateTime MinDt = Convert.ToDateTime(posList[0].Name);
         int DifferencetIME = int.Parse((dt - MinDt).TotalDays.ToString());
         DateTime start = DateTime.Now;
+      
         for (int i = 0; i <= DifferencetIME; i++)
         {
             DateTime DayAdd = MinDt.AddDays(i);
@@ -194,6 +196,11 @@ public class TimeBenchmarkManage : MonoBehaviour
             }
             TimeInstantiateLine();
         }
+        if (data.Count == 1)
+        {
+            TimeInstantiateLine();
+            data.Add(1);
+        }
         Debug.LogError("--------------------GetDayLineChartData:" + (DateTime.Now - start).TotalMilliseconds + "ms");
         return data;
     }
@@ -208,7 +215,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         {
             //LastTime = long.Parse(DataList[DataList.Count - 1].RecordTime);
             DateTime dt = Convert.ToDateTime(DataList[DataList.Count - 1].Name);
-            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, Num, dt);
+            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, Num, dt.AddDays (1));
         }
     }
 
@@ -234,12 +241,8 @@ public class TimeBenchmarkManage : MonoBehaviour
         DeleteLinePrefabs();
         for (int i = 0; i < PosList.Count; i++)
         {
-
             GameObject Obj = InstantiateLine();
             TimeBenchmarkItem item = Obj.GetComponent<TimeBenchmarkItem>();
-            Items.Add(item);
-            item.ShowTimeBenchmarkInfo(PosList[i]);
-
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -247,7 +250,10 @@ public class TimeBenchmarkManage : MonoBehaviour
             else
             {
                 item.GetComponent<Image>().sprite = OddImage;
-            }
+            }        
+            Items.Add(item);
+            item.ShowTimeBenchmarkInfo(PosList[i]);
+           
 
         }
         SetScelectItem(PosList);

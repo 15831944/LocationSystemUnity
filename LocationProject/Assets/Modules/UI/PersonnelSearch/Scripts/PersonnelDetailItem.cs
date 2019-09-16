@@ -20,16 +20,43 @@ public class PersonnelDetailItem : MonoBehaviour
     public Button LocationBut;
     public Button DetailBut;
     public Button DeleteBut;
+    string InputKey;
+    int Value = 0;
+    Personnel CurrentPer;
+    List<Personnel> PeraonnelList;
+
     void Start()
     {
+        LocationBut.onClick.AddListener(() =>
+        {
+            if (CurrentPer.Tag == null)
+            {
+                DataPaging.Instance.IsGetPersonData = false;
+                return;
+            }
+            PersonnelBut_Click(CurrentPer.Tag.Id);
+        });
+        DetailBut.onClick.AddListener(() =>
+        {
+            EditPersonnelInfo(CurrentPer.Id, PeraonnelList);
 
+        });
+        DeleteBut.onClick.AddListener(() =>
+        {
+            DeletePersonnelInfo(CurrentPer.Id);
+        });
+       
     }
     public void ShowPersonnelDetailInfo(Personnel per, List<Personnel> peraonnelList, List<LocationObject> listT)
     {
+        PersonnelType();
+        CurrentPer = new Personnel();
+        CurrentPer = per;
+        PeraonnelList = new List<Personnel>();
+        PeraonnelList.AddRange(peraonnelList);
         LocationObject locationObjectT = listT.Find((item) => item.personnel.TagId == per.TagId);
         nameT.text = per.Name.Trim();
-        sex.text = per.Sex.Trim();
-
+        sex.text = tempNames[per.TargetType];
         if (string.IsNullOrEmpty(per.WorkNumber))
         {
             workNumber.text = "--";
@@ -85,7 +112,7 @@ public class PersonnelDetailItem : MonoBehaviour
         {
             phone.text = per.PhoneNumber.ToString().Trim();
         }
-        if (locationObjectT == null|| per.Tag ==null )
+        if (locationObjectT == null || per.Tag == null)
         {
             standbyTime.text = "--";
         }
@@ -100,21 +127,7 @@ public class PersonnelDetailItem : MonoBehaviour
                 standbyTime.text = "--";
             }
         }
-
-        LocationBut.onClick.AddListener(() =>
-       {
-           if (per.Tag == null)
-           {
-               DataPaging.Instance.IsGetPersonData = false;
-               return;
-           }
-           PersonnelBut_Click(per.Tag.Id);
-       });
-        DetailBut.onClick.AddListener(() =>
-      {
-          EditPersonnelInfo(per.Id, peraonnelList);
-
-      });
+    
         JudgePersonnelLocation(per, locationObjectT);
     }
     public void JudgePersonnelLocation(Personnel per, LocationObject Location)
@@ -127,10 +140,7 @@ public class PersonnelDetailItem : MonoBehaviour
             LocationBut.GetComponent<Image>().color = noTag;
             DeleteBut.gameObject.SetActive(true);
             DeleteBut.GetComponent<Button>().interactable = true;
-            DeleteBut.onClick.AddListener(()=> 
-            {
-                DeletePersonnelInfo(per.Id );
-            });
+        
         }
         else
         {
@@ -159,11 +169,17 @@ public class PersonnelDetailItem : MonoBehaviour
     }
     public void EditPersonnelInfo(int perID, List<Personnel> peraonnelList)
     {
+        RecordScreeningCondition();
         DataPaging.Instance.SaveSelection();
         DataPaging.Instance.IsGetPersonData = false;
-        EditPersonnelInformation.Instance.GetPersonnelInformation(perID, peraonnelList);
+        EditPersonnelInformation.Instance.GetPersonnelInformation(perID, peraonnelList, InputKey, Value);
         EditPersonnelInformation.Instance.ShowAndCloseEditPersonnelInfo(true);
         DataPaging.Instance.personnelSearchUI.SetActive(false);
+    }
+    public void RecordScreeningCondition()
+    {
+        InputKey = DataPaging.Instance.Key;
+        Value = DataPaging.Instance.Level;
     }
     /// <summary>
     /// 删除人员
@@ -186,6 +202,16 @@ public class PersonnelDetailItem : MonoBehaviour
       }
 
   }, null);
+    }
+    public List<string> tempNames;
+    public void PersonnelType()
+    {
+        tempNames = new List<string>();
+        tempNames.Add("男性");
+        tempNames.Add("女性");
+        tempNames.Add("机器人");
+        tempNames.Add("车辆");
+        tempNames.Add("物资");
     }
     void Update()
     {

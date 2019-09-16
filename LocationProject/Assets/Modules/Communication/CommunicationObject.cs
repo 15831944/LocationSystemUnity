@@ -1620,7 +1620,7 @@ public class CommunicationObject : MonoBehaviour, IDataClient
         if (serviceClient == null) return null; lock (serviceClient)//1
         {
             CameraAlarmInfo[] list = serviceClient.GetAllCameraAlarms(merge);
-            return list.ToList();
+            return list==null?null:list.ToList();
         }
     }
     public LocationAlarm[] GetLocationAlarms(AlarmSearchArg arg)
@@ -1632,7 +1632,36 @@ public class CommunicationObject : MonoBehaviour, IDataClient
             return ToNotNullList(lst);
         }
     }
-
+    /// <summary>
+    /// 设备告警统计
+    /// </summary>
+    /// <returns></returns>
+  
+    public AlarmStatistics GetDevAlarmStatistics(SearchArg arg)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
+        {
+            AlarmStatistics devAlarm = serviceClient.GetDevAlarmStatistics(arg);
+            return devAlarm;
+        }
+    }
+    /// <summary>
+    /// 人员告警统计
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    public AlarmStatistics GetLocationAlarmStatistics(SearchArg arg)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)//1
+        {
+            AlarmStatistics perAlarm = serviceClient.GetLocationAlarmStatistics(arg);
+            return perAlarm;
+        }
+    }
     public DeviceAlarmInformation GetDeviceAlarms(AlarmSearchArg arg)
     {
         serviceClient = GetServiceClient();

@@ -648,23 +648,18 @@ public class BuildingController : DepNode {
             if (action != null) action();
             return;
         }
-        //Debug.Log("deviceAssets:" + deviceAssets);
-        deviceAssetStartIndex = 0;
-        int endIndex = 2;//deviceAssets.Count;加断点加不了，主厂房为4，默认前两个是一二楼设备
         for (int i = deviceAssets.Count - 1; i >= 0; i--)//先加载一楼
         {
-            deviceAssets[i].LoadAsset(dep =>
+            int currentIndex = i;
+            deviceAssets[i].LoadAsset(depNode =>
             {
-                deviceAssetStartIndex++;
-                if (deviceAssets.Count == 1)
+                if (currentIndex == 0)
                 {
-                    Debug.LogError("LoadDeviceComplete1...");
-                    if (action != null) action();
-                }
-                if (deviceAssetStartIndex == endIndex)
-                {
-                    Debug.LogError("LoadDeviceComplete2...");
-                    if (action != null) action();
+                    if (action != null)
+                    {
+                        Debug.LogError("LoadComplete:" + currentIndex);
+                        action();
+                    }
                 }
             });
         }

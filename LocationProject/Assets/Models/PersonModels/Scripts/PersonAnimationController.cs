@@ -38,6 +38,7 @@ public class PersonAnimationController : MonoBehaviour {
 
         GetAnimator();
         if (Animator == null||Animator.runtimeAnimatorController==null) return;
+        if (Animator.applyRootMotion) Animator.applyRootMotion = false;//取消模型本身的位置，统一用NavAgent移动
         Animator.SetBool("isMove", false);
     }
 

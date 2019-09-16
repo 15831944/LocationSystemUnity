@@ -534,19 +534,19 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
 
         if (tranM.IsCreateAreaByData) //利用数据创建区域范围
         {
-            Log.Info("MonitorRangeObject.UpdatePosSizeInfo","brach 1");
+            //Log.Info("MonitorRangeObject.UpdatePosSizeInfo","brach 1");
             UpdatePosSizeByTransform(tranM);
         }
         else//利用自身大小创建区域范围
         {
             if (followTarget != null)
             {
-                Log.Info("MonitorRangeObject.UpdatePosSizeInfo", "brach 2");
+                //Log.Info("MonitorRangeObject.UpdatePosSizeInfo", "brach 2");
                 UpdatePosSizeByFollowTarget();
             }
             else
             {
-                Log.Info("MonitorRangeObject.UpdatePosSizeInfo", "brach 3");
+                //Log.Info("MonitorRangeObject.UpdatePosSizeInfo", "brach 3");
                 UpdatePosSizeByTransform(tranM);
             }
         }
@@ -595,7 +595,7 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
             Mathf.Abs(realsize.z / oriSize.z));
         if (!info.Transfrom.IsRelative) //绝对坐标，加上二维和三维转换时的坐标偏移就行
         {
-            Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 0 : axisZero");
+            //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 0 : axisZero");
             targetPos += LocationManager.Instance.axisZero;
         }
         else //相对坐标，要考虑父物体的坐标
@@ -607,59 +607,56 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
                 PhysicalTopology parentArea = parentRangeNode.info;
                 TransformM parentTransform = parentArea.Transfrom;
 
-                Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", string.Format("parentArea:"+ parentArea.Name));
+                //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", string.Format("parentArea:"+ parentArea.Name));
 
                 //接下来计算建筑物的左下角坐标
                 Vector3 buildPos = Vector3.zero;
                 if (parentTransform != null && parentTransform.IsCreateAreaByData)
                 {
-                    Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 1 : by parentTransform");
+                    //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 1 : by parentTransform");
                     Vector3 sizeT = new Vector3((float) (parentTransform.SX / 2f), (float) (parentTransform.SY / 2),
                         (float) (parentTransform.SZ / 2)); //二维坐标尺寸
                     var offset = LocationManager.GetRealSizeVector(sizeT); //三维坐标尺寸，也就是偏移量
                     buildPos = parentRangeObject.transform.position - offset; //父物体（中心）位置-父物体一半大小=父物体左下角坐标
-                    Log.Info("MonitorRangeObject.UpdatePosSizeByTransform",
-                        string.Format("sizeT:{0},sizeR:{1},buildPos:{2}", sizeT, offset, buildPos));
+                    //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform",string.Format("sizeT:{0},sizeR:{1},buildPos:{2}", sizeT, offset, buildPos));
                 }
                 else
                 {
                     if (parentRangeObject)
                     {
-                        Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 2 : parentRangeObject");
+                        //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 2 : parentRangeObject");
                         Vector3 sizeR = parentRangeObject.gameObject.GetGlobalSize();//父物体真实大小
                         Vector3 offset= new Vector3((float)(sizeR.x / 2f),
                             (float)(-(sizeR.y + parentRangeObject.yOffset) / 2),
                             (float)(sizeR.z / 2)); //
                         buildPos = parentRangeObject.transform.position+offset;//父物体（中心）位置-偏移=父物体左下角坐标
 
-                        Log.Info("MonitorRangeObject.UpdatePosSizeByTransform",
-                            string.Format("sizeR:{0},offset:{1},buildPos:{2}", sizeR, offset, buildPos));
+                        //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform",string.Format("sizeR:{0},offset:{1},buildPos:{2}", sizeR, offset, buildPos));
                     }
                     else
                     {
                         if (rangeNode.parentNode.info.Type == Types.范围)
                         {
-                            Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 3");
+                            //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 3");
                             targetPos += LocationManager.Instance.axisZero;
                         }
                         else
                         {
-                            Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 4");
+                            //Log.Info("MonitorRangeObject.UpdatePosSizeByTransform", "brach 4");
                         }
                     }
                 }
 
                 targetPos += buildPos;
 
-                Log.Info("MonitorRange.UpdatePosSizeByTransform",
-                    string.Format("targetPos:{0},buildPos:{1}", targetPos, buildPos));
+                //Log.Info("MonitorRange.UpdatePosSizeByTransform",string.Format("targetPos:{0},buildPos:{1}", targetPos, buildPos));
 
-                ShowTestPoint(buildPos, "buildPos_"+ parentArea.Name);
-                ShowTestPoint(targetPos, "targetPos_"+info.Name);
+                //ShowTestPoint(buildPos, "buildPos_"+ parentArea.Name);
+                //ShowTestPoint(targetPos, "targetPos_"+info.Name);
             }
             else
             {
-                Log.Error("MonitorRange.UpdatePosSizeByTransform", "rangeNode.parentNode == null");
+                //Log.Error("MonitorRange.UpdatePosSizeByTransform", "rangeNode.parentNode == null");
             }
         }
 

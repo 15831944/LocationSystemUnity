@@ -262,6 +262,12 @@ namespace Location.WCFServiceReferences.LocationServices {
         private System.Nullable<int> TagIdField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TargetModelField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int TargetTypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string WorkNumberField;
         
         [global::System.ComponentModel.BrowsableAttribute(false)]
@@ -556,6 +562,32 @@ namespace Location.WCFServiceReferences.LocationServices {
                 if ((this.TagIdField.Equals(value) != true)) {
                     this.TagIdField = value;
                     this.RaisePropertyChanged("TagId");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string TargetModel {
+            get {
+                return this.TargetModelField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TargetModelField, value) != true)) {
+                    this.TargetModelField = value;
+                    this.RaisePropertyChanged("TargetModel");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int TargetType {
+            get {
+                return this.TargetTypeField;
+            }
+            set {
+                if ((this.TargetTypeField.Equals(value) != true)) {
+                    this.TargetTypeField = value;
+                    this.RaisePropertyChanged("TargetType");
                 }
             }
         }

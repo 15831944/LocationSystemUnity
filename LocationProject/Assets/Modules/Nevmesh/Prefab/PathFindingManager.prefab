@@ -53,7 +53,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useFollowNavAgent: 1
   useNavAgent: 0
-  FollowAgent: {fileID: 114664353992533376, guid: 546743c33be9f674ba574a7ef3070d01,
-    type: 2}
+  TargetPrefabs:
+  - {fileID: 1525260094488638, guid: 546743c33be9f674ba574a7ef3070d01, type: 2}
+  - {fileID: 1762639599349112, guid: 3e705543329fcbc47808e271675a2d76, type: 2}
+  - {fileID: 1700090358210832, guid: d807dbb34589d224e9df445d47b955a1, type: 2}
+  - {fileID: 1050878803737724, guid: 94b4f09adf96b8d4cb0582e37943d11b, type: 2}
+  - {fileID: 1473020630938288, guid: fb9be74f907b5c84cb1148bb0234b688, type: 2}
   MaxDistance: 15
   enableJump: 1
+  ShowOriginalPersonWhenEditor: 1

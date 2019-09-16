@@ -14,8 +14,12 @@ public class LocationHistoryManager : MonoBehaviour
 
     public static LocationHistoryManager Instance;
     private Transform historyPathParent;//历史记录父物体
-    public GameObject characterPrefab;//人员预设
-    public GameObject characterWomanPrefab;//女性人员预设
+
+    //public GameObject characterPrefab;//人员预设
+    //public GameObject characterWomanPrefab;//女性人员预设
+
+    public List<GameObject> TargetPrefabs;
+
     public GameObject NameUIPrefab;//名称UI预设
     public GameObject ArrowPrefab;//箭头预设
 
@@ -84,24 +88,21 @@ public class LocationHistoryManager : MonoBehaviour
 
     }
 
+    //private GameObject CreateCharacter()
+    //{
+    //    GameObject o = Instantiate(characterPrefab);
+    //    //o.transform.SetParent(tagsParent);
+    //    return o;
+    //}
+
+    //private GameObject CreateWomanCharacter()
+    //{
+    //    GameObject o = Instantiate(characterWomanPrefab);
+    //    //o.transform.SetParent(tagsParent);
 
 
-    private GameObject CreateCharacter()
-    {
-        GameObject o = Instantiate(characterPrefab);
-        //o.transform.SetParent(tagsParent);
-
-        return o;
-    }
-
-    private GameObject CreateWomanCharacter()
-    {
-        GameObject o = Instantiate(characterWomanPrefab);
-        //o.transform.SetParent(tagsParent);
-
-
-        return o;
-    }
+    //    return o;
+    //}
 
     /// <summary>
     /// 创建历史轨迹父物体
@@ -403,7 +404,8 @@ public class LocationHistoryManager : MonoBehaviour
     /// <returns></returns>
     public LocationHistoryPath ShowLocationHistoryPath(PathInfo pathInfo, string name = "HistoryPathObj")
     {
-        GameObject o = CreateCharacter();
+        //GameObject o = CreateCharacter();
+        GameObject o = CreatePersonObject(pathInfo.personnelT);
         LocationHistoryPath path = o.AddComponent<LocationHistoryPath>();
         o.name = pathInfo.personnelT.Name + "(" + pathInfo.personnelT.Tag.Code + ")";
         path.Init(pathInfo);
@@ -548,17 +550,39 @@ public class LocationHistoryManager : MonoBehaviour
 
     private GameObject CreatePersonObject(Personnel personnelT)
     {
-        GameObject o = null;
-        if (personnelT != null && personnelT.Sex == "2" && ThroughWallsManage.Instance.isCharacterControllerThroughWallsTest)//女性
+        try
         {
-            o = CreateWomanCharacter();
+            if (personnelT == null)
+            {
+                Log.Error("LocationHistoryManager.CreatePersonObject", "personnel == null");
+                return null;
+            }
+
+            var type = personnelT.TargetType;
+            var prefab = TargetPrefabs[type];
+
+            GameObject o = Instantiate(prefab);
+            //o.transform.SetParent(personnelT);
+            return o;
         }
-        else
+        catch (Exception e)
         {
-            o = CreateCharacter();
+            Log.Error("LocationHistoryManager.CreatePersonObject", "Exception:" + e);
+            return null;
         }
 
-        return o;
+
+        //GameObject o = null;
+        //if (personnelT != null && personnelT.Sex == "2" && ThroughWallsManage.Instance.isCharacterControllerThroughWallsTest)//女性
+        //{
+        //    o = CreateWomanCharacter();
+        //}
+        //else
+        //{
+        //    o = CreateCharacter();
+        //}
+
+        //return o;
     }
 
     /// <summary>

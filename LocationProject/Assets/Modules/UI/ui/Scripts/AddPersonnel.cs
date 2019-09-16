@@ -96,7 +96,7 @@ public class AddPersonnel : MonoBehaviour
 	public void GetAddJobsData()
     {
         JobManagements.GetJobsManagementData();
-        AddJobList.Instance.GetJobListData(JobManagements.JobsList);
+        AddJobList.Instance.GetJobListData();
         AddJobList.Instance.ShowJobListWindow();
     }
 
@@ -107,7 +107,7 @@ public class AddPersonnel : MonoBehaviour
         CreatPersonnel = new Personnel();
 
         CreatPersonnel.Name = Name.text;
-        CreatPersonnel.Sex = personnelSex.PerSexDropdownItem.captionText.text;
+        CreatPersonnel.TargetType = personnelSex.PerSexDropdownItem.value;
         DateTime BirthTime = Convert.ToDateTime(BornTime.text);
         CreatPersonnel.BirthDay = BirthTime;
 
@@ -206,6 +206,7 @@ public class AddPersonnel : MonoBehaviour
         PerList = new List<Personnel>();
         PerList.AddRange(Per);
         DataEmpty();
+        personnelSex.AddName();
         GetDepartmentInfo();
         AddPerWindow.SetActive(true);
         DataPaging.Instance.ClosepersonnelSearchUI();
@@ -235,13 +236,13 @@ public class AddPersonnel : MonoBehaviour
     public void GetDepartmentInfo()
     {
         personnelSex.PerSexDropdownItem.value = 0;
-        personnelSex.PerSexDropdownItem.captionText.text = "男";
+      //  personnelSex.PerSexDropdownItem.captionText.text = "男";
     }
 
     public void RefreshAddJobs()
     {
         JobManagements.GetJobsManagementData();
-        AddJobList.Instance.GetJobListData(JobManagements.JobsList);
+        AddJobList.Instance.GetJobListData();
         AddJobList.Instance.ShowJobListWindow();
 
     }

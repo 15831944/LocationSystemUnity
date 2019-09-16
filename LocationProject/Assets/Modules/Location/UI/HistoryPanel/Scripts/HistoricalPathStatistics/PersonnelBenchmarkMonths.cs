@@ -23,6 +23,8 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
     public GameObject scrollView;
     public GameObject coordinate;
     public GameObject PointParent;
+    public GameObject UGUI_LineChartObj;
+
     private void Awake()
     {
         Instance = this;
@@ -138,6 +140,7 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
         DateTime dt = Convert.ToDateTime(PosLIst[PosLIst.Count - 1].Name );
         DateTime MinDt = Convert.ToDateTime(PosLIst[0].Name );
         int DifferencetIME = int.Parse((dt - MinDt).TotalDays.ToString());
+     
         for (int i = 0; i <= DifferencetIME; i++)
         {
             TimeInstantiateLine();
@@ -154,10 +157,16 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
                 data.Add(1);//没有数据的日期补上1
             }
         }
+        if (data.Count == 1)
+        {
+            TimeInstantiateLine();
+            data.Add(1);
+        }
         float Width = data.Count * 120f;
-        scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 375);       
-        coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 325);
-        PersonnelLineChart.width = Width;
+        scrollView.transform.GetComponent<RectTransform>().sizeDelta  = new Vector2((data.Count+1) * 120f, 375);       
+        coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 325);
+        UGUI_LineChartObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count -1) * 120f, 305);
+        PersonnelLineChart.width = ((data.Count -1) * 120f);
         if (PersonnelLineChart.pointImageList.Count != 0)
         {
             PersonnelLineChart.pointImageList.Clear();
@@ -181,7 +190,7 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
         {
             //LastTime = long.Parse(DataList[DataList.Count - 1].RecordTime);
             DateTime dt = Convert.ToDateTime(DataList[DataList.Count - 1].Name);
-            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt);
+            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt.AddDays (1));
             //if (CurrentLevel == 0)
             //{
             //    LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt);

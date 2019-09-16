@@ -79,7 +79,7 @@ public class PersonnelAlarmList : MonoBehaviour
     [System.NonSerialized]
     List<LocationAlarm> AlarmItem;
     bool IsGetData = false;
-    //public Button PerStatisticalBut;
+    public Button PerStatisticalBut;
     void Start()
     {
 
@@ -99,11 +99,21 @@ public class PersonnelAlarmList : MonoBehaviour
         SearchBut.onClick.AddListener(PerAlarmSearchBut_Click);
         pegeNumText.onValueChanged.AddListener(InputPersonnelPage);
         InputPerAlarm.onValueChanged.AddListener(PerAlarmSearch);
-        // PerStatisticalBut.onClick.AddListener(() =>
-        //{
-        //    PerAlarmStatisticalManage.Instance . ShowPerAlarmStatisticalWindow(true);
-        //    PerAlarmStatisticalManage.Instance.StartShowPerAlarmStatisticalInfo();
-        //});
+       if (RoomFactory.Instance.FactoryType != FactoryTypeEnum.BaoXin)
+        {
+            PerStatisticalBut.onClick.AddListener(() =>
+            {
+                PerAlarmStatisticalManage.Instance.ShowPerAlarmStatisticalWindow(true);
+                Close_PersonnelAlarm();
+            });
+        }else
+        {
+            if(PerStatisticalBut!=null)
+            {
+                PerStatisticalBut.gameObject.SetActive(false);
+            }         
+        }
+       
     }
 
     private void LoadData()

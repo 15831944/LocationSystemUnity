@@ -1,0 +1,182 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1446000009595136}
+  m_IsPrefabParent: 1
+--- !u!1 &1446000009595136
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4301689261334402}
+  - component: {fileID: 114075295582862774}
+  - component: {fileID: 114448693578696790}
+  - component: {fileID: 114161879720505698}
+  - component: {fileID: 114376793809199572}
+  - component: {fileID: 114894342339661300}
+  m_Layer: 0
+  m_Name: Park_Sihui
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4301689261334402
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1446000009595136}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114075295582862774
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1446000009595136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b21a263537dc5d3469395f4026aa3484, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isShowLeavePerson: 1
+  isShowRealLocationHeight: 0
+  isSetPersonHeightByRay: 1
+  isSetPersonObjParent: 1
+  isNevMeshPersonFollow: 0
+  nevMeshFollowPerson: {fileID: 0}
+  LocationOffsetScale: {x: 1.6892543, y: 0, z: 1.6879051}
+  axisZero: {x: 1369.6029, y: 0, z: 1012.7637}
+  direction: {x: -1, y: 1, z: -1}
+  tagsParent: {fileID: 0}
+  TargetPrefabs:
+  - {fileID: 1678430840760074, guid: b98bc4996238cd349ab642f3df6f261f, type: 2}
+  - {fileID: 1762639599349112, guid: 3e705543329fcbc47808e271675a2d76, type: 2}
+  - {fileID: 1466202854081902, guid: d48e47e689ad9334c92b77f6f44d2195, type: 2}
+  - {fileID: 1050878803737724, guid: 94b4f09adf96b8d4cb0582e37943d11b, type: 2}
+  - {fileID: 1473020630938288, guid: fb9be74f907b5c84cb1148bb0234b688, type: 2}
+  damper: 0.5
+  userNameUI: {fileID: 0}
+  PersonInfoUIPrefab: {fileID: 0}
+  isChuLingDemo: 0
+  WaitBeforeShowLocation: 1
+  IsSwitchFocus: 0
+  exitFocusbtn: {fileID: 0}
+  currentLocationFocusObj: {fileID: 0}
+  isFocusPersonAndShowInfo: 0
+  Building: {fileID: 0}
+  transparentToggle: {fileID: 0}
+  TransparentColor: {r: 0.41960785, g: 0.63126445, b: 0.75686276, a: 0.3529412}
+  UseShowPos: 0
+--- !u!114 &114161879720505698
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1446000009595136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08e38ad4a503f7f44a0d26b3d1ca1629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TargetPrefabs:
+  - {fileID: 1678430840760074, guid: 37c1d1263beb37e45a7b833e66867890, type: 2}
+  - {fileID: 1762639599349112, guid: 567b1d517c2cb91438db0027b7694b6f, type: 2}
+  - {fileID: 1466202854081902, guid: d48e47e689ad9334c92b77f6f44d2195, type: 2}
+  - {fileID: 1050878803737724, guid: 94b4f09adf96b8d4cb0582e37943d11b, type: 2}
+  - {fileID: 1473020630938288, guid: fb9be74f907b5c84cb1148bb0234b688, type: 2}
+  NameUIPrefab: {fileID: 0}
+  ArrowPrefab: {fileID: 0}
+  IntervalTime: 2
+  isSetPersonHeightByRay: 0
+  LineSetting:
+    IsAuto: 0
+    LineWidth: 1.5
+    PointWidth: 1.5
+    LineTransparent: 0.3
+    PointTransparent: 1
+    renderQueue: 4000
+    DrawTestPoint: 0
+    DrawDottedline: 1
+    PointDensity: 2
+    PointColor: {r: 1, g: 0, b: 0, a: 1}
+    SegmentPower: 1
+--- !u!114 &114376793809199572
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1446000009595136}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9365a278fc72d2f46b2012a89c6bdae1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item1: {fileID: 0}
+  item2: {fileID: 0}
+  item3: {fileID: 0}
+  item4: {fileID: 0}
+  item5: {fileID: 0}
+  item6: {fileID: 0}
+  item7: {fileID: 0}
+  item8: {fileID: 0}
+  item9: {fileID: 0}
+  item10: {fileID: 0}
+  item11: {fileID: 0}
+  item12: {fileID: 0}
+  item13: {fileID: 0}
+  followUI: {fileID: 0}
+--- !u!114 &114448693578696790
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1446000009595136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed6ef8e6ddf76664881efc633f58fd25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isShowRangeRender: 0
+  areaPrefab: {fileID: 1211709501586442, guid: 217e98b2a2daf3d4d84e59e804d9c70d, type: 2}
+  NameUI: {fileID: 0}
+  IsEditState: 0
+  currentEditDepNode: {fileID: 0}
+  ZhuchangfangFirstDepNode: {fileID: 0}
+  ZhuchangfangSecordDepNode: {fileID: 0}
+--- !u!114 &114894342339661300
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1446000009595136}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b307b99184d5b46b69dc7ac6bbd6b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item1: {fileID: 0}
+  item2: {fileID: 0}
+  item3: {fileID: 0}
+  item11: {fileID: 0}
+  item22: {fileID: 0}
+  item33: {fileID: 0}
+  followUI: {fileID: 0}
+  workTicketHistoryPaths: []
+  operationTicketHistoryPaths: []

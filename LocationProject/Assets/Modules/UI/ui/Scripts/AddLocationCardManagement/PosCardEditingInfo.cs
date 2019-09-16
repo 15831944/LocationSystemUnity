@@ -43,6 +43,7 @@ public class PosCardEditingInfo : MonoBehaviour
             LocationCardManagement.Instance.GetLocationCardManagementData();
 
         });
+        RoleEdit.onClick.AddListener(ShowRoleEditInfo);
     }
     public void CloseCurrentAndShowLastUI()
     {
@@ -86,7 +87,7 @@ public class PosCardEditingInfo : MonoBehaviour
                 Instruction.text = posCardEditDropdpwn.CardRoleList[i].Description;
             }
         }
-        RoleEdit.onClick.AddListener(ShowRoleEditInfo);
+    
         
 
     }

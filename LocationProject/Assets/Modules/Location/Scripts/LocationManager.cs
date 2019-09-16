@@ -186,14 +186,17 @@ public class LocationManager : MonoBehaviour
     /// 定位卡的空间父物体
     /// </summary>
     public Transform tagsParent;
-    /// <summary>
-    /// 人物预设
-    /// </summary>
-    public GameObject characterPrefab;
-    /// <summary>
-    /// 女性人物预设
-    /// </summary>
-    public GameObject characterWomanPrefab;
+    ///// <summary>
+    ///// 人物预设
+    ///// </summary>
+    //public GameObject characterPrefab;
+    ///// <summary>
+    ///// 女性人物预设
+    ///// </summary>
+    //public GameObject characterWomanPrefab;
+
+    public List<GameObject> TargetPrefabs;
+
     /// <summary>
     /// 卡对应人物列表
     /// </summary>
@@ -936,10 +939,22 @@ public class LocationManager : MonoBehaviour
     private void CreateLocationObject(Tag tagT)
     {
         TagPosition tagpT = tagT.Pos;
-        Transform tran = CreateCharacter(tagT);
-        LocationObject locationObject = tran.gameObject.AddComponent<LocationObject>();//这里就会脚本中的
 
-        locationObject.SetTagPostion(tagpT);//要放到SetNavAgent前面
+        if (tagpT == null)
+        {
+            Log.Error("LocationManager.CreateLocationObject", "tagpT == null");
+            return;
+        }
+        Personnel personnel = PersonnelTreeManage.Instance.GetTagPerson(tagT.Id);
+        Transform tran = CreateCharacter(personnel,tagT);
+        if (tran == null)
+        {
+            Log.Error("LocationManager.CreateLocationObject", "tran == null:" + tagT.Code);
+            return;
+        }
+        LocationObject locationObject = tran.gameObject.AddComponent<LocationObject>();//这里就会脚本中的
+        locationObject.personnel = personnel;
+        locationObject.SetTagPostion(tagpT);//要放到SetNavAgent前面,需要位置信息,但是里面SetActive->OnEnable->CreateUI
         if (PathFindingManager.Instance != null)
         {
             //SetNavAgent要放到init前面,init里面有设置跟谁UI的地方
@@ -1062,19 +1077,28 @@ public class LocationManager : MonoBehaviour
     /// <summary>
     /// 创建定位人物
     /// </summary>
-    private Transform CreateCharacter(Tag tag)
+    private Transform CreateCharacter(Personnel personnel,Tag tag)
     {
-        Personnel personnel = PersonnelTreeManage.Instance.GetTagPerson(tag.Id);
-        GameObject o = null;
-        if (personnel != null && personnel.Sex == "女")//女性
+        //if (tag == null)
+        //{
+        //    Log.Error("LocationManager.CreateCharacter", "tag == null");
+        //    return null;
+        //}
+        //Personnel personnel = PersonnelTreeManage.Instance.GetTagPerson(tag.Id);
+
+        if (personnel == null)
         {
-            o = CreateWomanCharacter();
+            Log.Error("LocationManager.CreateCharacter", "personnel == null:"+tag.Id+","+tag.Code);
+
+            var ps=PersonnelTreeManage.Instance.GetAllPersonnels();
+
+            Log.Error("LocationManager.CreateCharacter", "ps:" + ps.Count);
+
+            return null;
         }
-        else
-        {
-            o = CreateCharacter();
-        }
-        //GameObject o = CreateCharacter();
+
+        GameObject o = CreateCharacterObject(personnel);
+        if (o == null) return null;
         //o.transform.position = new Vector3(999,999,999);
         o.SetActive(false);
         o.name = tag.Name + tag.Code;
@@ -1084,22 +1108,39 @@ public class LocationManager : MonoBehaviour
     /// <summary>
     /// 创建定位人物
     /// </summary>
-    private GameObject CreateCharacter()
+    private GameObject CreateCharacterObject(Personnel personnel)
     {
-        GameObject o = Instantiate(characterPrefab);
-        o.transform.SetParent(tagsParent);
-        return o;
+        try
+        {
+            if (personnel == null)
+            {
+                Log.Error("LocationManager.CreateCharacter", "personnel == null");
+                return null;
+            }
+
+            var type = personnel.TargetType;
+            var prefab=TargetPrefabs[type];
+
+            GameObject o = Instantiate(prefab);
+            o.transform.SetParent(tagsParent);
+            return o;
+        }
+        catch (Exception e)
+        {
+            Log.Error("LocationManager.CreateCharacter", "Exception:"+e);
+            return null;
+        }
     }
 
-    /// <summary>
-    /// 创建定位人物女性
-    /// </summary>
-    private GameObject CreateWomanCharacter()
-    {
-        GameObject o = Instantiate(characterWomanPrefab);
-        o.transform.SetParent(tagsParent);
-        return o;
-    }
+    ///// <summary>
+    ///// 创建定位人物女性
+    ///// </summary>
+    //private GameObject CreateWomanCharacter()
+    //{
+    //    GameObject o = Instantiate(characterWomanPrefab);
+    //    o.transform.SetParent(tagsParent);
+    //    return o;
+    //}
 
     /// <summary>
     /// 获取位置偏移量

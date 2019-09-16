@@ -18,12 +18,15 @@ public class PathFindingManager : MonoBehaviour
     /// </summary>
     public bool useNavAgent = false;
 
-    public NavAgentFollowPerson FollowAgent;
+    //public NavAgentFollowPerson FollowAgent;
 
-    /// <summary>
-    /// 女性人物
-    /// </summary>
-    public NavAgentFollowPerson FollowAgentFemale;
+    ///// <summary>
+    ///// 女性人物
+    ///// </summary>
+    //public NavAgentFollowPerson FollowAgentFemale;
+
+
+    public List<GameObject> TargetPrefabs;
 
     public float MaxDistance = 15;
 
@@ -164,6 +167,7 @@ public class PathFindingManager : MonoBehaviour
 
             man.followTarget = target.transform;
             man.followTitle = uiFollowTarget.transform;
+            man.ChangeTitleTag(uiFollowTarget);
         }
         //AroundAlignCamera.
     }
@@ -200,7 +204,9 @@ public class PathFindingManager : MonoBehaviour
             LocationHistoryManager.Instance.isSetPersonHeightByRay = false;//还是false
 
             man.followTarget = this.transform;
+            man.ResetTitleTag();
             man.followTitle = man.titleTag;
+
         }
     }
 
@@ -239,6 +245,7 @@ public class PathFindingManager : MonoBehaviour
 
     public void SetNavAgent(LocationObject o,Action callback)
     {
+        Log.Info("PathFindingManager.SetNavAgent","o:"+o.transform.name);
         if (SystemSettingHelper.locationSetting.EnableNavMesh == false) return;//不启用NavMesh
         if (o == null) return;
         if (useNavAgent)
@@ -248,7 +255,7 @@ public class PathFindingManager : MonoBehaviour
         }
         else if (useFollowNavAgent)
         {
-            if (FollowAgent)
+            //if (FollowAgent)
             {
                 if (o.navAgentFollow == null)
                 {
@@ -276,8 +283,24 @@ public class PathFindingManager : MonoBehaviour
 
     private void InstantiateNavAgent(LocationObject o, Vector3 pos)
     {
+        if (o == null)
+        {
+            Log.Error("PathFindingManager.InstantiateNavAgent", "o == null");
+            return;
+        }
+        if (o.personnel == null)
+        {
+            Log.Error("PathFindingManager.InstantiateNavAgent", "o.personnel == null");
+            return;
+        }
+        var prefab = TargetPrefabs[o.personnel.TargetType];
+        var obj = GameObject.Instantiate<GameObject>(prefab, pos, Quaternion.identity, o.transform.parent);
         //创建一个Agent跟随，这里要直接设置position，因为不设置的话，NavAgent必须在NavMesh上面初始化。
-        var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent, pos, Quaternion.identity, o.transform.parent);
+        var agent = obj.AddMissingComponent<NavAgentFollowPerson>();
+
+        agent.MaxDistance = MaxDistance;
+        agent.enableJump = enableJump;
+
         agent.name = o.gameObject.name + "(Nav)";
         agent.gameObject.layer = o.gameObject.layer;
         agent.gameObject.tag = o.gameObject.tag;
@@ -295,6 +318,10 @@ public class PathFindingManager : MonoBehaviour
         //o.uiTarget = agent.gameObject;//UI跟谁的目标
 
         DisableRenderer(o.gameObject);
+
+        UGUIFollowTarget uiFollow = o.personInfoUI.gameObject.GetComponent<UGUIFollowTarget>();
+        if(uiFollow!=null)
+            uiFollow.Target= UGUIFollowTarget.CreateTitleTag(obj.gameObject, Vector3.zero);
     }
 
     public void SetNavAgent(LocationHistoryPathBase o)
@@ -309,13 +336,26 @@ public class PathFindingManager : MonoBehaviour
         }
         else if (useFollowNavAgent)
         {
-            if (FollowAgent)
+            //if (FollowAgent)
             {
                 if (o.navAgentFollow == null)
                 {
+                    if (o == null)
+                    {
+                        Log.Error("PathFindingManager.SetNavAgent", "o == null");
+                        return;
+                    }
+                    if (o.personnel == null)
+                    {
+                        Log.Error("PathFindingManager.SetNavAgent", "o.personnel == null");
+                        return;
+                    }
 
+                    var prefab = TargetPrefabs[o.personnel.TargetType];
+                    var obj = GameObject.Instantiate<GameObject>(prefab, o.transform.position, Quaternion.identity, o.CreatePathParent());
                     //创建一个Agent跟随，这里要直接设置position，因为不设置的话，NavAgent必须在NavMesh上面初始化。
-                    var agent = GameObject.Instantiate<NavAgentFollowPerson>(FollowAgent, o.transform.position,Quaternion.identity, o.CreatePathParent());
+                    var agent = obj.AddMissingComponent<NavAgentFollowPerson>();
+
                     agent.name = o.gameObject.name + "(Nav)";
                     agent.gameObject.layer = o.gameObject.layer;
                     agent.gameObject.tag = o.gameObject.tag;

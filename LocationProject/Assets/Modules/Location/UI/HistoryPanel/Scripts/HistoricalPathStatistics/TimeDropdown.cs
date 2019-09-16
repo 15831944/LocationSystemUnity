@@ -22,7 +22,7 @@ public class TimeDropdown : MonoBehaviour {
             tempData.text = showName[i];
             timeDropdown.options.Add(tempData);
         }
-        timeDropdown.captionText.text = showName[0];
+        timeDropdown.captionText.text = showName[3];
     }
     public void AddName()
     {

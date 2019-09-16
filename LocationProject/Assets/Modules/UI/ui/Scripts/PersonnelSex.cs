@@ -9,9 +9,9 @@ public class PersonnelSex : MonoBehaviour {
     
     void Start () {
         PerSexDropdownItem = GetComponent<Dropdown>();
-        tempNames = new List<string>();
-        AddName();
-        SetDropdownData(tempNames);
+      
+      //  AddName();
+       
 
     }
 	private void SetDropdownData(List <string > showItem)
@@ -24,18 +24,23 @@ public class PersonnelSex : MonoBehaviour {
             tempData.text = showItem[i];
             PerSexDropdownItem.options.Add(tempData);
         }
-        
-        
+        PerSexDropdownItem.captionText.text = tempNames[0];
+
+
     }
     public void AddName()
     {
-        string n1 = "未知";
-        string n2 = "男";
-        string n3= "女";
-       
-        tempNames.Add(n1);
-        tempNames.Add(n2);
-        tempNames.Add(n3);
+        tempNames = new List<string>();
+        //string n1 = "未知";
+        //string n2 = "男";
+        //string n3= "女";
+        //   tempNames.Add("--");
+        tempNames.Add("男性");
+        tempNames.Add("女性");
+        tempNames.Add("机器人");
+        tempNames.Add("车辆");
+        tempNames.Add("物资");
+        SetDropdownData(tempNames);
     }
 	// Update is called once per frame
 	void Update () {

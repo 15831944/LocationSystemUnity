@@ -65,6 +65,7 @@ public class AddJobList : MonoBehaviour {
     public Button CloseBut;
     public Sprite DoubleImage;
     public Sprite OddImage;
+    private List<Post> PostList;
     void Start()
     {
         Instance = this;
@@ -75,17 +76,9 @@ public class AddJobList : MonoBehaviour {
         selectedBut.onClick.AddListener(SetJob_Click);
         CloseBut.onClick.AddListener(()=>
         {
-            UGUIMessageBox.Show("关闭部门信息！",
-    () =>
-    {
-        CloseJobListWindow();
-        AddPersonnel.Instance.ShowAddPerWindow();
-    }, ()=>
-    {
-        CloseJobListWindow();
-        AddPersonnel.Instance.ShowAddPerWindow();
-    });
-          
+            CloseJobListWindow();
+            AddPersonnel.Instance.ShowAddPerWindow();
+
         });
        
         Addpst.onClick.AddListener(() =>
@@ -95,10 +88,20 @@ public class AddJobList : MonoBehaviour {
            AddJobs.Instance . ShowJobEditWindow();
            AddJobs.Instance.GetPostList(JobData);
        });
+        JobSelected.onValueChanged.AddListener(SetJob_Input);
     }
 
-    public void GetJobListData(List<Post> info)
+    public void GetJobListData( )
     {
+        PostList = new List<Post>();
+        PostList = CommunicationObject.Instance.GetJobsList();
+        if (PostList.Count == 0)
+        {
+            pegeNumText.text = "1";
+            pegeTotalText.text = "1";
+            SaveSelection();
+            return;
+        }
         SaveSelection();
         ScreenList = new List<Post>();
         JobData = new List<Post>();
@@ -110,9 +113,9 @@ public class AddJobList : MonoBehaviour {
         {
             JobData.Clear();
         }
-        ScreenList.AddRange(info);
-        JobData.AddRange(info);
-        TotaiLine(info);
+        ScreenList.AddRange(PostList);
+        JobData.AddRange(PostList);
+        TotaiLine(PostList);
         pegeNumText.text = "1";
         GetPageData(JobData);
     }
@@ -193,7 +196,7 @@ public class AddJobList : MonoBehaviour {
         {
             currentPage = int.Parse(pegeNumText.text);
         }
-
+        if (ScreenList == null) return;
         int maxPage = (int)Math.Ceiling((double)(ScreenList.Count) / (double)pageSize);
         if (currentPage > maxPage)
         {
@@ -209,18 +212,28 @@ public class AddJobList : MonoBehaviour {
         PageNum = currentPage;
         GetPageData(ScreenList);
     }
+    string Key = "";
+    public void SetJob_Input (string key)
+    {
+        Key = key.ToLower();
+        ScreenJobInfo();
+    }
     public void SetJob_Click()
+    {
+        ScreenJobInfo();
+    }
+    public void ScreenJobInfo()
     {
         StartPageNum = 0;
         PageNum = 1;
         pegeNumText.text = "1";
         ScreenList.Clear();
         SaveSelection();
-        string key = JobSelected.text.ToString().ToLower();
+        
         for (int i = 0; i < JobData.Count; i++)
         {
             string name = JobData[i].Name;
-            if (name.ToLower().Contains(key))
+            if (name.ToLower().Contains(Key))
             {
                 ScreenList.Add(JobData[i]);
             }
@@ -238,7 +251,8 @@ public class AddJobList : MonoBehaviour {
     public void ShowJobListWindow()
     {
         JobListUI.SetActive(true);
-
+        Key = "";
+        JobSelected.text = "";
     }
     
     public void CloseJobListWindow()

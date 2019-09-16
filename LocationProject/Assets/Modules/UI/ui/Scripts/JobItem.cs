@@ -31,10 +31,11 @@ public class JobItem : MonoBehaviour {
         }
         else
         {
+    
             bool IsSuccessful = CommunicationObject.Instance.DeletePost(post.Id);
             if (IsSuccessful)
             {
-                UGUIMessageBox.Show("删除部门信息成功！", "确定", "",
+                UGUIMessageBox.Show("删除岗位信息成功！", "确定", "",
               () => {
                   EditPersonnelInformation.Instance.RefreshEditJobInfo();
               }, null, null);
@@ -42,7 +43,7 @@ public class JobItem : MonoBehaviour {
             }
             else
             {
-                UGUIMessageBox.Show("删除部门信息失败！",
+                UGUIMessageBox.Show("删除岗位信息失败！",
                  null, null);
             }
         }

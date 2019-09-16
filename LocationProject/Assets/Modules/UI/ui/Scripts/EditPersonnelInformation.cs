@@ -40,6 +40,8 @@ public class EditPersonnelInformation : MonoBehaviour
     [System.NonSerialized] public Personnel CreatPersonnel;
     public int CurrentId;
     [System.NonSerialized] List<Personnel> PersonnelList;
+    string InputKey;
+    int Value = 0;
     void Start()
     {
         Instance = this;
@@ -77,11 +79,14 @@ public class EditPersonnelInformation : MonoBehaviour
     /// 得到人员的详细信息
     /// </summary>
     /// <param name="id"></param>
-    public void GetPersonnelInformation(int id, List<Personnel> PerList)
+    public void GetPersonnelInformation(int id, List<Personnel> PerList,string inputKey,int Level)
     {
+        InputKey = inputKey;
+        Value = Level;
         PersonnelList = new List<Personnel>();
         PersonnelList.AddRange(PerList);
         PerInfo = CommunicationObject.Instance.GetPerson(id);
+        personnelSex.AddName();
         ShowPersonnelInfo(PerInfo);
     }
     /// <summary>
@@ -122,19 +127,8 @@ public class EditPersonnelInformation : MonoBehaviour
         }
 
         UseTog.isOn = perInfo.Enabled;
-        personnelSex.PerSexDropdownItem.captionText.text = perInfo.Sex;
-        if (perInfo.Sex == "男")
-        {
-            personnelSex.PerSexDropdownItem.value = 1;
-        }
-        else if (perInfo.Sex == "女")
-        {
-            personnelSex.PerSexDropdownItem.value = 2;
-        }
-        else if (perInfo.Sex == "未知")
-        {
-            personnelSex.PerSexDropdownItem.value = 0;
-        }
+        personnelSex.PerSexDropdownItem.value = perInfo.TargetType;
+        personnelSex.PerSexDropdownItem.captionText.text = personnelSex.tempNames[perInfo.TargetType];
         if (perInfo.Parent != null)
         {
             departmentText.text = perInfo.Parent.Name.ToString();
@@ -186,8 +180,14 @@ public class EditPersonnelInformation : MonoBehaviour
         //   ShowAndCloseEditPersonnelInfo(false);
         CloseEditPersonnelWindow();
         DataPaging.Instance.IsGetPersonData = false;
-        DataPaging.Instance.StartPerSearchUI();
         DataPaging.Instance.ShowpersonnelSearchWindow();
+       
+        DataPaging.Instance.StartPerSearchUI();
+        DataPaging.Instance.PerSelected.text = InputKey;
+        DataPaging.Instance.Level = Value;
+        DataPaging.Instance.personnelDropdown.PerDropdown.value = Value;
+        DataPaging.Instance.personnelDropdown.PerDropdown.captionText.text = DataPaging.Instance.personnelDropdown.devTyprList[Value];
+      //  DataPaging.Instance.
         if (EditDepartmentTreeViewManger.Instance.DepBut.isOn)
         {
             EditDepartmentTreeViewManger.Instance.DepBut.isOn = false;
@@ -229,12 +229,12 @@ public class EditPersonnelInformation : MonoBehaviour
             List<Personnel> personnelLists = new List<Personnel>();
             personnels = CommunicationObject.Instance.GetPersonnels(); ;
             personnelLists = new List<Personnel>(personnels);
-            JobList.Instance.GetJobListData(JobManagements.JobsList, personnelLists);
+            JobList.Instance.GetJobListData( personnelLists);
            
         }
         else
         {
-            JobList.Instance.GetJobListData(JobManagements.JobsList, PersonnelList);
+            JobList.Instance.GetJobListData( PersonnelList);
         }
         JobList.Instance.ShowJobListWindow();
         CloseEditPersonnelWindow();
@@ -245,7 +245,7 @@ public class EditPersonnelInformation : MonoBehaviour
     public void ShowJobInfo()
     {
         JobManagements.GetJobsManagementData();
-        JobList.Instance.GetJobListData(JobManagements.JobsList, PersonnelList);
+        JobList.Instance.GetJobListData( PersonnelList);
         JobList.Instance.ShowJobListWindow();
         CloseEditPersonnelWindow();
     }
@@ -284,7 +284,8 @@ public class EditPersonnelInformation : MonoBehaviour
         {
             CreatPersonnel.PhoneNumber = Phone.text;
         }
-        CreatPersonnel.Sex = personnelSex.PerSexDropdownItem.captionText.text;
+       
+        CreatPersonnel.TargetType = personnelSex.PerSexDropdownItem.value;
         if (!string.IsNullOrEmpty(TagName.text))
         {
             foreach (var tagT in EditTagInfo.Instance.LocationCardData)

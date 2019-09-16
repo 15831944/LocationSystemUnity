@@ -39,6 +39,25 @@ public class HistoryManController : MonoBehaviour
         followTarget = this.transform;
         followTitle = titleTag;
     }
+    /// <summary>
+    /// 设置新的TitleTag(navMeshFollowPerson的Tag)
+    /// </summary>
+    /// <param name="titleTagTemp"></param>
+    public void ChangeTitleTag(GameObject titleTagTemp)
+    {
+        titleTag = titleTagTemp.transform;
+    }
+    /// <summary>
+    /// 重置TitleTag
+    /// </summary>
+    public void ResetTitleTag()
+    {
+        Transform normalTag = transform.Find("TitleTag");
+        if(normalTag!=null)
+        {
+            titleTag = normalTag;
+        }
+    }
 
     // Update is called once per frame
     void Update()

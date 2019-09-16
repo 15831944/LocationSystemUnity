@@ -74,20 +74,27 @@ public class BaoXinDeviceAlarm : MonoBehaviour
     {
         AllDevAlarmList = new List<CameraAlarmInfo>();
         AllDevAlarmList = CommunicationObject.Instance.GetAllCameraAlarms(true);
+
+
         DateTime CurrentTime = System.DateTime.Now;
         string currenttime = CurrentTime.ToString("yyyy年MM月dd日");
         StartTimeText.text = DateTime.Now.Year.ToString() + "年01月01日"; ;
         EndTimeText.text = currenttime;
         StartTime = Convert.ToDateTime(DateTime.Now.Year.ToString() + "年01月01日");
         EndTime = CurrentTime;
+        PageNum = 1;
+        StartPageNum = 0;
+        pegeNumText.text = "1";
+        if (AllDevAlarmList == null)
+        {
+            return;
+        }
         ScreenDevAlarmList = new List<CameraAlarmInfo>();
         ScreenDevAlarmList.AddRange(AllDevAlarmList);
         SaveSelection();
         GetDevAlarmPageData(AllDevAlarmList);
         TotaiLine(AllDevAlarmList);
-        PageNum = 1;
-        StartPageNum = 0;
-        pegeNumText.text = "1";
+        
     }
     /// <summary>
     /// 获取几页数据
@@ -171,7 +178,7 @@ public class BaoXinDeviceAlarm : MonoBehaviour
         {
             currentPage = int.Parse(pegeNumText.text);
         }
-
+        if (ScreenDevAlarmList == null) return;
         int maxPage = (int)Math.Ceiling((double)ScreenDevAlarmList.Count / (double)pageLine);
         if (maxPage == 0)
         {

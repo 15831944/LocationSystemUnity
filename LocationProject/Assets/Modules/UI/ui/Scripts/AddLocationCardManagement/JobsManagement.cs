@@ -18,6 +18,9 @@ public class JobsManagement : MonoBehaviour {
         JobsList = new List<Post>();
         PostList = new List<Post>();
         PostList = CommunicationObject.Instance.GetJobsList();
+        Post first = new Post();
+        first.Name = "--";
+        JobsList.Add(first);
         JobsList.AddRange(PostList);
      
         SetDropdownData(JobsList);

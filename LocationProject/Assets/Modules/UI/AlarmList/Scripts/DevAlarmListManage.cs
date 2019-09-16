@@ -72,6 +72,7 @@ public class DevAlarmListManage : MonoBehaviour
     public GameObject BanClick;//正在获取数据时，不能点击
     DeviceAlarmInformation DevAlarmInfo;
     List<DeviceAlarm> ShowDevAlarmList;
+    public Button AlarmStatistics;//告警统计
     int AlarmLevel = 0;
     int DevType = 0;
     bool IsGetData = false;
@@ -86,7 +87,15 @@ public class DevAlarmListManage : MonoBehaviour
         StartcalendarDay.onDayClick.AddListener(ScreeningStartTimeAlaim);
         EndcalendarDay.onDayClick.AddListener(ScreeningSecondTimeAlarm);
         pegeNumText.onValueChanged.AddListener(InputDevPage);
-
+        if (AlarmStatistics!=null)
+        {
+            AlarmStatistics.onClick.AddListener(() =>
+            {
+                DevAlarmStatisticalManage.Instance.ShowDevAlarmStatisticalWindow(true);
+                ColseDevAlarm();
+            });
+        }
+     
     }
     /// <summary>
     /// 刚打开设备告警时的界面
@@ -281,6 +290,25 @@ public class DevAlarmListManage : MonoBehaviour
     /// </summary>
     public void CloseDevAlarmWindow()
     {
+        ColseDevAlarm();
+        //pegeNumText.text = "1";
+        //pegeTotalText.text = "1";
+        //DevAlarmWindow.SetActive(false);
+        //if (devAlarmdropdownItem.tempNames != null && devAlarmdropdownItem.tempNames.Count != 0) devAlarmdropdownItem.devAlarmLeveldropdown.captionText.text = devAlarmdropdownItem.tempNames[0];
+        //devAlarmdropdownItem.devAlarmLeveldropdown.transform.GetComponent<Dropdown>().value = 0;
+
+        //if (devAlarmType.tempNames != null && devAlarmType.tempNames.Count != 0) devAlarmType.DevTypedropdownItem.captionText.text = devAlarmType.tempNames[0];
+        //devAlarmType.DevTypedropdownItem.transform.GetComponent<Dropdown>().value = 0;
+
+        //DevSubsystemManage.Instance.ChangeImage(false, DevSubsystemManage.Instance.DevAlarmToggle);
+        DevSubsystemManage.Instance.DevAlarmToggle.isOn = false;
+        //IsGetData = false;
+        //IsStartShow = false;
+        //BanClick.SetActive(false);
+    }
+    public void ColseDevAlarm()
+    {
+
         pegeNumText.text = "1";
         pegeTotalText.text = "1";
         DevAlarmWindow.SetActive(false);
@@ -291,12 +319,11 @@ public class DevAlarmListManage : MonoBehaviour
         devAlarmType.DevTypedropdownItem.transform.GetComponent<Dropdown>().value = 0;
 
         //DevSubsystemManage.Instance.ChangeImage(false, DevSubsystemManage.Instance.DevAlarmToggle);
-        DevSubsystemManage.Instance.DevAlarmToggle.isOn = false;
+        //DevSubsystemManage.Instance.DevAlarmToggle.isOn = false;
         IsGetData = false;
         IsStartShow = false;
         BanClick.SetActive(false);
     }
-
     List<DeviceAlarm> ScreenAlarmTime = new List<DeviceAlarm>();
     /// <summary>
     /// 第二个筛选时间

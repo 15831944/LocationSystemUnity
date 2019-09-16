@@ -254,7 +254,7 @@ public class BuildingBox : AssetBundleInfo
     {
         SetRootParent(rootObj);//设置加载的物体的父物体
 
-        Debug.Log("BuildingBox.LoadBuilding: " + topoNode);
+        //Debug.Log("BuildingBox.LoadBuilding: " + topoNode);
         ReplaceDepNodeWhenLoad(rootObj);//替换缓存中的节点对象
         ReplaceOtherDepNode(rootObj);//J6J11，J6加载的话，J11也要替换
 
@@ -468,10 +468,10 @@ public class BuildingBox : AssetBundleInfo
             Debug.LogError("BuildingBox.ReplaceDepNode depNode == null ");
             return;
         }
-        Debug.Log("BuildingBox.ReplaceDepNode depNode :"+ depNode+ ",tag:"+ tag);
+        //Debug.Log("BuildingBox.ReplaceDepNode depNode :"+ depNode+ ",tag:"+ tag);
         if (roomFactory.Contains(depNode))//避免重复操作
         {
-            Debug.Log("BuildingBox.ReplaceDepNode roomFactory.Contains(depNode) :" + depNode);
+            //Debug.Log("BuildingBox.ReplaceDepNode roomFactory.Contains(depNode) :" + depNode);
             return;
         }
         roomFactory.SetTopoNode(depNode, topoNode, true);

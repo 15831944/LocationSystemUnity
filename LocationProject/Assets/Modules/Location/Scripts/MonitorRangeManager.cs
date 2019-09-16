@@ -234,7 +234,7 @@ namespace MonitorRange
         public void CreateRanges(DepNode node)
         {
 
-            Log.Info("CreateChilrenRange", node.ToString());
+            //Log.Info("CreateChilrenRange", node.ToString());
             //ClearRanges();
             PhysicalTopology topoNode = node.TopoNode;
             if (topoNode == null)
@@ -283,7 +283,7 @@ namespace MonitorRange
                 return;
             }
 
-            Log.Info("MonitorRangeManager.CreateRangesByRootNode", string.Format("area:{0}",newArea.Name));
+            //Log.Info("MonitorRangeManager.CreateRangesByRootNode", string.Format("area:{0}",newArea.Name));
 
             //Transform pparent = pparentT; //区域根物体
             //Transform content = CreateRangeParent(pNode.Type.ToString() + "(" + pNode.Id + ")" + ":" + pNode.Name, pparent); //创建父物体
@@ -657,7 +657,7 @@ namespace MonitorRange
                 Log.Alarm("MonitorRangeManager.CreateRange", "newArea.Transfrom == null");
                 return null;
             }
-            Log.Info("MonitorRangeManager.CreateRange", string.Format("CreateRange：{0},({1},{2},{3})", newArea.Name, newArea.Transfrom.X, newArea.Transfrom.Y, newArea.Transfrom.Z));
+            //Log.Info("MonitorRangeManager.CreateRange", string.Format("CreateRange：{0},({1},{2},{3})", newArea.Name, newArea.Transfrom.X, newArea.Transfrom.Y, newArea.Transfrom.Z));
 
 
             DepNode areaDepNode = RoomFactory.Instance.GetDepNodeByTopo(newArea);//找到该区域数据（PhysicalTopology）对应的（三维）区域节点

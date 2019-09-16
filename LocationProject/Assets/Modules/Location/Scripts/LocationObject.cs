@@ -483,7 +483,7 @@ public class LocationObject : MonoBehaviour
 
             var targetPosNew2 = ChangePosWhenExpandBuilding(targetPosNew, depnode);
 
-            Log.Debug("LocationObject", string.Format("SetPositionInfo:{0},dep:{1},{2}=>({3},{4})", this.name, depnode.NodeName, transform.position, targetPosNew, targetPosNew2));
+            //Log.Debug("LocationObject.SetPositionInfo", string.Format("name:{0},dep:{1},{2}=>({3},{4})", this.name, depnode.NodeName, transform.position, targetPosNew, targetPosNew2));
             posInfo.TargetPos = targetPosNew2;
             Vector3 targetPosTemp = targetPosNew;
             dataPos = targetPosNew;
@@ -995,7 +995,8 @@ public class LocationObject : MonoBehaviour
 
     private void StartAnimation()
     {
-        personAnimationController.DoMove();
+        if (personAnimationController)
+            personAnimationController.DoMove();
 
 
         if (navAgent)
@@ -1011,7 +1012,8 @@ public class LocationObject : MonoBehaviour
 
     private void StopAnimation()
     {
-        personAnimationController.DoStop();//动画停下
+        if(personAnimationController)
+            personAnimationController.DoStop();//动画停下
 
         if (navAgent)
         {
@@ -1524,7 +1526,7 @@ public class LocationObject : MonoBehaviour
         var uiPrefab = LocationManager.Instance.PersonInfoUIPrefab.gameObject;
         //GameObject obj = UGUIFollowManage.Instance.CreateItemEX(uiPrefab, targetTagObj, "LocationNameUI", mask.value);
         GameObject obj = UGUIFollowManage.Instance.CreateItemEX(uiPrefab, targetTagObj, "LocationNameUI",true);
-        personInfoUI = obj.GetComponent<PersonInfoUI>();
+        personInfoUI = obj.GetComponent<PersonInfoUI>();//创建PersonInfoUI的地方
         if (Tag == null)
         {
             Log.Error("Location.CreateFollowUI", "Tag == null");
@@ -1539,7 +1541,7 @@ public class LocationObject : MonoBehaviour
 
     private GameObject GetUITarget()
     {
-        GameObject targetTagObj =null;
+        GameObject targetTagObj = null;
         if (navAgentFollow != null)
         {
             targetTagObj = UGUIFollowTarget.CreateTitleTag(navAgentFollow.gameObject, Vector3.zero);
@@ -1548,7 +1550,9 @@ public class LocationObject : MonoBehaviour
         {
             targetTagObj = UGUIFollowTarget.CreateTitleTag(this.gameObject, Vector3.zero);
         }
-        
+
+        Log.Error("LocationObject.GetUITarget", string.Format("target:{0},navAgentFollow:{1}",targetTagObj.transform.parent.name, navAgentFollow));
+
         return targetTagObj;
     }
 

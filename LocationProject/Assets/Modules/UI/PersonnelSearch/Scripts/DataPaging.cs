@@ -139,15 +139,14 @@ public class DataPaging : MonoBehaviour
                 StartPageNum = 0;
                 PageNum = 1;
                 TotaiLine(peraonnelData);
-                pegeNumText.text = "1";
-                PerSelected.text = "";
-                GetPageData(peraonnelData);
+         
+                InputPerFindData(Key );
+               // GetPageData(peraonnelData);
                 promptText.gameObject.SetActive(false);
                 EditPersonnelInformation.Instance.GetJobInfo();
             });
         });
-        personnelDropdown.PerDropdown.value = 0;
-        personnelDropdown.PerDropdown.captionText.text = "全部";
+      
         listT = LocationManager.Instance.GetPersonObjects();
     }
     /// <summary>
@@ -186,74 +185,7 @@ public class DataPaging : MonoBehaviour
 
     }
 
-    /// <summary>
-    /// 得到人员搜索的数据
-    /// </summary>
-    public void GetPersonnelData()
-    {
-
-        for (int i = 0; i < NewpagingData.Count; i++)
-        {
-            nameT = NewpagingData[i].Name;
-            sex = NewpagingData[i].Sex;
-            workNumber = NewpagingData[i].WorkNumber;
-
-            if (NewpagingData[i].Parent != null)
-            {
-                post = NewpagingData[i].Pst;
-                department = NewpagingData[i].Parent.Name;
-            }
-            else
-            {
-                Debug.Log(NewpagingData[i]);
-                department = "--";
-                post = "--";
-            }
-
-            if (NewpagingData[i].TagId != null)
-            {
-                tagNum = NewpagingData[i].TagId.ToString();
-            }
-            else
-            {
-                tagNum = "--";
-            }
-
-            if (NewpagingData[i].Tag != null)
-            {
-                tagName = NewpagingData[i].Tag.Name;
-
-                tagNum = NewpagingData[i].Tag.Code;//编号不是Id是code
-            }
-            else
-            {
-                tagName = "--";
-                tagNum = "--";
-            }
-            if (NewpagingData[i].AreaName != null)
-            {
-                area = NewpagingData[i].AreaName.ToString();
-            }
-            else
-            {
-                area = "--";
-            }
-
-            if (NewpagingData[i].PhoneNumber == null)
-            {
-                phone = "--";
-            }
-            else
-            {
-                phone = NewpagingData[i].PhoneNumber.ToString();
-            }
-
-            EditId = NewpagingData[i].Id.ToString();
-
-            SetInstantiateLine(i);
-            SetPersonnelData(i, nameT, sex, workNumber, post, department, area, tagNum, tagName, phone, EditId, NewpagingData[i].Tag);
-        }
-    }
+    
     /// <summary>
     ///获取第几页数据
     /// </summary>
@@ -334,7 +266,7 @@ public class DataPaging : MonoBehaviour
         {
             currentPage = int.Parse(pegeNumText.text);
         }
-
+        if (selectedItem == null) return;
         int maxPage = (int)Math.Ceiling((double)(selectedItem.Count) / (double)pageSize);
         if (currentPage > maxPage)
         {
@@ -377,8 +309,8 @@ public class DataPaging : MonoBehaviour
         Key = keyInfo;
         ScreenPersonnelInfo(Level, Key);
     }
-    int Level = 0;
-    string Key ="";
+    public int Level = 0;
+    public string Key = "";
     public void ScreenPresonnelCardRole(int level)
     {
         Level = level;
@@ -389,11 +321,18 @@ public class DataPaging : MonoBehaviour
         SaveSelection();
         ScreenPersonnelInfo(level, Key);
     }
-    public void ScreenPersonnelInfo(int level,string key)
+    public void ScreenPersonnelInfo(int level, string key)
     {
         for (int i = 0; i < peraonnelData.Count; i++)
         {
             string personnelName = peraonnelData[i].Name;
+            string TagName = "";
+            if (peraonnelData[i].Tag!=null)
+            {
+                TagName = peraonnelData[i].Tag.Name;
+
+            }
+
             if (personnelName == "马路峰")
             {
                 Debug.LogError(peraonnelData[i].Tag);
@@ -405,7 +344,7 @@ public class DataPaging : MonoBehaviour
             }
             else
             {
-                if (personnelName.ToLower().Contains(key) || personnelWorkNum.ToLower().Contains(key))
+                if (personnelName.ToLower().Contains(key) || personnelWorkNum.ToLower().Contains(key) || TagName. ToLower().Contains(key))
                 {
                     TagJudge(peraonnelData[i], level);
                 }
@@ -425,7 +364,7 @@ public class DataPaging : MonoBehaviour
             GetPageData(selectedItem);
         }
     }
-    public void TagJudge( Personnel peraonnelData,int level)
+    public void TagJudge(Personnel peraonnelData, int level)
     {
         if (peraonnelData.Tag == null)
         {
@@ -485,127 +424,9 @@ public class DataPaging : MonoBehaviour
             DestroyImmediate(grid.transform.GetChild(j).gameObject);
         }
     }
-    /// <summary>
-    /// 给每一条预设赋值
-    /// </summary>
-    /// <param name="i"></param>
-    /// <param name="name"></param>
-    /// <param name="sex"></param>
-    /// <param name="workNumber"></param>
-    /// <param name="department"></param>
-    /// <param name="tagNum"></param>
-    /// <param name="tagName"></param>
-    /// <param name="phone"></param>
-    public void SetPersonnelData(int i, string name, string sex, string workNumber, string post, string department, string area, string tagNum, string tagName, string phone, string EditId, Tag tag)
-    {
-        Transform line = grid.transform.GetChild(i);
-        line.GetChild(0).GetComponent<Text>().text = name;
-        line.GetChild(1).GetComponent<Text>().text = sex;
-        line.GetChild(2).GetComponent<Text>().text = workNumber;
-        line.GetChild(3).GetComponent<Text>().text = post;
-        line.GetChild(4).GetComponent<Text>().text = department;
-        line.GetChild(5).GetComponent<Text>().text = area;
-        if (string.IsNullOrEmpty(tagNum))
-        {
-            line.GetChild(6).GetComponent<Text>().text = "";
-        }
-        else
-        {
-            line.GetChild(6).GetComponent<Text>().text = tagNum.ToString();
-        }
-        int tagId = int.Parse(EditId);
+  
 
-        LocationObject locationObjectT = listT.Find((item) => item.personnel.Id == tagId);
-
-        line.GetChild(7).GetComponent<Text>().text = tagName;
-        if (locationObjectT == null)
-        {
-            line.GetChild(8).GetComponent<Text>().text = "——";
-        }
-        else
-        {
-            line.GetChild(8).GetComponent<Text>().text = locationObjectT.personInfoUI.infoStandbyTime.text;
-        }
-
-        line.GetChild(9).GetComponent<Text>().text = phone;
-        Button but = line.GetChild(10).GetChild(0).GetComponent<Button>();
-        but.onClick.RemoveAllListeners();
-
-        but.onClick.AddListener(() =>
-        {
-            if (string.IsNullOrEmpty(tagNum))
-            {
-
-            }
-            else
-            {
-                PersonnelBut_Click(tag.Id);
-            }
-
-        });
-
-        line.GetChild(10).GetChild(1).GetComponent<Button>().onClick.AddListener(() =>
-        {
-
-
-            EditPersonnelInformation.Instance.GetPersonnelInformation(tagId, peraonnelData);
-            EditPersonnelInformation.Instance.ShowAndCloseEditPersonnelInfo(true);
-            SaveSelection();
-            personnelSearchUI.SetActive(false);
-            IsGetPersonData = false;
-            //PersonnelDetails(name, sex);
-            //PersonnelSearchTweener.Instance.openTweener.PlayForward();
-        });
-
-        Transform line1 = grid.transform.GetChild(i).GetChild(10).GetChild(0);
-        if (tag == null || locationObjectT == null)
-        {
-
-            line1.GetComponent<Button>().interactable = false;
-            Color noTag = new Color(109 / 255f, 236 / 255f, 254 / 255f, 52 / 255f);
-            line1.GetComponent<Image>().color = noTag;
-
-        }
-        else
-        {
-            if (tag.IsActive == true)
-            {
-                Color NormalTag = new Color(109 / 255f, 236 / 255f, 254 / 255f, 255 / 255f);
-                line1.GetComponent<Image>().color = NormalTag;
-                line1.GetComponent<Button>().interactable = true;
-            }
-            else
-            {
-                line1.GetComponent<Button>().interactable = false;
-                Color noTag = new Color(109 / 255f, 236 / 255f, 254 / 255f, 52 / 255f);
-                line1.GetComponent<Image>().color = noTag;
-            }
-
-        }
-        if (i % 2 == 0)
-        {
-            line.GetComponent<Image>().sprite = DoubleLine;
-        }
-        else
-        {
-            line.GetComponent<Image>().sprite = SingleLine;
-        }
-    }
-
-
-    /// <summary>
-    /// 设备定位
-    /// </summary>
-    public void PersonnelBut_Click(int tagId)
-    {
-        SaveSelection();
-        ParkInformationManage.Instance.ShowParkInfoUI(false);
-        AlarmPushManage.Instance.CloseAlarmPushWindow(false);
-        LocationManager.Instance.FocusPersonAndShowInfo(tagId);
-        personnelSearchUI.SetActive(false);
-        IsGetPersonData = false;
-        PersonSubsystemManage.Instance.SearchToggle.isOn = false;
-    }
+  
     /// <summary>
     /// 每一行的预设
     /// </summary>
@@ -619,30 +440,17 @@ public class DataPaging : MonoBehaviour
         o.transform.localPosition = new Vector3(o.transform.localPosition.x, o.transform.localPosition.y, 0);
         return o;
     }
-    /// <summary>
-    /// 生成多少预设
-    /// </summary>
-    /// <param name="num"></param>
-    public void SetInstantiateLine(int num)
-    {
-        if (grid.transform.childCount <= num)
-        {
-            InstantiateLine();
-        }
-        else
-        {
-            for (int j = grid.transform.childCount - 1; j > num; j--)
-            {
-                DestroyImmediate(grid.transform.GetChild(j).gameObject);
-            }
-        }
-    }
+ 
     /// <summary>
     /// 人员搜索界面打开
     /// </summary>
     /// <param name="b"></param>
     public void ShowpersonnelSearchWindow()
     {
+        pegeNumText.text = "1";
+        PerSelected.text = "";
+        personnelDropdown.PerDropdown.value = 0;
+        personnelDropdown.PerDropdown.captionText.text = "全部";
         personnelSearchUI.SetActive(true);
     }
     /// <summary>

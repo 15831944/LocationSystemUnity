@@ -21,16 +21,16 @@ public class ThroughWallsManage : MonoBehaviour {
     void Start () {
         Instance = this;
 
-        if (isCharacterControllerThroughWallsTest)
-        {
-            if(locationManager!=null)
-                locationManager.characterPrefab = manPrefab_LOD_CharacterController;
-        }
-        else if (isNavMeshThroughWallsTest)
-        {
-            if (locationManager != null)
-                locationManager.characterPrefab = manPrefabNavMesh;
-        }
+        //if (isCharacterControllerThroughWallsTest)
+        //{
+        //    if(locationManager!=null)
+        //        locationManager.characterPrefab = manPrefab_LOD_CharacterController;
+        //}
+        //else if (isNavMeshThroughWallsTest)
+        //{
+        //    if (locationManager != null)
+        //        locationManager.characterPrefab = manPrefabNavMesh;
+        //}
 
         meshcolliders = new List<MeshCollider>();
         boxColliders = new List<BoxCollider>();

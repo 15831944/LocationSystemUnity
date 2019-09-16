@@ -78,8 +78,8 @@ public class NavAgentControllerBase : MonoBehaviour {
                 NavMeshHelper.GetClosetPointAsync(targetPos, this.name, agent, (destination, o) =>
                 {
                     var r = agent.Warp(destination);//要用这个
-                    Log.Info("NavAgentControllerBase.SetSpeedByDistance", string.Format("Jump(Warp) distance:{0}|name:{1}|destination:{2}|wrap:{3}|isOnEnableWrap:{4}",
-                        distance , this.name , destination , r, isOnEnableWrap));
+                    Log.Info("NavAgentControllerBase.SetSpeedByDistance", string.Format("Jump(Warp) distance:{0}|name:{1}|destination:{2}|wrap:{3}|isOnEnableWrap:{4}|MaxDistance:{5}",
+                        distance , this.name , destination , r, isOnEnableWrap, MaxDistance));
                 });
 
                 isOnEnableWrap = false;
@@ -174,10 +174,10 @@ public class NavAgentControllerBase : MonoBehaviour {
 
     public void SetDestination(PosInfo posInfo, float rateT)
     {
-        Log.Info("SetDestination","posInfo:"+posInfo.TargetPos+",rateT:"+rateT);
+        //Log.Info("SetDestination","posInfo:"+posInfo.TargetPos+",rateT:"+rateT);
         if (gameObject.activeInHierarchy == false)
         {
-            Log.Info("SetDestination", "gameObject.activeInHierarchy == false");
+            //Log.Info("SetDestination", "gameObject.activeInHierarchy == false");
             return;
         }
         this.rate = rateT;
