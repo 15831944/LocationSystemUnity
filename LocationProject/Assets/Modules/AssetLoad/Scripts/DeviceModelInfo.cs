@@ -1,4 +1,5 @@
-﻿using Jacovone.AssetBundleMagic;
+﻿using HighlightingSystem;
+using Jacovone.AssetBundleMagic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -98,10 +99,7 @@ public class DeviceModelInfo : MonoBehaviour {
                  {
                      obj.transform.SetParent(transform, true);
                  }
-                 if (meshRenderer)
-                 {
-                     meshRenderer.enabled = false;
-                 }
+                 SetNormalMeshHighlight(false);
                  if (finished != null)
                  {
                      finished();
@@ -132,10 +130,7 @@ public class DeviceModelInfo : MonoBehaviour {
             return;
         }
         IsLoaded = false;
-        if (meshRenderer)
-        {
-            meshRenderer.enabled = true;
-        }
+        SetNormalMeshHighlight(true);
         ModelAssetLoader.Instance.UnloadModel(ModelInfo);//不能用AssetBundleMagic.UnloadBundle(ModelInfo.GetBundleName(), true)，上面的代码 ModelAssetLoader里面还有个前缀
         //ModelInfo.isLoaded = false;
 
@@ -145,6 +140,31 @@ public class DeviceModelInfo : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// 设置粗模的mesh和高亮
+    /// </summary>
+    private void SetNormalMeshHighlight(bool isOn)
+    {
+        if (meshRenderer)
+        {
+            meshRenderer.enabled = isOn;
+        }
+        Highlighter highLight = transform.GetComponent<Highlighter>();
+        if(highLight)
+        {
+            highLight.enabled = false;
+            highLight.enabled = true;
+            HighlightManage manager = HighlightManage.Instance;
+            if (manager)
+            {
+                DevNode dev = manager.GetCurrentHighLightDev();
+                if(dev!=null&&dev.gameObject==gameObject)
+                {
+                    dev.HighlightOn();
+                }
+            }
+        }
+    }
 
     void OnDestroy()
     {

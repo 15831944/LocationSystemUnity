@@ -48,7 +48,14 @@ public class HighlightManage : MonoBehaviour
             currentHighlightDev.HighLightOff();
         }
     }
-
+    /// <summary>
+    /// 获取当前高亮设备
+    /// </summary>
+    /// <returns></returns>
+    public DevNode GetCurrentHighLightDev()
+    {
+        return currentHighlightDev;
+    }
     #endregion
     #region DepHighLight
     /// <summary>
