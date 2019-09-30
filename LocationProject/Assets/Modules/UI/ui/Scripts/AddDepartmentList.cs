@@ -8,7 +8,8 @@ using UnityEngine.UI;
 
 public class AddDepartmentList : MonoBehaviour {
     public  static  AddDepartmentList Instance;
-    [System.NonSerialized] List<Department> DepartList;
+    [System.NonSerialized]
+   public  List<Department> DepartList;
     /// <summary>
     /// 行的模板
     /// </summary>
@@ -40,7 +41,8 @@ public class AddDepartmentList : MonoBehaviour {
     /// <summary>
     /// 筛选后的数据
     /// </summary>
-    [System.NonSerialized] List<Department> ScreenList;
+    [System.NonSerialized]
+    public List<Department> ScreenList;
     /// <summary>
     /// 部门总数据
     /// </summary>
@@ -67,7 +69,7 @@ public class AddDepartmentList : MonoBehaviour {
     public Button CloseDepartmentList;
     public Sprite DoubleImage;
     public Sprite OddImage;
-
+    
     [System.NonSerialized] IList<Department> departIList;
     void Start()
     {
@@ -75,9 +77,9 @@ public class AddDepartmentList : MonoBehaviour {
         Instance = this;
         AddPageBut.onClick.AddListener(AddDepartmentPage);
         MinusPageBut.onClick.AddListener(MinusDepartmentPage);
-        pegeNumText.onValueChanged.AddListener(InputDepartmentPage);
+        pegeNumText.onEndEdit .AddListener(InputDepartmentPage);
         selectedBut.onClick.AddListener(SetDepartment_Click);
-        DepSelected.onValueChanged.AddListener(SetDepartment_Input);
+        DepSelected.onEndEdit .AddListener(SetDepartment_Input);
         CloseDepartmentList.onClick.AddListener(()=>
         {
             CloseDepartmentListUI();
@@ -92,6 +94,7 @@ public class AddDepartmentList : MonoBehaviour {
           AddDepartment.Instance.GetDepartmentList(DepartmentData);
           CloseDepartmentListUI();
       });
+     
     }
     public void GetDepartmentListData()
     {
@@ -118,7 +121,12 @@ public class AddDepartmentList : MonoBehaviour {
         DepartmentData.AddRange(DepartList);
         TotaiLine(DepartList);
         pegeNumText.text = "1";
-        GetPageData(DepartList);
+        ShowAddDepartmentInfo();
+    }
+    public void ShowAddDepartmentInfo()
+    {
+        SetDepartment_Input(DepSelected.text );
+      //  GetPageData(DepartList);
     }
     public void SetDepartmentData(List<Department> depList)
     {
@@ -126,7 +134,7 @@ public class AddDepartmentList : MonoBehaviour {
         {
             GameObject Obj = InstantiateLine();
             AddDepartmentItem item = Obj.GetComponent<AddDepartmentItem>();
-            item.ShowDepartmentItemInfo(depList[i], DepartmentData);
+            item.ShowDepartmentItemInfo(depList[i], DepartList, grid, DepSelected.text , pegeNumText.text );
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -212,7 +220,15 @@ public class AddDepartmentList : MonoBehaviour {
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
 
         int maxPage = (int)Math.Ceiling((double)(ScreenList.Count) / (double)pageSize);
@@ -251,28 +267,28 @@ public class AddDepartmentList : MonoBehaviour {
         ScreenList.Clear();
         SaveSelection();
       
-        for (int i = 0; i < DepartmentData.Count; i++)
+        for (int i = 0; i < DepartList.Count; i++)
         {
-            string Name = DepartmentData[i].Name;
+            string Name = DepartList[i].Name;
             string SuperiorName;
-            if (string.IsNullOrEmpty(DepartmentData[i].ParentId.ToString()))
+            if (string.IsNullOrEmpty(DepartList[i].ParentId.ToString()))
             {
                 if (Name.ToLower().Contains(Key))
                 {
-                    ScreenList.Add(DepartmentData[i]);
+                    ScreenList.Add(DepartList[i]);
                 }
             }
             else
             {
-                int id = (int)DepartmentData[i].ParentId;
-                foreach (var per in DepartmentData)
+                int id = (int)DepartList[i].ParentId;
+                foreach (var per in DepartList)
                 {
                     if (id == per.Id)
                     {
                         SuperiorName = per.Name.ToString();
                         if (Name.ToLower().Contains(Key) || SuperiorName.ToLower().Contains(Key))
                         {
-                            ScreenList.Add(DepartmentData[i]);
+                            ScreenList.Add(DepartList[i]);
                         }
                     }
                 }
@@ -325,5 +341,8 @@ public class AddDepartmentList : MonoBehaviour {
     {
         DepartmentListWindow.SetActive(false);
     }
-   
+   public void ShowAndCloseAddDepartmentListUI(bool b)
+    {
+        DepartmentListWindow.SetActive(b );
+    }
 }

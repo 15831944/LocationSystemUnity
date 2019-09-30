@@ -104,7 +104,7 @@ public class LoginManage : MonoBehaviour {
         else
         {
             isLoginSucceed = false;
-            Debug.LogFormat("登陆连接失败！用户:{0}",info.UserName);
+            Debug.LogFormat("登录连接失败！用户:{0}", info.UserName);
         }
         isAfterLoginInit = true;
     }
@@ -143,7 +143,7 @@ public class LoginManage : MonoBehaviour {
             else
             {
                 isLoginSucceed = false;
-                Debug.LogFormat("登陆连接失败！  ip:{0}:{1}  用户:{2}", ipT, portT, info.UserName);
+                Debug.LogFormat("登录连接失败！  ip:{0}:{1}  用户:{2}", ipT, portT, info.UserName);
                 //AfterLoginFailed();
             }
             isAfterLoginInit = true;
@@ -192,7 +192,7 @@ public class LoginManage : MonoBehaviour {
             else
             {
                 isLoginSucceed = false;
-                Debug.LogFormat("登陆连接失败！  用户:{0}",info.UserName);
+                Debug.LogFormat("登录连接失败！  用户:{0}", info.UserName);
                 //AfterLoginFailed();
             }
             isAfterLoginInit = true;

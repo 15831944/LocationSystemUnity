@@ -80,11 +80,13 @@ public class PersonnelAlarmList : MonoBehaviour
     List<LocationAlarm> AlarmItem;
     bool IsGetData = false;
     public Button PerStatisticalBut;
+    [System.NonSerialized]
+    List<LocationAlarm> SeachPerItems ;
     void Start()
     {
 
         AlarmItem = new List<LocationAlarm>();
-      //  ScreenAlarmItem = new List<LocationAlarm>();
+        //  ScreenAlarmItem = new List<LocationAlarm>();
         Instance = this;
         perAlarmData = new AlarmSearchArg();
         pegeTotalText.text = "1";
@@ -97,23 +99,24 @@ public class PersonnelAlarmList : MonoBehaviour
         StartcalendarDay.onDayClick.AddListener(ScreeningStartTimeAlaim);
         DealcalendarDay.onDayClick.AddListener(ScreeningSecondTimeAlarm);
         SearchBut.onClick.AddListener(PerAlarmSearchBut_Click);
-        pegeNumText.onValueChanged.AddListener(InputPersonnelPage);
-        InputPerAlarm.onValueChanged.AddListener(PerAlarmSearch);
-       if (RoomFactory.Instance.FactoryType != FactoryTypeEnum.BaoXin)
+        pegeNumText.onEndEdit .AddListener(InputPersonnelPage);
+        InputPerAlarm.onEndEdit .AddListener(PerAlarmSearch);
+        if (RoomFactory.Instance.FactoryType != FactoryTypeEnum.BaoXin)
         {
             PerStatisticalBut.onClick.AddListener(() =>
             {
                 PerAlarmStatisticalManage.Instance.ShowPerAlarmStatisticalWindow(true);
                 Close_PersonnelAlarm();
             });
-        }else
+        }
+        else
         {
-            if(PerStatisticalBut!=null)
+            if (PerStatisticalBut != null)
             {
                 PerStatisticalBut.gameObject.SetActive(false);
-            }         
+            }
         }
-       
+
     }
 
     private void LoadData()
@@ -137,6 +140,7 @@ public class PersonnelAlarmList : MonoBehaviour
             }
         }
         IsGetData = false;
+        SeachPerItems = new List<LocationAlarm>();
         SeachPerItems.AddRange(AlarmItem);
     }
 
@@ -176,10 +180,10 @@ public class PersonnelAlarmList : MonoBehaviour
 
                     StartPageNum = 0;
                     PageNum = 1;
-                    GetPersonnelAlarmPage(AlarmItem);
+                    GetPersonnelAlarmPage(SeachPerItems);
                     pegeNumText.text = "1";
                     InputPerAlarm.text = "";
-                    TotaiLine(AlarmItem);
+                    TotaiLine(SeachPerItems);
                     DateTime CurrentTime = System.DateTime.Now;
                     string currenttime = CurrentTime.ToString("yyyy年MM月dd日");
                     StartTimeText.text = currenttime;
@@ -266,28 +270,36 @@ public class PersonnelAlarmList : MonoBehaviour
         if (ispage == true) return;
         ispage = true;
         int currentPage;
-        if (string.IsNullOrEmpty(pegeNumText.text))
+        if (string.IsNullOrEmpty(value))
         {
             currentPage = 1;
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
-        }      
-            int MaxPage = (int)Math.Ceiling((double)SeachPerItems.Count / (double)pageLine);
-            if (currentPage > MaxPage)
+            if (value.Contains("-") || value.Contains("—"))
             {
-                currentPage = MaxPage;
-                pegeNumText.text = currentPage.ToString();
-            }
-            if (currentPage <= 0)
-            {
+                pegeNumText.text = "1";
                 currentPage = 1;
-                pegeNumText.text = currentPage.ToString();
             }
-            StartPageNum = currentPage - 1;
-            PageNum = currentPage;
-            GetPersonnelAlarmPage(SeachPerItems);
+            else
+            {
+                currentPage = int.Parse(value);
+            }
+        }
+        int MaxPage = (int)Math.Ceiling((double)SeachPerItems.Count / (double)pageLine);
+        if (currentPage > MaxPage)
+        {
+            currentPage = MaxPage;
+            pegeNumText.text = currentPage.ToString();
+        }
+        if (currentPage <= 0)
+        {
+            currentPage = 1;
+            pegeNumText.text = currentPage.ToString();
+        }
+        StartPageNum = currentPage - 1;
+        PageNum = currentPage;
+        GetPersonnelAlarmPage(SeachPerItems);
         ispage = false;
 
     }
@@ -479,11 +491,13 @@ public class PersonnelAlarmList : MonoBehaviour
 
     public void Close_PersonnelAlarm()
     {
+        
+        pegeNumText.text = "1";
         // perAlarmType.PerTypedropdownItem.captionText.text = perAlarmType.tempNames[0];
         //  perAlarmType.PerTypedropdownItem.transform.GetComponent<Dropdown>().value = 0;
         if (PerAlarmList != null) PerAlarmList.Clear();
         if (AlarmItem != null) AlarmItem.Clear();
-      //  if (ScreenAlarmItem != null) ScreenAlarmItem.Clear();
+        //  if (ScreenAlarmItem != null) ScreenAlarmItem.Clear();
         personAlarmUI.SetActive(false);
         IsGetData = false;
     }
@@ -640,8 +654,7 @@ public class PersonnelAlarmList : MonoBehaviour
         }
     }
 
-    [System.NonSerialized]
-    List<LocationAlarm> SeachPerItems = new List<LocationAlarm>();
+  
     public void PerAlarmSearch(string str)
     {
         pegeNumText.text = "1";

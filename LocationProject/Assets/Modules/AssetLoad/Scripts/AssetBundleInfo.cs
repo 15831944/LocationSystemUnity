@@ -52,6 +52,7 @@ public class AssetBundleInfo : MonoBehaviour {
             if (rootObjs.Length > 0)
             {
                 GameObject rootObj = rootObjs[0];
+                this.callback = null;//某个操作后，根据距离加载精细模型，就回掉到聚焦建筑去了（wk）
                 depNode = LoadRootObject(rootObj, isFocus);//代码运行到子类实现中
                 if(depNode!=null&& callback!=null)
                 {

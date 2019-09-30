@@ -60,7 +60,7 @@ public class ParkDevAlarmInfo : MonoBehaviour
         CloseBut.onClick.AddListener(CloseDevAlarmWindow);
         StartcalendarDay.onDayClick.AddListener(ScreenStartTimeAlarm);
         EndcalendarDay.onDayClick.AddListener(ScreenSecondTime);
-        pegeNumText.onValueChanged.AddListener(InputDevPage);
+        pegeNumText.onEndEdit .AddListener(InputDevPage);
 
         //代码方式隐藏界面 不修改场景
         if (StartcalendarDay != null)
@@ -182,7 +182,15 @@ public class ParkDevAlarmInfo : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
 
         int maxPage = (int)Math.Ceiling((double)ScreenDevAlarmList.Count / (double)pageLine);

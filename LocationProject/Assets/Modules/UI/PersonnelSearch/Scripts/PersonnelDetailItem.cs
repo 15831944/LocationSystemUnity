@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,7 +25,8 @@ public class PersonnelDetailItem : MonoBehaviour
     int Value = 0;
     Personnel CurrentPer;
     List<Personnel> PeraonnelList;
-
+    GridLayoutGroup Grid;
+    string pagePer;
     void Start()
     {
         LocationBut.onClick.AddListener(() =>
@@ -43,12 +45,13 @@ public class PersonnelDetailItem : MonoBehaviour
         });
         DeleteBut.onClick.AddListener(() =>
         {
-            DeletePersonnelInfo(CurrentPer.Id);
+            DeletePersonnelInfo(CurrentPer.Id, CurrentPer);
         });
-       
+
     }
-    public void ShowPersonnelDetailInfo(Personnel per, List<Personnel> peraonnelList, List<LocationObject> listT)
+    public void ShowPersonnelDetailInfo(Personnel per, List<Personnel> peraonnelList, List<LocationObject> listT, GridLayoutGroup grid)
     {
+        Grid = grid;
         PersonnelType();
         CurrentPer = new Personnel();
         CurrentPer = per;
@@ -103,15 +106,8 @@ public class PersonnelDetailItem : MonoBehaviour
         {
             area.text = "--";
         }
-
-        if (string.IsNullOrEmpty(per.PhoneNumber))
-        {
-            phone.text = "--";
-        }
-        else
-        {
-            phone.text = per.PhoneNumber.ToString().Trim();
-        }
+        string phoneNum = string.IsNullOrEmpty(per.PhoneNumber) ? per.Mobile : per.PhoneNumber;
+        phone.text = string.IsNullOrEmpty(phoneNum) ? "--" : phoneNum;
         if (locationObjectT == null || per.Tag == null)
         {
             standbyTime.text = "--";
@@ -127,7 +123,7 @@ public class PersonnelDetailItem : MonoBehaviour
                 standbyTime.text = "--";
             }
         }
-    
+
         JudgePersonnelLocation(per, locationObjectT);
     }
     public void JudgePersonnelLocation(Personnel per, LocationObject Location)
@@ -140,7 +136,7 @@ public class PersonnelDetailItem : MonoBehaviour
             LocationBut.GetComponent<Image>().color = noTag;
             DeleteBut.gameObject.SetActive(true);
             DeleteBut.GetComponent<Button>().interactable = true;
-        
+
         }
         else
         {
@@ -170,31 +166,56 @@ public class PersonnelDetailItem : MonoBehaviour
     public void EditPersonnelInfo(int perID, List<Personnel> peraonnelList)
     {
         RecordScreeningCondition();
-        DataPaging.Instance.SaveSelection();
-        DataPaging.Instance.IsGetPersonData = false;
-        EditPersonnelInformation.Instance.GetPersonnelInformation(perID, peraonnelList, InputKey, Value);
+        //  DataPaging.Instance.SaveSelection();
+        //  DataPaging.Instance.IsGetPersonData = false;
+        EditPersonnelInformation.Instance.GetPersonnelInformation(perID, peraonnelList, InputKey, Value, Grid, this.gameObject);
         EditPersonnelInformation.Instance.ShowAndCloseEditPersonnelInfo(true);
-        DataPaging.Instance.personnelSearchUI.SetActive(false);
+        DataPaging.Instance.ShowAndClosePersonnelWindow(false);
     }
     public void RecordScreeningCondition()
     {
         InputKey = DataPaging.Instance.Key;
         Value = DataPaging.Instance.Level;
+        pagePer = DataPaging.Instance.pegeNumText.text;
     }
     /// <summary>
     /// 删除人员
     /// </summary>
     /// <param name="id"></param>
-    public void DeletePersonnelInfo(int id)
+    public void DeletePersonnelInfo(int id, Personnel per)
     {
+        RecordScreeningCondition();
         UGUIMessageBox.Show("确定删除该人员？",
   () =>
   {
       bool IsSuccessful = CommunicationObject.Instance.DeletePerson(id);
       if (IsSuccessful)
       {
-          DataPaging.Instance.StartPerSearchUI();
+          DataPaging.Instance.peraonnelData.RemoveAll(item => item.Id == per .Id);
+          DataPaging.Instance.selectedItem.RemoveAll(item => item.Id == per.Id);
+          DataPaging.Instance.ShowPersonnelInfo();
           DataPaging.Instance.ShowpersonnelSearchWindow();
+          DataPaging.Instance.PerSelected.text = InputKey;
+          DataPaging.Instance.Level = Value;
+          DataPaging.Instance.personnelDropdown.PerDropdown.value = Value;
+          DataPaging.Instance.personnelDropdown.PerDropdown.captionText.text = DataPaging.Instance.personnelDropdown.devTyprList[Value];
+
+          double pageNum = Math.Ceiling((double)(DataPaging.Instance.selectedItem.Count) / 10);
+          if (int.Parse(pagePer)>pageNum  && DataPaging.Instance.selectedItem.Count != 0)
+          {
+              DataPaging.Instance.pegeNumText.text = pageNum.ToString();
+          }
+          else if (DataPaging.Instance.selectedItem.Count == 0)
+          {
+
+              DataPaging.Instance.pegeNumText.text = "1";
+
+          }
+          else
+          {
+              DataPaging.Instance.pegeNumText.text = pagePer;
+          }
+
       }
       else
       {

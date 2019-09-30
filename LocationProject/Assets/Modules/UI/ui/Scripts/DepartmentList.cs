@@ -9,9 +9,9 @@ using UnityEngine.UI;
 public class DepartmentList : MonoBehaviour
 {
     public static DepartmentList Instance;
-    
+
     [System.NonSerialized]
-    private List<Department> DepartList;
+    public List<Department> DepartList;
     /// <summary>
     /// 行的模板
     /// </summary>
@@ -44,7 +44,7 @@ public class DepartmentList : MonoBehaviour
     /// 筛选后的数据
     /// </summary>
     [System.NonSerialized]
-    List<Department> ScreenList;
+    public List<Department> ScreenList;
     /// <summary>
     /// 部门总数据
     /// </summary>
@@ -71,7 +71,7 @@ public class DepartmentList : MonoBehaviour
     public GameObject DepartmentListWindow;
     public Button CloseDepartmentList;
     public Button AddDep;
-    
+
     public Sprite DoubleImage;
     public Sprite OddImage;
 
@@ -83,9 +83,9 @@ public class DepartmentList : MonoBehaviour
         Instance = this;
         AddPageBut.onClick.AddListener(AddDepartmentPage);
         MinusPageBut.onClick.AddListener(MinusDepartmentPage);
-        pegeNumText.onValueChanged.AddListener(InputDepartmentPage);
+        pegeNumText.onEndEdit.AddListener(InputDepartmentPage);
         selectedBut.onClick.AddListener(SetDepartment_Click);
-        DepSelected.onValueChanged.AddListener(SetDepartment);
+        DepSelected.onEndEdit.AddListener(SetDepartment);
         ShowList = new List<Department>();
         CloseDepartmentList.onClick.AddListener(() =>
         {
@@ -102,11 +102,11 @@ public class DepartmentList : MonoBehaviour
     }
     public void ShowAddDep()
     {
-        CloseDepartmentListUI();
+        ShowAndCloseDepartmentListUI(false);
         AddDepartment.Instance.ShowAddDepartmentWindow();
         AddDepartment.Instance.GetDepartmentList(DepartmentData);
         AddDepartment.Instance.IsAdd = false;
-       // departmentManagement.DepartmentDropdownItem.value  = 0;
+        // departmentManagement.DepartmentDropdownItem.value  = 0;
 
     }
     public void GetDepartmentListData()
@@ -117,19 +117,25 @@ public class DepartmentList : MonoBehaviour
         SaveSelection();
         ScreenList = new List<Department>();
         DepartmentData = new List<Department>();
-        if (ScreenList.Count !=0)
+        if (ScreenList.Count != 0)
         {
             ScreenList.Clear();
         }
-        if (DepartmentData .Count != 0)
+        if (DepartmentData.Count != 0)
         {
             DepartmentData.Clear();
         }
         ScreenList.AddRange(DepartList);
         DepartmentData.AddRange(DepartList);
-        TotaiLine(DepartList);
         pegeNumText.text = "1";
-        GetPageData(DepartList);
+        DepSelected.text = "";
+        TotaiLine(DepartList);
+        ShowEditDepartmentInfo();
+    }
+    public void ShowEditDepartmentInfo()
+    {
+        SetDepartment(DepSelected.text);
+        // GetPageData(DepartList);
     }
     public void SetDepartmentData(List<Department> depList)
     {
@@ -137,7 +143,7 @@ public class DepartmentList : MonoBehaviour
         {
             GameObject Obj = InstantiateLine();
             DepartmentItem item = Obj.GetComponent<DepartmentItem>();
-            item.ShowDepartmentItemInfo(depList[i], DepartmentData);
+            item.ShowDepartmentItemInfo(depList[i], DepartList, grid, DepSelected.text, pegeNumText.text);
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -147,7 +153,7 @@ public class DepartmentList : MonoBehaviour
                 item.GetComponent<Image>().sprite = OddImage;
             }
         }
-      //  ToggleAuthoritySet();
+        //  ToggleAuthoritySet();
     }
     /// <summary>
     /// 每一行的预设
@@ -218,13 +224,21 @@ public class DepartmentList : MonoBehaviour
     public void InputDepartmentPage(string value)
     {
         int currentPage;
-        if (string.IsNullOrEmpty(pegeNumText.text))
+        if (string.IsNullOrEmpty(value))
         {
             currentPage = 1;
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
 
         int maxPage = (int)Math.Ceiling((double)(ScreenList.Count) / (double)pageSize);
@@ -244,84 +258,47 @@ public class DepartmentList : MonoBehaviour
     }
     public void SetDepartment(string str)
     {
-        StartPageNum = 0;
-        PageNum = 1;
-        pegeNumText.text = "1";
-        ScreenList.Clear();
-        SaveSelection();
-      string   key = str.ToLower();
-        for (int i = 0; i < DepartmentData.Count; i++)
-        {
-            string Name = DepartmentData[i].Name;
-            string SuperiorName;
-            if (string.IsNullOrEmpty(DepartmentData[i].ParentId.ToString()))
-            {
-                if (Name.ToLower().Contains(key))
-                {
-                    ScreenList.Add(DepartmentData[i]);
-                }
-            }
-            else
-            {
-                int id = (int)DepartmentData[i].ParentId;
-                foreach (var per in DepartmentData)
-                {
-                    if (id == per.Id)
-                    {
-                        SuperiorName = per.Name.ToString();
-                        if (Name.ToLower().Contains(key) || SuperiorName.ToLower().Contains(key))
-                        {
-                            ScreenList.Add(DepartmentData[i]);
-                        }
-                    }
-                }
-            }
-
-
-        }
-        if (ScreenList.Count == 0)
-        {
-            pegeTotalText.text = "1";
-        }
-        else
-        {
-            TotaiLine(ScreenList);
-            GetPageData(ScreenList);
-        }
+        Key = str.ToLower();
+        ScreenDepartmentInfo();
     }
     /// <summary>
     /// 筛选部门
     /// </summary>
     public void SetDepartment_Click()
     {
+        ScreenDepartmentInfo();
+    }
+    string Key = "";
+    public void ScreenDepartmentInfo()
+    {
         StartPageNum = 0;
         PageNum = 1;
         pegeNumText.text = "1";
         ScreenList.Clear();
         SaveSelection();
-        string key = DepSelected.text.ToString().ToLower();
-        for (int i = 0; i < DepartmentData.Count; i++)
+
+        for (int i = 0; i < DepartList.Count; i++)
         {
-            string Name = DepartmentData[i].Name;
+            string Name = DepartList[i].Name;
             string SuperiorName;
-            if (string.IsNullOrEmpty(DepartmentData[i].ParentId.ToString()))
+            if (string.IsNullOrEmpty(DepartList[i].ParentId.ToString()))
             {
-                if (Name.ToLower().Contains(key))
+                if (Name.ToLower().Contains(Key))
                 {
-                    ScreenList.Add(DepartmentData[i]);
+                    ScreenList.Add(DepartList[i]);
                 }
             }
             else
             {
-                int id = (int)DepartmentData[i].ParentId;
-                foreach (var per in DepartmentData)
+                int id = (int)DepartList[i].ParentId;
+                foreach (var per in DepartList)
                 {
                     if (id == per.Id)
                     {
                         SuperiorName = per.Name.ToString();
-                        if (Name.ToLower().Contains(key) || SuperiorName.ToLower().Contains(key))
+                        if (Name.ToLower().Contains(Key) || SuperiorName.ToLower().Contains(Key))
                         {
-                            ScreenList.Add(DepartmentData[i]);
+                            ScreenList.Add(DepartList[i]);
                         }
                     }
                 }
@@ -372,7 +349,12 @@ public class DepartmentList : MonoBehaviour
     public void CloseDepartmentListUI()
     {
         DepSelected.text = "";
+        pegeNumText.text = "1";
         DepartmentListWindow.SetActive(false);
+    }
+    public void ShowAndCloseDepartmentListUI(bool b)
+    {
+        DepartmentListWindow.SetActive(b);
     }
     /// <summary>
     /// 不同权限下，按钮的显示
@@ -381,7 +363,7 @@ public class DepartmentList : MonoBehaviour
     {
         if (CommunicationObject.Instance.IsGuest())
         {
-            AddDep.gameObject.SetActive(false );
+            AddDep.gameObject.SetActive(false);
             for (int i = 0; i < grid.transform.childCount; i++)
             {
                 grid.transform.GetChild(i).GetComponent<Toggle>().interactable = false;
@@ -393,7 +375,7 @@ public class DepartmentList : MonoBehaviour
             AddDep.gameObject.SetActive(true);
             for (int i = 0; i < grid.transform.childCount; i++)
             {
-                grid.transform.GetChild(i).GetComponent<Toggle>().interactable = true ;
+                grid.transform.GetChild(i).GetComponent<Toggle>().interactable = true;
             }
         }
     }

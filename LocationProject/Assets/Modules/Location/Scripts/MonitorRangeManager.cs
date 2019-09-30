@@ -276,30 +276,12 @@ namespace MonitorRange
                 Debug.LogError("MonitorRangeManager.CreateRangesByRootNode: newArea == null");
                 return;
             }
-
             if (newNode == null)
             {
                 Debug.LogError("MonitorRangeManager.CreateRangesByRootNode: newNode == null");
                 return;
             }
-
-            //Log.Info("MonitorRangeManager.CreateRangesByRootNode", string.Format("area:{0}",newArea.Name));
-
-            //Transform pparent = pparentT; //区域根物体
-            //Transform content = CreateRangeParent(pNode.Type.ToString() + "(" + pNode.Id + ")" + ":" + pNode.Name, pparent); //创建父物体
-
             newNode.SetInfo(newArea);
-            //rangeNode.ranges = new List<MonitorRangeObject>();
-            //rangeNode.subNodes = new List<RangeNode>();
-
-            //if (areaInfo.Name.Contains("#1变主区域告警区域"))
-            //{
-            //    int i = 0;
-            //}
-            //if (areaInfo.Name.Contains("集控楼"))
-            //{
-            //    int i = 0;
-            //}
             MonitorRangeObject thisRangeObject = null;
             if (newArea.Type != Types.分组 && newArea.Type != Types.CAD)
             {
@@ -571,6 +553,7 @@ namespace MonitorRange
         [ContextMenu("ShowAreas")]
         public void ShowRanges(DepNode depNodeT)
         {
+            //Log.Error("")
             if (depNodeT == null || FullViewController.Instance.IsFullView) return;
             if (depNodeT.depType == DepType.Factory)
             {
@@ -649,31 +632,19 @@ namespace MonitorRange
         {
             if (newArea == null)
             {
-                Log.Alarm("MonitorRangeManager.CreateRange", "newArea == null");
+                Log.Alarm("MonitorRangeManager.CreateRange", "newArea == null:"+newArea.Name);
                 return null;
             }
-            if (newArea.Transfrom == null)
-            {
-                Log.Alarm("MonitorRangeManager.CreateRange", "newArea.Transfrom == null");
-                return null;
-            }
-            //Log.Info("MonitorRangeManager.CreateRange", string.Format("CreateRange：{0},({1},{2},{3})", newArea.Name, newArea.Transfrom.X, newArea.Transfrom.Y, newArea.Transfrom.Z));
 
-
-            DepNode areaDepNode = RoomFactory.Instance.GetDepNodeByTopo(newArea);//找到该区域数据（PhysicalTopology）对应的（三维）区域节点
-            //if (p.Id == 63)
+            //if (newArea.Transfrom == null) //2019_09_30_cww:为了能够在没有设定范围的园区下创建区域，删除这个
             //{
-            //    int i = 0;
-            //}
-            //if (p.Id == 710)
-            //{
-            //    int i = 0;
-            //}
-            //if (depNodeT == null || depNodeT.NodeObject == null)
-            //{
+            //    Log.Alarm("MonitorRangeManager.CreateRange", "newArea.Transfrom == null:" + newArea.Name);
             //    return null;
             //}
-            //if (p.Type == Types.CAD) return null;
+
+            //Log.Info("MonitorRangeManager.CreateRange", string.Format("CreateRange：{0},({1},{2},{3})", newArea.Name, newArea.Transfrom.X, newArea.Transfrom.Y, newArea.Transfrom.Z));
+
+            DepNode areaDepNode = RoomFactory.Instance.GetDepNodeByTopo(newArea);//找到该区域数据（PhysicalTopology）对应的（三维）区域节点
             MonitorRangeObject rangeObject = rangelist.Find((item) => item.info.Id == newArea.Id);
             if (!rangeObject)
             {

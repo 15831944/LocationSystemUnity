@@ -11,46 +11,21 @@ public class MobileInspectionInfoDetail : MonoBehaviour
     public Text PersonnelText;
     public Text PersonnelNumText;
     public Text DevNameText;
+    public Text DevKKSCode;
     public Button ButDetail;
     void Start()
     {
 
     }
-    public void Init(PatrolPoint infoT)
+    public void Init(PatrolPoint infoT,int currentIndex)
     {
 
-        if (infoT.DeviceId == null)
-        {
-            NumText.text = "--";
-        }
-        else
-        {
-            NumText.text = infoT.DeviceId.ToString();
-        }
-        if (infoT .StaffName==null)
-        {
-			PersonnelText.text = "--";
-        }
-        else
-        {
-            PersonnelText.text = infoT.StaffName.ToString();
-        }
-        if (infoT.StaffCode == null)
-        {
-			PersonnelNumText.text = "--";
-        }
-        else
-        {
-            PersonnelNumText.text = infoT.StaffCode.ToString();
-        }
-        if (infoT.DevName == null)
-        {
-			DevNameText.text = "--";
-        }
-        else
-        {
-            DevNameText.text = infoT.DevName.ToString();
-        }
+        NumText.text = currentIndex.ToString();
+        PersonnelText.text = string.IsNullOrEmpty(infoT.StaffName) ? "--" : infoT.StaffName;
+        PersonnelNumText.text = string.IsNullOrEmpty(infoT.StaffCode) ? "--" : infoT.StaffCode;
+        string devName = string.IsNullOrEmpty(infoT.DevName) ? infoT.DeviceCode : infoT.DevName;
+        DevNameText.text = string.IsNullOrEmpty(devName) ? "--" : devName;
+        DevKKSCode.text = string.IsNullOrEmpty(infoT.KksCode)?"--":infoT.KksCode;
 
         ButDetail.onClick.AddListener(() =>
         {

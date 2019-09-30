@@ -284,7 +284,15 @@ public class AddEditCardRoleInfo : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (vale.Contains("-") || vale.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(vale);
+            }
         }
 
         int MaxPage = (int)Math.Ceiling((double)ScreenList.Count / (double)pageSize);

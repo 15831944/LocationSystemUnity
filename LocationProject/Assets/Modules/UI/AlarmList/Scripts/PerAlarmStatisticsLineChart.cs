@@ -63,13 +63,13 @@ public class PerAlarmStatisticsLineChart : MonoBehaviour {
         if (data.Count == 1)
         {
             TimeInstantiateLine();
-            data.Add(1);
+            data.Insert(0, 1);
         }
         float Width = data.Count * 120f;
         scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 500);
         coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 445);
-        UGUI_LineChartObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 440);
-        PerAlarmLineChart.width = Width;
+        UGUI_LineChartObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(((data.Count - 1) * 120f), 440);
+        PerAlarmLineChart.width = ((data.Count - 1) * 120f);
         if (PerAlarmLineChart.pointImageList.Count != 0)
         {
             PerAlarmLineChart.pointImageList.Clear();

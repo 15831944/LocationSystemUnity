@@ -21,6 +21,7 @@ public class FPSMode : MonoBehaviour {
 
     public Camera[] cameras;
 
+    [HideInInspector]
     public Collider[] colliders;
 
     public Collider PlaneCollider;
@@ -169,7 +170,7 @@ public class FPSMode : MonoBehaviour {
 
                 if (item.GetComponent<MeshCollider>() || item.GetComponent<DepNode>()) continue;
                 if (PlaneCollider == item || item.GetComponent<DoorAccessItem>() || item.GetComponent<SingleDoorTrigger>()||item.GetComponent<RoamBuildingCollider>()
-                    ||item.GetComponent<BuildingTopCollider>()||item.GetComponentInParent<BuildingTopCollider>()||item.GetComponent<DevNode>()!=null) continue;
+                    ||item.GetComponent<BuildingTopCollider>()||item.GetComponentInParent<BuildingTopCollider>()||item.GetComponent<DevNode>()!=null||item.GetComponentInParent<UnLocatedAreas>()!=null) continue;
                 if (item.enabled == true)
                 {
                     colliderList.Add(item);

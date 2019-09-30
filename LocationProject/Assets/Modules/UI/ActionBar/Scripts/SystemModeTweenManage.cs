@@ -237,7 +237,7 @@ public class SystemModeTweenManage : MonoBehaviour
         PushAlarmMoveTween = PushAlarm.transform.GetComponent<RectTransform>().DOAnchorPos3D(new Vector3(-180f, 250f), 0.5f).SetEase(Ease.OutBack);
         PushAlarmAppearTween = DOTween.To(() => PushAlarmGroup.alpha, x => PushAlarmGroup.alpha = x, 1, 0.48f).SetEase(Ease.OutBack);
 
-        ParkMoveT = ParkObj.transform.GetComponent<RectTransform>().DOAnchorPos3D(new Vector3(85f, 294f), 0.48f).SetEase(Ease.OutBack);
+        ParkMoveT = ParkObj.transform.GetComponent<RectTransform>().DOAnchorPos3D(new Vector3(-109f, 324f), 0.48f).SetEase(Ease.OutBack);
         ParkAppearT = DOTween.To(() => ParkGroup.alpha, x => ParkGroup.alpha = x, 1, 0.5f).SetEase(Ease.OutBack);
 
         ViewModeTween = ViewMode.GetComponent<Text>().DOColor(new Color(255 / 255f, 255 / 255f, 255 / 255f, 255 / 255f), 0.5f).SetEase(Ease.OutBack);

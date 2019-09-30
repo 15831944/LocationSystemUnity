@@ -114,10 +114,11 @@ public class MobileInspectionHistoryRouteDetails : MonoBehaviour {
     /// </summary>
     public void UpdateData()
     {
-        TxtPersonnelNum.text = info.StaffCode.ToString();
-        TxtPerson.text = info.StaffName;
-        devText.text = info.DevName.ToString();
-        Title.text = MobileInspectionHistoryDetailInfo.Instance .TitleText .text .ToString() + info.ParentId.ToString() ;
+        TxtPersonnelNum.text = string.IsNullOrEmpty(info.StaffCode) ? "--" : info.StaffCode;
+        string devName = string.IsNullOrEmpty(info.DevName) ? info.DeviceCode : info.DevName;
+        devText.text = string.IsNullOrEmpty(devName) ? "--" : devName;
+        TxtPerson.text = string.IsNullOrEmpty(info.StaffName) ? "--" : info.StaffName;
+        Title.text = MobileInspectionHistoryDetailInfo.Instance.TitleText.text;
 
     }
     int i = 0;
@@ -129,31 +130,41 @@ public class MobileInspectionHistoryRouteDetails : MonoBehaviour {
 
         ClearMeasuresItems();
         if (newHistoryPatrolPointItemLis == null || newHistoryPatrolPointItemLis.Count == 0) return;
+        i = 0;
         foreach (PatrolPointItemHistory sm in newHistoryPatrolPointItemLis)
         {
             i = i + 1;
             GameObject itemT = CreateMeasuresItem();
             Text[] ts = itemT.GetComponentsInChildren<Text>();
+            int currentIndex = startPageNum * pageLine + i;
             if (ts.Length > 0)
             {
-                ts[0].text = sm.CheckId.ToString();
+                ts[0].text = currentIndex.ToString();
             }
             if (ts.Length > 1)
             {
-                ts[1].text = sm.CheckItem;
+                ts[1].text = string.IsNullOrEmpty(sm.CheckItem) ? "--" : sm.CheckItem;
             }
             if (ts.Length > 2)
             {
 
                 if (sm.dtCheckTime == null)
                 {
-                    ts[2].text = "";
+                    ts[2].text = "--";
                 }
                 else
                 {
                     DateTime timeT = Convert.ToDateTime(sm.dtCheckTime);
                     ts[2].text = timeT.ToString("yyyy年MM月dd日 HH:mm");
                 }
+            }
+            if (ts.Length > 3)
+            {
+                ts[3].text = string.IsNullOrEmpty(sm.CheckResult) ? "--" : sm.CheckResult;
+            }
+            if (ts.Length > 4)
+            {
+                ts[4].text = string.IsNullOrEmpty(sm.CheckId) ? "--" : sm.CheckId;
             }
             if (i % 2 == 0)
             {

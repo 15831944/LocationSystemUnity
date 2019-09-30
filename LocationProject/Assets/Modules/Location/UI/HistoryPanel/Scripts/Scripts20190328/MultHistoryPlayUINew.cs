@@ -450,7 +450,7 @@ public class MultHistoryPlayUINew : MonoBehaviour
         lightToggle.SetState(false);//关闭灯光
 
         SetHistoryLineDrawing(isPlay);//是否开启历史轨迹实时绘制
-        SetProcessEndTime(GetTimeLengthForHours());
+        SetProcessEndTime();
         isPlay = false;
         playBtn.interactable = true;
 
@@ -889,7 +889,7 @@ public class MultHistoryPlayUINew : MonoBehaviour
         endtime = Convert.ToDateTime(dayTxt.text);
         int hours = GetEndHours();
         int minutes = GetEndMinutes();
-        int timeLengthHours = GetTimeLengthForHours();
+        float timeLengthHours = GetTimeLengthForHours();
         endtime = endtime.AddHours(hours + timeLengthHours);
         endtime = endtime.AddMinutes(minutes);
 
@@ -1022,17 +1022,26 @@ public class MultHistoryPlayUINew : MonoBehaviour
         processEndTime.text = timestr;
     }
 
-    public void SetProcessEndTime(int t)
+    public void SetProcessEndTime()
     {
-        string timestr = t.ToString();
-        if (t < 9)
+        string timestr = "";
+        if (durationDropdown.value < 5)
         {
-            timestr = "0" + t + ":00:00";
+            int min = (durationDropdown.value + 1) * 10;
+            timestr = string.Format("00:{0}:00",min);
         }
         else
         {
-            timestr = t + ":00:00";
-        }
+            int t = (durationDropdown.value + 1);
+            if (t < 9)
+            {
+                timestr = "0" + t + ":00:00";
+            }
+            else
+            {
+                timestr = t + ":00:00";
+            }
+        }      
         SetProcessEndTime(timestr);
     }
 
@@ -1379,7 +1388,7 @@ public class MultHistoryPlayUINew : MonoBehaviour
             hourDropdown.value = 8;
         }
 
-        SetMiniteDropDownList(6,10);//6,10=>0,10,20,30,40,50. 60,1=>0-59
+        SetMiniteDropDownList(60,1);//6,10=>0,10,20,30,40,50. 60,1=>0-59
         //minuteDropdown.captionText.text = minuteStrs[30];
 
         try
@@ -1392,6 +1401,10 @@ public class MultHistoryPlayUINew : MonoBehaviour
         }
 
         List<string> durationStrs = new List<string>();
+        for (int i = 1; i < 6; i++)
+        {
+            durationStrs.Add((i*10).ToString() + "分钟");
+        }
         for (int i = 1; i <= 24; i++)
         {
             durationStrs.Add(i.ToString() + "小时");
@@ -1411,19 +1424,37 @@ public class MultHistoryPlayUINew : MonoBehaviour
         //Scrollbar 
 
     }
-
+    
     /// <summary>
     /// 获取时间长度
     /// </summary>
     public float GetTimeLengthForSeconds()
     {
-        float timet = (durationDropdown.value + 1) * 3600f; //value = 0=>1小时 => 3600s
+        float timet = 0;
+        if(durationDropdown.value<5)
+        {
+            timet = (durationDropdown.value + 1) * 600f;
+        }
+        else
+        {
+            timet = (durationDropdown.value + 1) * 3600f; //value = 0=>1小时 => 3600s
+        }
         return timet;
     }
 
-    public int GetTimeLengthForHours()
+    public float GetTimeLengthForHours()
     {
-        int timet = (durationDropdown.value + 1);
+        float timet = 0;
+        if (durationDropdown.value < 5)
+        {
+            timet = (float)(durationDropdown.value + 1)/6f;
+            Debug.LogError("获取时间范围："+timet);
+        }
+        else
+        {
+            //前5个是分钟
+            timet = (durationDropdown.value-5 + 1);
+        }
         return timet;
     }
 

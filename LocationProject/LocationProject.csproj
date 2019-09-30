@@ -886,6 +886,7 @@
     <Compile Include="Assets\Modules\UI\PersonnelTree\Scripts\BaseDivideTree.cs" />
     <Compile Include="Assets\Modules\UI\PersonnelTree\Scripts\DepartmentDivideTree.cs" />
     <Compile Include="Assets\Modules\UI\PersonnelTree\Scripts\PersonnelTreeManage.cs" />
+    <Compile Include="Assets\Modules\UI\PowerGroupState\PowerGroupStateManage.cs" />
     <Compile Include="Assets\Modules\UI\Roam\Scripts\ButtonTextColor.cs" />
     <Compile Include="Assets\Modules\UI\Roam\Scripts\CloseRoam.cs" />
     <Compile Include="Assets\Modules\UI\Roam\Scripts\EntranceManage.cs" />
@@ -938,6 +939,7 @@
     <Compile Include="Assets\Modules\UI\ui\Scripts\DepartmentListInfo.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\DepartmentManagement.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\DpeartmentEditList.cs" />
+    <Compile Include="Assets\Modules\UI\ui\Scripts\EditDepartment.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\EditPersonnelInformation.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\EditTagCardRoleDropdown.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\EditTagInfo.cs" />
@@ -946,6 +948,7 @@
     <Compile Include="Assets\Modules\UI\ui\Scripts\JobList.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\JobsEditing.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\PersonnelSex.cs" />
+    <Compile Include="Assets\Modules\UI\ui\Scripts\SuperiorDepartmentDropdown.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\TreeScripts\AddEditRoleItem.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\TreeScripts\AddRoleAreaTreeView.cs" />
     <Compile Include="Assets\Modules\UI\ui\Scripts\TreeScripts\AddRoleTreeNodeToggle.cs" />
@@ -1205,6 +1208,10 @@
     <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-Camera\Scripts\Translate\MouseTranslate.cs" />
     <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-Camera\Scripts\UI\TestAlignUI.cs" />
     <Compile Include="Assets\ThirdPlugins\MGS-Camera-master\MGS-CommonCode\UI\HelpInfo.cs" />
+    <Compile Include="Assets\ThirdPlugins\ReferenceFinder\AssetSceneIgnoreList.cs" />
+    <Compile Include="Assets\ThirdPlugins\ReferenceFinder\AssetTreeView.cs" />
+    <Compile Include="Assets\ThirdPlugins\ReferenceFinder\ReferenceSceneData.cs" />
+    <Compile Include="Assets\ThirdPlugins\ReferenceFinder\ReferenceSceneWindow.cs" />
     <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Scripts\Core\Jobs\MeshSphereTreeBuildJob.cs" />
     <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Scripts\Core\Jobs\SilentJob.cs" />
     <Compile Include="Assets\ThirdPlugins\Runtime Transform Gizmos\Scripts\Editor Camera\EditorCamera.cs" />
@@ -1772,6 +1779,7 @@
     <None Include="Assets\M_Plugins\Shaders\UGUI\Blurred picture\XMLReadme.XML" />
     <None Include="Assets\M_Plugins\Shaders\UGUI\MaskIcon.shader" />
     <None Include="Assets\MeshBakerSceneAnalysisReport.txt" />
+    <None Include="Assets\Models\Zibo\淄博电厂FBX\MAXFILES.TXT" />
     <None Include="Assets\Modules\ModelAddList\ModelAddList\XMLReadme.XML" />
     <None Include="Assets\Modules\UI\FacilityDevInfo\Textures\23-大设备监控信息\read me.txt" />
     <None Include="Assets\Plugins\HighlightingSystem\Resources\HighlightingBlur.shader" />

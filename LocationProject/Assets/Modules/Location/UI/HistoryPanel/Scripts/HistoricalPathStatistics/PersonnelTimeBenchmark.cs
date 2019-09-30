@@ -87,7 +87,7 @@ public class PersonnelTimeBenchmark : MonoBehaviour
     public void ShowLineChartInfo(List<PositionList> PosList,string Name)
     {
         PerName = Name;
-        promptText.text = PerName + Convert.ToDateTime(StrText).ToString("yyyy年MM月dd日") + "定位数据量折线图"; ;
+        promptText.text =  Convert.ToDateTime(StrText).ToString("yyyy年MM月dd日") + PerName + "定位数据量折线图"; ;
         DeleteLinePrefabsX();
         if (PosList == null) return;
         if (PosList.Count == 0) return;

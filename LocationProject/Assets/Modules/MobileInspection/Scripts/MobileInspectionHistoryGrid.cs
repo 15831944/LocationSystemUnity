@@ -314,10 +314,12 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
         }
         if (date.Count == 0) return;
         List<InspectionTrackHistory> historyList = searchList.GetRange(startIndex, num);
+        i = 0;
         foreach (InspectionTrackHistory w in historyList)
         {
             i = i + 1;
-            MobileInspectionHistoryItem item = CreatePersonItem(w);
+            int currentIndex=startIndex+i;
+            MobileInspectionHistoryItem item = CreatePersonItem(w, currentIndex);
             item.gameObject.SetActive(true);
             if (i % 2 == 0)
             {
@@ -335,11 +337,11 @@ public class MobileInspectionHistoryGrid : MonoBehaviour
     /// <summary>
     /// 创建人员列表项
     /// </summary>
-    public MobileInspectionHistoryItem CreatePersonItem(InspectionTrackHistory w)
+    public MobileInspectionHistoryItem CreatePersonItem(InspectionTrackHistory w,int currentIndex)
     {
         titleHistory = w.Code + "-" + w.Name;
         MobileInspectionHistoryItem item = Instantiate(itemPrefab);
-        item.Init(w);
+        item.Init(w, currentIndex);
         item.transform.SetParent(grid.transform);
         item.transform.localScale = Vector3.one;
         item.transform.localPosition = Vector3.zero;

@@ -45,7 +45,7 @@ public class PerAlarmStatisticalManage : MonoBehaviour
     /// </summary>
     public void StartShowPerAlarmStatisticalInfo()
     {
-        string StartTime = DateTime.Now.Year.ToString() + "年01月01日";
+        string StartTime = DateTime.Now.Year.ToString() ;
         string EndTime = DateTime.Now.ToString("yyyy年MM月dd日");
         PerlarmDropdownTop.timeDropdown.captionText.text = "一年";
         PerlarmDropdownTop.timeDropdown.value = 3;
@@ -76,7 +76,7 @@ public class PerAlarmStatisticalManage : MonoBehaviour
     public void ScreenPersonnelMonths(int level)
     {
         PersonnelAlarmStatistics.Instance.DelectItem();
-        string StartTime = TimeType(level).ToString() + "年01月01日";
+        string StartTime = TimeType(level).ToString() ;
         string EndTime = CurrentEndTime.ToString("yyyy年MM月dd日");
         GetPerAlarmStatisticsData(StartTime, EndTime);
     }
@@ -86,7 +86,7 @@ public class PerAlarmStatisticalManage : MonoBehaviour
     /// <param name="value"></param>
     public void ScreenTimeLineChartData(int value)
     {
-        StartTimeLineChart = TimeType(value).ToString() + "年01月01日";
+        StartTimeLineChart = TimeType(value).ToString() ;
         EndTimeLineChart = CurrentEndTime.ToString("yyyy年MM月dd日");
         GetDevTypeAlarmLineData(StartTimeLineChart, EndTimeLineChart);
     }

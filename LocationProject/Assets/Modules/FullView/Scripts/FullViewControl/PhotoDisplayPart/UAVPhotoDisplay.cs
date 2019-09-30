@@ -162,11 +162,15 @@ public class UAVPhotoDisplay : MonoBehaviour {
         //DoImageTwinkle();
         currentSpriteIndex--;
         currentSpriteIndex = currentSpriteIndex < 0 ? MSprites.Count-1: currentSpriteIndex;
-        //Debug.Log(string.Format("Sprites count:{0}.Current sprites index:{1}.", MSprites.Count, currentSpriteIndex));
-        displayContent.overrideSprite = MSprites[currentSpriteIndex];
+        //Debug.Log(string.Format("Sprites count:{0}.Current sprites index:{1}.", MSprites.Count, currentSpriteIndex));      
+        LoadImage(MSprites[currentSpriteIndex], sp =>
+        {
+            displayContent.overrideSprite = sp;
+        });  
         int indexShow = currentSpriteIndex + 1;
         ShowImageIndex(indexShow, MSprites.Count);
     }
+    private Vector2 pivotCenter = new Vector2(0.5f,0.5f);
     /// <summary>
     /// 显示下一张照片
     /// </summary>
@@ -178,7 +182,10 @@ public class UAVPhotoDisplay : MonoBehaviour {
         currentSpriteIndex++;
         currentSpriteIndex = currentSpriteIndex > MSprites.Count - 1 ? 0 : currentSpriteIndex;
         //Debug.Log(string.Format("Sprites count:{0}.Current sprites index:{1}.", MSprites.Count, currentSpriteIndex));
-        displayContent.overrideSprite = MSprites[currentSpriteIndex];
+        LoadImage(MSprites[currentSpriteIndex], sp => 
+        {
+            displayContent.overrideSprite = sp;
+        });       
         //显示下标，不是从0开始
         int indexShow = currentSpriteIndex + 1;
         ShowImageIndex(indexShow, MSprites.Count);
@@ -260,6 +267,34 @@ public class UAVPhotoDisplay : MonoBehaviour {
                 break;
         }
     }
+
+    private Dictionary<Sprite, string> PictureDic = new Dictionary<Sprite, string>();
+
+    private void LoadImage(Sprite sp,Action<Sprite>onComplete)
+    {
+        string picName = PictureDic[sp];
+        byte[] PictureInfo = null;
+        //recordTime = DateTime.Now;
+        //string value = picName + "\n";
+        ThreadManager.Run(() =>
+        {
+            PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(picName);
+        }, () =>
+        {
+            //value += "GetInfoByServer:" + (DateTime.Now - recordTime).TotalSeconds.ToString() + "\n";
+            //recordTime = DateTime.Now;
+            //sp.texture.LoadImage(PictureInfo);
+            int width = 602;
+            int height = 392;
+            Texture2D tex = new Texture2D(width, height);
+            tex.LoadImage(PictureInfo);           
+            Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            //Debug.LogError(value+" CreatSprite:"+(DateTime.Now-recordTime).TotalSeconds);
+            if (onComplete != null) onComplete(sprite);
+        }, "");      
+    }
+
+
     private DateTime recordTime;
     public void GetHomePagePictureInfo()
     {
@@ -269,54 +304,50 @@ public class UAVPhotoDisplay : MonoBehaviour {
         var PictureName = CommunicationObject.Instance.HomePagePicture();
         int width = 602;
         int height = 392;               
-        foreach (var name  in PictureName)
+        foreach (var nameT  in PictureName)
         {
             Texture2D texture = new Texture2D(width, height);
-            if (name.Contains("生活")|| name.Contains("办公"))
+            if (nameT.Contains("生活")|| nameT.Contains("办公"))
             {
-                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
-                texture.LoadImage(PictureInfo);
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                livingPartSprites.Add(sprite);                
+                GetSpriteFromServer(nameT, texture, livingPartSprites);
             }
-            else if (name.Contains("主厂房"))
-            {             
-                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
-                texture.LoadImage(PictureInfo);
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                mainFacotrySprites.Add(sprite);                
-            }
-            else if (name.Contains("锅炉"))
-            {              
-                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
-                texture.LoadImage(PictureInfo);
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                boilerPartSprites.Add(sprite);               
-            }
-            else if (name.Contains("水处理"))
+            else if (nameT.Contains("主厂房"))
             {
-                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
-                texture.LoadImage(PictureInfo);
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));           
-                waterTreatmentSprites.Add(sprite);              
+                GetSpriteFromServer(nameT, texture, mainFacotrySprites);
             }
-            else if (name.Contains("气能源"))
+            else if (nameT.Contains("锅炉"))
             {
-                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
-                texture.LoadImage(PictureInfo);
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));         
-                gasEnergySprites.Add(sprite);                
+                GetSpriteFromServer(nameT, texture, boilerPartSprites);
             }
-            else if (name.Contains("整体"))
+            else if (nameT.Contains("水处理"))
             {
-                var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(name);
-                texture.LoadImage(PictureInfo);
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));           
-                fullFactorySprites.Add(sprite);              
+                GetSpriteFromServer(nameT, texture, waterTreatmentSprites);
+            }
+            else if (nameT.Contains("气能源"))
+            {
+                GetSpriteFromServer(nameT, texture, gasEnergySprites);
+            }
+            else if (nameT.Contains("整体"))
+            {
+                GetSpriteFromServer(nameT,texture,fullFactorySprites);
             }
         }
         isPhotoInit = true;
         Debug.LogErrorFormat("TrySetUAVPhoto,cost Time{0}s.",(DateTime.Now-recordTime).TotalSeconds);
+    }
+    /// <summary>
+    /// 从服务端获取数据
+    /// </summary>
+    /// <param name="picName"></param>
+    /// <param name="tex"></param>
+    /// <param name="spriteList"></param>
+    private void GetSpriteFromServer(string picName, Texture2D tex, List<Sprite> spriteList)
+    {
+        //var PictureInfo = CommunicationObject.Instance.HomePagePictureInfo(picName);
+        //tex.LoadImage(PictureInfo);
+        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+        spriteList.Add(sprite);
+        PictureDic.Add(sprite, picName);
     }
     /// <summary>
     /// 清除Sprite缓存

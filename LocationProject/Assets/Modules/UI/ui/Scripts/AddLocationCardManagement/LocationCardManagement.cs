@@ -45,12 +45,12 @@ public class LocationCardManagement : MonoBehaviour
     /// 筛选后的数据
     /// </summary>
     [System.NonSerialized]
-    List<Tag> ScreenList;
+    public List<Tag> ScreenList;
     /// <summary>
     /// 总数据
     /// </summary>
     [System.NonSerialized]
-    List<Tag> LocationCardData;
+    public List<Tag> LocationCardData;
     /// <summary>
     /// 展示的10条信息
     /// </summary>
@@ -83,10 +83,10 @@ public class LocationCardManagement : MonoBehaviour
         Instance = this;
         AddPageBut.onClick.AddListener(AddLocationCardPage);
         MinusPageBut.onClick.AddListener(MinLocationCardPage);
-        pegeNumText.onValueChanged.AddListener(InputLocationCardPage);
+        pegeNumText.onEndEdit .AddListener(InputLocationCardPage);
         ScreenBut.onClick.AddListener(LocationRoleSearch_Click);
         CloseBut.onClick.AddListener(CloseCurrentWindow);
-        LocationRole.onValueChanged.AddListener(InputLocationRoleSearch);
+        LocationRole.onEndEdit .AddListener(InputLocationRoleSearch);
         CreatBut.onClick.AddListener(ShowAddPosCardInfo);
         ToggleAuthoritySet();
     }
@@ -102,37 +102,43 @@ public class LocationCardManagement : MonoBehaviour
     public void ShowAddPosCardInfo()
     {
         AddPosCard.Instance.ShowAddPosCardWindow(LocationCardData);
-        CloseLocationCardWindow();
+        //    CloseLocationCardWindow();
+        ShowAndCloseLocationCardManagementWindow(false);
     }
     private DateTime recordTag;
     public void GetLocationCardManagementData()
-    {if (!IsGetPersonData) return;
+    {
+        if (!IsGetPersonData) return;
         ThreadManager.Run(() =>
         {
             IsGetPersonData = false;
-             LocationCardList = new List<Tag>();
+            LocationCardList = new List<Tag>();
             ShowList = new List<Tag>();
             ScreenList = new List<Tag>();
             LocationCardData = new List<Tag>();
             recordTag = DateTime.Now;
             CardList = CommunicationObject.Instance.GetTags();
-            Debug.LogError("CommunicationObject.Instance.GetTags,cost :" + (DateTime.Now - recordTag).TotalSeconds + " s");
-            Debug.LogError("CommunicationObject.Instance.GetTags,cost :" + CardList.Count);
             LocationCardList = CardList.ToList();
+            LocationCardList.Sort((a, b) =>
+            {
+                return b.PowerState.CompareTo(a.PowerState);
+            });
             LocationCardData.AddRange(LocationCardList);
             ScreenList.AddRange(LocationCardList);
             GetPerInfo();
             IsGetPersonData = true;
         }, () =>
          {
+             ShowCardRoleInfo();
 
-             cardRoleDropdown.GetCardRoleData();
-             pegeNumText.text = "1";
-             InputLocationCardPage("1");
+
          }, "");
-
-
-
+    }
+    public void ShowCardRoleInfo()
+    {
+        cardRoleDropdown.GetCardRoleData();
+        pegeNumText.text = "1";
+        InputLocationCardPage("1");
     }
     public void GetPerInfo()
     {
@@ -148,7 +154,7 @@ public class LocationCardManagement : MonoBehaviour
         {
             GameObject Obj = InstantiateLine();
             LocationCardItem item = Obj.GetComponent<LocationCardItem>();
-            item.ShowCardRole(info[i], CardRoleList, peraonnelData, info);
+            item.ShowCardRole(info[i], CardRoleList, peraonnelData, info, grid);
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -235,13 +241,21 @@ public class LocationCardManagement : MonoBehaviour
         if (ispage == true) return;
         ispage = true;
         int currentPage;
-        if (string.IsNullOrEmpty(pegeNumText.text))
+        if (string.IsNullOrEmpty(vale))
         {
             currentPage = 1;
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (vale.Contains("-") || vale.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(vale);
+            }
         }
 
         int MaxPage = (int)Math.Ceiling((double)ScreenList.Count / (double)pageSize);
@@ -307,27 +321,28 @@ public class LocationCardManagement : MonoBehaviour
             }
             else
             {
+                string PerName = "";
                 Personnel per = peraonnelData.Find((item) => item.Id == LocationCardData[i].PersonId);
+                if (per !=null)
+                {
+                    PerName = per.Name;
+                }
                 if (LocationCardData[i].CardRoleId == 0)
                 {
                     if (KeyName == "全部人员")
                     {
-                        if (per !=null)
-                        {
-                            if (LocationCardData[i].Code .ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key)||per .Name.ToLower().Contains(key))
+                        
+                            if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                             {
                                 ScreenList.Add(LocationCardData[i]);
-
-                            }
-                        }
-                        
+                            }                       
                     }
                 }
                 else
                 {
-                    if (KeyName == "全部人员"&&per != null)
+                    if (KeyName == "全部人员")
                     {
-                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || per.Name.ToLower().Contains(key))
+                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                         {
                             ScreenList.Add(LocationCardData[i]);
 
@@ -339,9 +354,9 @@ public class LocationCardManagement : MonoBehaviour
                         {
                             if (KeyName == role.Name)
                             {
-                                if (LocationCardData[i].CardRoleId == role.Id && per != null)
+                                if (LocationCardData[i].CardRoleId == role.Id )
                                 {
-                                    if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || per.Name.ToLower().Contains(key))
+                                    if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                                     {
                                         ScreenList.Add(LocationCardData[i]);
 
@@ -373,9 +388,8 @@ public class LocationCardManagement : MonoBehaviour
     {
         pegeNumText.text = "1";
         ScreenList.Clear();
+        String key = LocationRole.text .ToLower();
         string KeyName = cardRoleDropdown.CardRoleDropdownItem.captionText.text;
-        // SaveSelection();
-        string key = LocationRole.text.ToString().ToLower();
         for (int i = 0; i < LocationCardData.Count; i++)
         {
             if (key == "")
@@ -395,6 +409,7 @@ public class LocationCardManagement : MonoBehaviour
                     }
                     else
                     {
+
                         foreach (var role in cardRoleDropdown.CardRoleList)
                         {
                             if (KeyName == role.Name)
@@ -411,14 +426,20 @@ public class LocationCardManagement : MonoBehaviour
             }
             else
             {
+                string PerName = "";
+                Personnel per = peraonnelData.Find((item) => item.Id == LocationCardData[i].PersonId);
+                if (per != null)
+                {
+                    PerName = per.Name;
+                }
                 if (LocationCardData[i].CardRoleId == 0)
                 {
                     if (KeyName == "全部人员")
                     {
-                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key))
+
+                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                         {
                             ScreenList.Add(LocationCardData[i]);
-
                         }
                     }
                 }
@@ -426,7 +447,7 @@ public class LocationCardManagement : MonoBehaviour
                 {
                     if (KeyName == "全部人员")
                     {
-                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key))
+                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                         {
                             ScreenList.Add(LocationCardData[i]);
 
@@ -440,7 +461,7 @@ public class LocationCardManagement : MonoBehaviour
                             {
                                 if (LocationCardData[i].CardRoleId == role.Id)
                                 {
-                                    if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key))
+                                    if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                                     {
                                         ScreenList.Add(LocationCardData[i]);
 
@@ -472,11 +493,11 @@ public class LocationCardManagement : MonoBehaviour
     public void GetLocationCardRoleType(int level)
     {
         pegeNumText.text = "1";
-        if (ScreenList !=null && ScreenList.Count != 0)
+        if (ScreenList != null && ScreenList.Count != 0)
         {
             ScreenList.Clear();
         }
-       
+
         string key = LocationRole.text.ToString().ToLower();
         string KeyName = cardRoleDropdown.CardRoleDropdownItem.captionText.text;
         for (int i = 0; i < LocationCardData.Count; i++)
@@ -488,14 +509,15 @@ public class LocationCardManagement : MonoBehaviour
                     if (KeyName == "全部人员")
                     {
                         ScreenList.Add(LocationCardData[i]);
-                    }                  
+                    }
                 }
                 else
                 {
                     if (KeyName == "全部人员")
                     {
                         ScreenList.Add(LocationCardData[i]);
-                    }else
+                    }
+                    else
                     {
                         foreach (var role in cardRoleDropdown.CardRoleList)
                         {
@@ -508,27 +530,33 @@ public class LocationCardManagement : MonoBehaviour
                             }
                         }
                     }
-                    
+
                 }
             }
             else
             {
+                string PerName = "";
+                Personnel per = peraonnelData.Find((item) => item.Id == LocationCardData[i].PersonId);
+                if (per !=null)
+                {
+                    PerName = per.Name;
+                }
                 if (LocationCardData[i].CardRoleId == 0)
                 {
                     if (KeyName == "全部人员")
                     {
-                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) )
-                        {
-                            ScreenList.Add(LocationCardData[i]);
-
-                        }
+                        
+                            if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
+                            {
+                                ScreenList.Add(LocationCardData[i]);
+                            }                       
                     }
                 }
                 else
                 {
                     if (KeyName == "全部人员")
                     {
-                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key))
+                        if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                         {
                             ScreenList.Add(LocationCardData[i]);
 
@@ -540,9 +568,9 @@ public class LocationCardManagement : MonoBehaviour
                         {
                             if (KeyName == role.Name)
                             {
-                                if (LocationCardData[i].CardRoleId == role.Id)
+                                if (LocationCardData[i].CardRoleId == role.Id )
                                 {
-                                    if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key))
+                                    if (LocationCardData[i].Code.ToString().ToLower().Contains(key) || LocationCardData[i].Name.ToLower().Contains(key) || PerName.ToLower().Contains(key))
                                     {
                                         ScreenList.Add(LocationCardData[i]);
 
@@ -551,7 +579,7 @@ public class LocationCardManagement : MonoBehaviour
                             }
                         }
                     }
-                }           
+                }
             }
         }
 
@@ -604,6 +632,11 @@ public class LocationCardManagement : MonoBehaviour
         LocationCardWindow.SetActive(false);
         LocationRole.text = "";
         IsGetPersonData = true;
+    }
+
+    public void ShowAndCloseLocationCardManagementWindow(bool b)
+    {
+        LocationCardWindow.SetActive(b);
     }
     /// <summary>
     /// 每一行的预设

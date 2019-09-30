@@ -39,11 +39,12 @@ public class EditDepartmentTreeViewManger : MonoBehaviour
         }
         else
         {
+            DepartmentWindow.SetActive(false);
             if (selectNode == null) return;
             Department SelectdepNode = selectNode.Item.Tag as Department;          
             EditPersonnelInformation.Instance.CurrentId = (int)SelectdepNode.Id ;
             EditPersonnelInformation.Instance.departmentText.text = SelectdepNode.Name;
-            DepartmentWindow.SetActive(false );
+            
   
         }
     }

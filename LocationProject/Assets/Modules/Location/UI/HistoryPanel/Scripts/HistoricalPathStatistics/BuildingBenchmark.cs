@@ -143,7 +143,15 @@ public class BuildingBenchmark : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumTex.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumTex.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
         if (AllPositionList == null) return;
         int maxPage = (int)Math.Ceiling((double)(AllPositionList.Count) / (double)pageSize);

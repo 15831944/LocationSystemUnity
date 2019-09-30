@@ -6,7 +6,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AddJobList : MonoBehaviour {
+public class AddJobList : MonoBehaviour
+{
     public static AddJobList Instance;
     /// <summary>
     /// 行的模板
@@ -39,11 +40,11 @@ public class AddJobList : MonoBehaviour {
     /// <summary>
     /// 筛选后的数据
     /// </summary>
-    List<Post> ScreenList;
+    public List<Post> ScreenList;
     /// <summary>
     /// 部门总数据
     /// </summary>
-    List<Post> JobData;
+    public List<Post> JobData;
     /// <summary>
     /// 展示的10条信息
     /// </summary>
@@ -57,7 +58,7 @@ public class AddJobList : MonoBehaviour {
     /// 上一页
     /// </summary>
     public Button MinusPageBut;
-    
+
     public Button Addpst;
     public InputField JobSelected;
     public Button selectedBut;
@@ -66,33 +67,36 @@ public class AddJobList : MonoBehaviour {
     public Sprite DoubleImage;
     public Sprite OddImage;
     private List<Post> PostList;
+    List<Personnel> personnelList;
     void Start()
     {
         Instance = this;
         ShowList = new List<Post>();
         AddPageBut.onClick.AddListener(AddJobPage);
         MinusPageBut.onClick.AddListener(MinusJobPage);
-        pegeNumText.onValueChanged.AddListener(InputJobPage);
+        pegeNumText.onEndEdit.AddListener(InputJobPage);
         selectedBut.onClick.AddListener(SetJob_Click);
-        CloseBut.onClick.AddListener(()=>
+        CloseBut.onClick.AddListener(() =>
         {
             CloseJobListWindow();
             AddPersonnel.Instance.ShowAddPerWindow();
 
         });
-       
+
         Addpst.onClick.AddListener(() =>
        {
-           AddJobs.Instance.isAdd = false;
+           AddJobs.Instance.isAdd = true ;
            CloseJobListWindow();
-           AddJobs.Instance . ShowJobEditWindow();
+           AddJobs.Instance.ShowJobEditWindow();
            AddJobs.Instance.GetPostList(JobData);
        });
-        JobSelected.onValueChanged.AddListener(SetJob_Input);
+        JobSelected.onEndEdit.AddListener(SetJob_Input);
     }
 
-    public void GetJobListData( )
+    public void GetJobListData(List<Personnel> Per)
     {
+        personnelList = new List<Personnel>();
+        personnelList.AddRange(Per);
         PostList = new List<Post>();
         PostList = CommunicationObject.Instance.GetJobsList();
         if (PostList.Count == 0)
@@ -105,11 +109,11 @@ public class AddJobList : MonoBehaviour {
         SaveSelection();
         ScreenList = new List<Post>();
         JobData = new List<Post>();
-        if (ScreenList .Count != 0)
+        if (ScreenList.Count != 0)
         {
             ScreenList.Clear();
         }
-        if (JobData .Count != 0)
+        if (JobData.Count != 0)
         {
             JobData.Clear();
         }
@@ -117,7 +121,12 @@ public class AddJobList : MonoBehaviour {
         JobData.AddRange(PostList);
         TotaiLine(PostList);
         pegeNumText.text = "1";
-        GetPageData(JobData);
+        ShowAddPostInfo();
+    }
+    public void ShowAddPostInfo()
+    {
+        SetJob_Input(JobSelected.text);
+        // GetPageData(JobData);
     }
     void Update()
     {
@@ -129,7 +138,7 @@ public class AddJobList : MonoBehaviour {
         {
             GameObject Obj = InstantiateLine();
             AddJobItem item = Obj.GetComponent<AddJobItem>();
-            item.ShowJobItemInfo(info[i]);
+            item.ShowJobItemInfo(info[i], personnelList, JobSelected.text, pegeNumText.text);
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -177,12 +186,13 @@ public class AddJobList : MonoBehaviour {
             if (PageNum == 0)
             {
                 pegeNumText.text = "1";
-                GetPageData(ScreenList);
+                
             }
             else
             {
                 pegeNumText.text = PageNum.ToString();
             }
+            GetPageData(ScreenList);
         }
     }
     public void InputJobPage(string value)
@@ -194,7 +204,15 @@ public class AddJobList : MonoBehaviour {
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
         if (ScreenList == null) return;
         int maxPage = (int)Math.Ceiling((double)(ScreenList.Count) / (double)pageSize);
@@ -213,7 +231,7 @@ public class AddJobList : MonoBehaviour {
         GetPageData(ScreenList);
     }
     string Key = "";
-    public void SetJob_Input (string key)
+    public void SetJob_Input(string key)
     {
         Key = key.ToLower();
         ScreenJobInfo();
@@ -229,7 +247,7 @@ public class AddJobList : MonoBehaviour {
         pegeNumText.text = "1";
         ScreenList.Clear();
         SaveSelection();
-        
+
         for (int i = 0; i < JobData.Count; i++)
         {
             string name = JobData[i].Name;
@@ -250,14 +268,19 @@ public class AddJobList : MonoBehaviour {
     }
     public void ShowJobListWindow()
     {
+        JobSelected.text = "";
         JobListUI.SetActive(true);
         Key = "";
         JobSelected.text = "";
     }
-    
+
     public void CloseJobListWindow()
     {
         JobListUI.SetActive(false);
+    }
+    public void ShowAndClosePostInfo(bool b)
+    {
+        JobListUI.SetActive(b);
     }
     /// <summary>
     /// 每一行的预设
@@ -297,5 +320,5 @@ public class AddJobList : MonoBehaviour {
             DestroyImmediate(grid.transform.GetChild(j).gameObject);
         }
     }
-   
+
 }

@@ -137,7 +137,7 @@ public class TimeBenchmarkManage : MonoBehaviour
             var posListNew = ParseLineChartInfo(posList);//按时间排序，删除错误数据
             List<float> data = GetDayLineChartData(posListNew);//得到按天折线图的数据
             SetHourLineChartDate(posListNew, TimeData, data.Count);//设置小时折线图
-            promptText.text = Convert.ToDateTime(posListNew[0].Name).ToString("yyyy年MM月dd日") + "起定位数据量折线图"; ;
+            promptText.text =  "定位数据量折线图"+"("+ Convert.ToDateTime(posListNew[0].Name).ToString("yyyy年MM月dd日") + "起" + ")"; 
             posListNew.Sort((x, y) =>
             {
                 return x.Count.CompareTo(y.Count);
@@ -199,7 +199,8 @@ public class TimeBenchmarkManage : MonoBehaviour
         if (data.Count == 1)
         {
             TimeInstantiateLine();
-            data.Add(1);
+            data.Insert(0, 1);
+         
         }
         Debug.LogError("--------------------GetDayLineChartData:" + (DateTime.Now - start).TotalMilliseconds + "ms");
         return data;
@@ -215,7 +216,7 @@ public class TimeBenchmarkManage : MonoBehaviour
         {
             //LastTime = long.Parse(DataList[DataList.Count - 1].RecordTime);
             DateTime dt = Convert.ToDateTime(DataList[DataList.Count - 1].Name);
-            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, Num, dt.AddDays (1));
+            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, Num, dt);
         }
     }
 
@@ -295,7 +296,15 @@ public class TimeBenchmarkManage : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumTex.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumTex.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
 
         int maxPage = (int)Math.Ceiling((double)(AllPositionList.Count) / (double)pageSize);

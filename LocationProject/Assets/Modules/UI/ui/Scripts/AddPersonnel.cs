@@ -42,14 +42,16 @@ public class AddPersonnel : MonoBehaviour
             {
                 CloseAddPerWindow();
                 DataPaging.Instance.ShowpersonnelSearchWindow();
-                DataPaging.Instance.StartPerSearchUI();
+                DataPaging.Instance.ShowPersonnelInfo();
+               // DataPaging.Instance.StartPerSearchUI();
             });
         if(CloseBut)
             CloseBut.onClick.AddListener(() =>
             {
                 CloseAddPerWindow();
                 DataPaging.Instance.ShowpersonnelSearchWindow();
-                DataPaging.Instance.StartPerSearchUI();
+                DataPaging.Instance.ShowPersonnelInfo();
+                //  DataPaging.Instance.StartPerSearchUI();
             });
         if(DepartBut)
             DepartBut.onClick.AddListener(() =>
@@ -96,7 +98,7 @@ public class AddPersonnel : MonoBehaviour
 	public void GetAddJobsData()
     {
         JobManagements.GetJobsManagementData();
-        AddJobList.Instance.GetJobListData();
+        AddJobList.Instance.GetJobListData(PerList);
         AddJobList.Instance.ShowJobListWindow();
     }
 
@@ -114,11 +116,11 @@ public class AddPersonnel : MonoBehaviour
         CreatPersonnel.WorkNumber = WorkNum.text;
         if (string.IsNullOrEmpty(Phone.text))
         {
-            CreatPersonnel.PhoneNumber = "";
+            CreatPersonnel.Mobile = "";
         }
         else
         {
-            CreatPersonnel.PhoneNumber = Phone.text;
+            CreatPersonnel.Mobile = Phone.text;
         }
 
         if (CurrentId == 0)
@@ -159,9 +161,15 @@ public class AddPersonnel : MonoBehaviour
                     UGUIMessageBox.Show("人员信息已添加！", "确定", "",
                         () =>
                         {
+                            DataPaging.Instance.peraonnelData.Insert(0, person);
+                            DataPaging.Instance.selectedItem.Insert(0, person);
                             CloseAddPerWindow();
+                            DataPaging.Instance.PerSelected.text = "";
+                            DataPaging.Instance.Key = "";
+                            DataPaging.Instance.personnelDropdown.PerDropdown.value = 0;
+                            DataPaging.Instance.personnelDropdown.PerDropdown.captionText.text = "全部";
                             DataPaging.Instance.ShowpersonnelSearchWindow();
-                            DataPaging.Instance.StartPerSearchUI();
+                            DataPaging.Instance.ShowPersonnelInfo();
                             PersonnelTreeManage.Instance.departmentDivideTree.GetTopoTree();
                         }, null, null);
 
@@ -176,6 +184,7 @@ public class AddPersonnel : MonoBehaviour
                 UGUIMessageBox.Show("该工号已存在！", "确定", "", null, null, null);
             }
         }
+       
     }
 
     public void SavePersonnelInfo(Personnel p, Action action = null)
@@ -242,7 +251,7 @@ public class AddPersonnel : MonoBehaviour
     public void RefreshAddJobs()
     {
         JobManagements.GetJobsManagementData();
-        AddJobList.Instance.GetJobListData();
+        AddJobList.Instance.GetJobListData(PerList);
         AddJobList.Instance.ShowJobListWindow();
 
     }

@@ -20,7 +20,9 @@ namespace Assets.M_Plugins.Helpers.Utils
             return IsTypeCodeContains(typeCode,CameraType);
         }
 
-        private static string DoorAccess = "其他_单联单控开关_3D|";
+        public static int DoorAccessTypecode = 20190926;
+
+        private static string DoorAccess = "20190926|其他_单联单控开关_3D";
         /// <summary>
         /// 根据TypeCode判断是否是门禁
         /// </summary>

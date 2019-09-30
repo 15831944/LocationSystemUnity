@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PersonnelAlarmStatistics : MonoBehaviour {
+public class PersonnelAlarmStatistics : MonoBehaviour
+{
     public static PersonnelAlarmStatistics Instance;
     /// <summary>
     /// 行的模板
@@ -27,9 +28,16 @@ public class PersonnelAlarmStatistics : MonoBehaviour {
 
         for (int i = 0; i < devAlarmList.Count; i++)
         {
-            GameObject Obj = InstantiateLine();
-            PersonnelAlarmStatisticsDetailInfo item = Obj.GetComponent<PersonnelAlarmStatisticsDetailInfo>();
-            item.GetPersonnelAlarmStatisticsDetailData(devAlarmList[i], devAlarmList[0].Count);
+            if (i < 10)
+            {
+                GameObject Obj = InstantiateLine();
+                PersonnelAlarmStatisticsDetailInfo item = Obj.GetComponent<PersonnelAlarmStatisticsDetailInfo>();
+                item.GetPersonnelAlarmStatisticsDetailData(devAlarmList[i], devAlarmList[0].Count);
+            }
+            else
+            {
+                return;
+            }
         }
     }
 
@@ -58,7 +66,8 @@ public class PersonnelAlarmStatistics : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update () {
-		
-	}
+    void Update()
+    {
+
+    }
 }

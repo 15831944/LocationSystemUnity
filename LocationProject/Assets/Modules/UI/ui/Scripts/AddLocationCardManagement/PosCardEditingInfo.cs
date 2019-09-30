@@ -23,6 +23,8 @@ public class PosCardEditingInfo : MonoBehaviour
     public Sprite Row_Selected;
     [System.NonSerialized]
     List<Tag> PosCardRole;
+    GridLayoutGroup Grid;
+    GameObject Obj;
     void Start()
     {
         Instance = this;
@@ -39,8 +41,8 @@ public class PosCardEditingInfo : MonoBehaviour
         CancelBut.onClick.AddListener(() =>
         {
             ClosePosCardEditWindow();
-            LocationCardManagement.Instance.ShowLocationCardManagementWindow();
-            LocationCardManagement.Instance.GetLocationCardManagementData();
+            LocationCardManagement.Instance.ShowAndCloseLocationCardManagementWindow(true );
+        //    LocationCardManagement.Instance.GetLocationCardManagementData();
 
         });
         RoleEdit.onClick.AddListener(ShowRoleEditInfo);
@@ -48,10 +50,17 @@ public class PosCardEditingInfo : MonoBehaviour
     public void CloseCurrentAndShowLastUI()
     {
         ClosePosCardEditWindow();
-        LocationCardManagement.Instance.ShowLocationCardManagementWindow();
-        LocationCardManagement.Instance.GetLocationCardManagementData();
+        LocationCardManagement.Instance.ShowAndCloseLocationCardManagementWindow(true );
+     //   LocationCardManagement.Instance.GetLocationCardManagementData();
     }
-
+    public void EditPosCardInfo()
+    {
+        int k = Obj.transform.GetSiblingIndex();
+        Transform line = Grid.transform.GetChild(k);
+        line.GetChild(0).GetComponent<Text>().text = Num.text;
+        line.GetChild(1).GetComponent<Text>().text = Name .text;
+        line.GetChild(3).GetComponent<Text>().text = posCardEditDropdpwn.CardRoleDropdownItem.captionText.text;
+    }
 
     public void OpenEditCardAndDataNull()
     {
@@ -66,8 +75,11 @@ public class PosCardEditingInfo : MonoBehaviour
         EditTag.Describe = Instruction.text;
     }
     int RoleId;
-    public void ShowEditCardInfo(Tag info, List<Tag> TagInfo)
+    public void ShowEditCardInfo(Tag info, List<Tag> TagInfo, GridLayoutGroup grid,GameObject obj)
     {
+        posCardEditDropdpwn.GetCardRoleData();
+        Grid = grid;
+        Obj = obj;
         PosCardRole = new List<Tag>();
         PosCardRole.AddRange(TagInfo);
         EditTag = new Tag();
@@ -154,7 +166,7 @@ public class PosCardEditingInfo : MonoBehaviour
 
     public void ShowPosCardEditWindow()
     {
-        posCardEditDropdpwn.GetCardRoleData();
+        
         PosCardEditWindow.SetActive(true);
     }
     public void ClosePosCardEditWindow()
@@ -179,6 +191,7 @@ public class PosCardEditingInfo : MonoBehaviour
             UGUIMessageBox.Show("定位卡信息已保存！", "确定", null,
      () =>
      {
+         EditPosCardInfo();
          //LocationCardManagement.Instance.ShowLocationCardManagementWindow();
          //LocationCardManagement.Instance.GetLocationCardManagementData();
          //ClosePosCardEditWindow();

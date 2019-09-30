@@ -46,8 +46,19 @@ public class DeviceAlarmFollowUI : MonoBehaviour {
     /// <param name="alarmInfo"></param>
     public void InitInfo(DeviceAlarm alarmInfo)
     {
-        alarmInfos.Add(alarmInfo);
+        AddAlarmInfo(alarmInfo);
         SetText();
+    }
+    /// <summary>
+    /// 添加告警信息
+    /// </summary>
+    /// <param name="alarmInfo"></param>
+    private void AddAlarmInfo(DeviceAlarm alarmInfo)
+    {
+        //去除内容重复的告警
+        DeviceAlarm alarm = alarmInfos.Find(i=>i!=null&&alarmInfo!=null&&i.Message==alarmInfo.Message);
+        if (alarm != null) return;
+        else alarmInfos.Add(alarmInfo);
     }
 
     protected virtual string GetText()

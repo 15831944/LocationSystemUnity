@@ -7,7 +7,7 @@ public class TowerSmokeChange : MonoBehaviour {
     public List<GameObject> SmokeList;
 	// Use this for initialization
 	void Start () {
-        SceneEvents.DepNodeChangeStart += OnDepChangeStart;
+        //SceneEvents.DepNodeChangeStart += OnDepChangeStart;//PowerGroupStateManage会根据机组实际情况，调整烟雾状态
 
     }
     private string WaterBuildingName = "供水与水处理建筑物";

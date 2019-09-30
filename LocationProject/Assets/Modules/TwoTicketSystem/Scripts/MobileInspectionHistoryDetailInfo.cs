@@ -92,11 +92,13 @@ public class MobileInspectionHistoryDetailInfo : MonoBehaviour {
     int i = 0;
     public void CreatInspectionHistoyDetailInfo(List<PatrolPointHistory> newPatrolPointHistoryList)
     {
+        i = 0;
         foreach (PatrolPointHistory w in newPatrolPointHistoryList)
         {
             i = i + 1;
+            int currentIndex = startPageNum * pageLine + i;
             MobileInspectionHistoryDetailInfoItem item = CreateMeasuresItem();
-            item.ShowInspectionTrackHistory(w);
+            item.ShowInspectionTrackHistory(w,currentIndex);
             if (i % 2 == 0)
             {
                 item.transform.gameObject.GetComponent<Image>().sprite = DoubleLine;

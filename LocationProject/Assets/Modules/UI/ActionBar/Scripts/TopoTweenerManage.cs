@@ -104,7 +104,7 @@ public class TopoTweenerManage : MonoBehaviour {
         ViewModeTween = ViewMode.GetComponent<Text>().DOColor(new Color(255 / 255f, 255 / 255f, 255 / 255f, 0/ 255f), 0.5f).SetEase(Ease.OutBack);
         FeatureTween = Feature.GetComponent<Text>().DOColor(new Color(255 / 255f, 255 / 255f, 255 / 255f, 0 / 255f), 0.5f).SetEase(Ease.OutBack);
 
-        parkInfoAppearTween = parkObj.transform.GetComponent<RectTransform>().DOAnchorPos3D(new Vector3(260f, 294f), 0.48f).SetEase(Ease.OutBack);
+        parkInfoAppearTween = parkObj.transform.GetComponent<RectTransform>().DOAnchorPos3D(new Vector3(-109f, 324f), 0.48f).SetEase(Ease.OutBack);
         parkInfoMoveTween = DOTween.To(() => parkInfoGroup.alpha, x => parkInfoGroup.alpha = x, 0, 0.5f).SetEase(Ease.OutBack);
 
         topoTreeMoveTween = topoTree.transform.GetComponent<RectTransform>().DOAnchorPos3D(new Vector3(-350f, 100f), 0.48f).SetEase(Ease.OutBack);

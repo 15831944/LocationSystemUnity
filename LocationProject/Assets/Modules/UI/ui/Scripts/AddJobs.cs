@@ -78,12 +78,22 @@ public class AddJobs : MonoBehaviour
                     CloseJobEditWindow();
                     if (isAdd)
                 {
-                    AddPersonnel.Instance.GetAddJobsData();
-                }
+                        //  AddPersonnel.Instance.GetAddJobsData();
+                        AddJobList.Instance.ShowAndClosePostInfo(true);
+                        AddJobList.Instance.JobData.Insert(0, post);
+                        AddJobList.Instance.ScreenList.Insert(0, post);
+                        AddJobList.Instance.JobSelected.text = "";
+                        AddJobList.Instance.ShowAddPostInfo();
+                    }
                 else
                 {
-                    EditPersonnelInformation.Instance.ShowJobInfo();
-                }
+                        //EditPersonnelInformation.Instance.ShowJobInfo();
+                        JobList.Instance.ShowAndCloseEditPostWindow(true);
+                        JobList.Instance.JobData.Insert(0, post);
+                        JobList.Instance.ScreenList.Insert(0, post);
+                        JobList.Instance.JobSelected.text = "";
+                        JobList.Instance.ShowPostInfo();
+                    }
               
                 }, null, null);
         }

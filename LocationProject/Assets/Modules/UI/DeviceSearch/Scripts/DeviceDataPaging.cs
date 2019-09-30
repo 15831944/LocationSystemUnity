@@ -6,7 +6,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DeviceDataPaging : MonoBehaviour {
+public class DeviceDataPaging : MonoBehaviour
+{
     public static DeviceDataPaging Instance;
     /// <summary>
     /// 每页显示的条数
@@ -15,7 +16,7 @@ public class DeviceDataPaging : MonoBehaviour {
     /// <summary>
     /// 数据
     /// </summary>
-   private  int StartPageNum = 0;
+    private int StartPageNum = 0;
     /// <summary>
     /// 页数
     /// </summary>
@@ -63,7 +64,7 @@ public class DeviceDataPaging : MonoBehaviour {
     private string devRoute;
     private string devIP;
     private string devID;
-    private int  depID;
+    private int depID;
     private string ManufactorName;
     /// <summary>
     /// 行的模板
@@ -85,20 +86,21 @@ public class DeviceDataPaging : MonoBehaviour {
     public Sprite OddImage;
     public DeviceTypeDropdown deviceTypeDropdown;
     public DeviceNameDropdown deviceNameDropdown;
-    void Start () {
+    void Start()
+    {
         Instance = this;
         //devSearch = new List<DevInfo>(CommunicationObject.Instance.GetAllDevInfos());
-     //   SeachDevName = devSearch;
-     //   TotaiLine(devSearch);
-      //  GetPageDevData(devSearch);
+        //   SeachDevName = devSearch;
+        //   TotaiLine(devSearch);
+        //  GetPageDevData(devSearch);
         AddPageBut.onClick.AddListener(AddDevPage);
-        MinusPageBut.onClick.AddListener( MinusDevPage );
-        pageNumText.onValueChanged.AddListener(InputDevPage);
+        MinusPageBut.onClick.AddListener(MinusDevPage);
+        pageNumText.onEndEdit .AddListener(InputDevPage);
         DevBut.onClick.AddListener(InputDevName);
         closeButton.onClick.AddListener(ClosedevSearchWindow);
         deviceNameDropdown.devNameDropdown.onValueChanged.AddListener(ScreenDeviceType);
         deviceTypeDropdown.DevTypeDropdown.onValueChanged.AddListener(ScreenDeviceType);
-        InputDev.onValueChanged.AddListener(InputDevName_Click);
+        InputDev.onEndEdit .AddListener(InputDevName_Click);
         //pageNumText.text = "1";
         //StartPageNum = 0;
     }
@@ -121,12 +123,12 @@ public class DeviceDataPaging : MonoBehaviour {
         Loom.StartSingleThread(() =>
         {
             devSearch = new List<DevInfo>(CommunicationObject.Instance.GetAllDevInfos());
-          
+
             Loom.DispatchToMainThread(() =>
             {
                 SeachDevName = new List<DevInfo>();
                 SeachDevName.AddRange(devSearch);
-               //  SeachDevName = devSearch;
+                //  SeachDevName = devSearch;
                 pageNumText.text = "1";
                 PageNum = 1;
                 StartPageNum = 0;
@@ -145,10 +147,11 @@ public class DeviceDataPaging : MonoBehaviour {
     /// <param name="DevData"></param>
     public void TotaiLine(List<DevInfo> devNum)
     {
-        if (devNum==null || devNum.Count == 0)
+        if (devNum == null || devNum.Count == 0)
         {
             pageTotalText.text = "1";
-        }else
+        }
+        else
         {
             if (devNum.Count % pageSize == 0)
             {
@@ -160,20 +163,20 @@ public class DeviceDataPaging : MonoBehaviour {
             }
         }
 
-   
+
     }
     /// <summary>
     /// 获取设备数据
     /// </summary>
 	public void GetDevData(List<DevInfo> dev)
     {
-        for (int i=0;i < NewPagingData.Count;i ++)
+        for (int i = 0; i < NewPagingData.Count; i++)
         {
             devType = NewPagingData[i].TypeName.ToString();
             devName = NewPagingData[i].Name.ToString();
             devRoute = NewPagingData[i].Path.ToString();
             devIP = NewPagingData[i].IP.ToString();
-            if (NewPagingData[i].Manufactor==null)
+            if (NewPagingData[i].Manufactor == null)
             {
                 ManufactorName = "";
             }
@@ -181,17 +184,17 @@ public class DeviceDataPaging : MonoBehaviour {
             {
                 ManufactorName = NewPagingData[i].Manufactor;
             }
-            
+
             devID = NewPagingData[i].DevID.ToString();
             depID = (int)NewPagingData[i].ParentId;
             SetInstantiateLine(NewPagingData.Count);
-            SetDevData(i, devType, devName, devRoute, ManufactorName, devIP, devID,depID );
+            SetDevData(i, devType, devName, devRoute, ManufactorName, devIP, devID, depID);
         }
     }
     /// <summary>
     /// 获取每页的数据
     /// </summary>
-    public void GetPageDevData(List<DevInfo>  DevData)
+    public void GetPageDevData(List<DevInfo> DevData)
     {
         NewPagingData.Clear();
         if (StartPageNum * pageSize < DevData.Count)
@@ -201,16 +204,16 @@ public class DeviceDataPaging : MonoBehaviour {
             {
                 NewPagingData.Add(dev);
             }
-          
+
             GetDevData(NewPagingData);
         }
-        
+
     }
-    
-        /// <summary>
-        /// 生成多少行预设
-        /// </summary>
-        /// <param name="num"></param>
+
+    /// <summary>
+    /// 生成多少行预设
+    /// </summary>
+    /// <param name="num"></param>
     public void SetInstantiateLine(int num)
     {
         if (grid.transform.childCount < num)
@@ -241,8 +244,8 @@ public class DeviceDataPaging : MonoBehaviour {
     /// 每条信息赋值
     /// </summary>
     /// <param name="i"></param>
-   
-    public void SetDevData(int i, string devType, string devName, string devRoute, string  ManufactorName, string devIP, string devID,int depID)
+
+    public void SetDevData(int i, string devType, string devName, string devRoute, string ManufactorName, string devIP, string devID, int depID)
     {
         Transform line = grid.transform.GetChild(i);
         line.GetChild(0).GetComponent<Text>().text = devType;
@@ -254,7 +257,7 @@ public class DeviceDataPaging : MonoBehaviour {
         but.onClick.RemoveAllListeners();
         but.onClick.AddListener(() =>
         {
-            DevBut_Click(devID, depID,devName);
+            DevBut_Click(devID, depID, devName);
 
         });
         if (i % 2 == 0)
@@ -269,12 +272,13 @@ public class DeviceDataPaging : MonoBehaviour {
     public void AddDevPage()
     {
         StartPageNum += 1;
-        if (StartPageNum <= SeachDevName.Count /pageSize)
+        if (StartPageNum <= SeachDevName.Count / pageSize)
         {
             PageNum += 1;
             pageNumText.text = PageNum.ToString();
             GetPageDevData(SeachDevName);
-        }else
+        }
+        else
         {
             StartPageNum -= 1;
         }
@@ -292,7 +296,7 @@ public class DeviceDataPaging : MonoBehaviour {
             {
                 pageNumText.text = "1";
             }
-           else
+            else
             {
                 pageNumText.text = PageNum.ToString();
             }
@@ -306,20 +310,30 @@ public class DeviceDataPaging : MonoBehaviour {
     public void InputDevPage(string value)
     {
         int currentPage;
-        if (string.IsNullOrEmpty( pageNumText.text))
+        if (string.IsNullOrEmpty(pageNumText.text))
         {
             currentPage = 1;
-        }else
+        }
+        else
         {
-            currentPage = int.Parse(pageNumText.text);
-        }  
-        if (SeachDevName .Count == 0)
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pageNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
+        }
+        if (SeachDevName.Count == 0)
         {
             pageTotalText.text = "1";
             StartPageNum = currentPage - 1;
             PageNum = currentPage;
             return;
-        } else
+        }
+        else
         {
             int maxPage = (int)Math.Ceiling((double)SeachDevName.Count / (double)pageSize);
             if (currentPage > maxPage)
@@ -336,30 +350,35 @@ public class DeviceDataPaging : MonoBehaviour {
             PageNum = currentPage;
             GetPageDevData(SeachDevName);
         }
-       
+
     }
     /// <summary>
     /// 输入搜索名字
     /// </summary>
     public void InputDevName()
-    {    
+    {
         StartPageNum = 0;
         PageNum = 1;
         pageNumText.text = "1";
         SeachDevName.Clear();
         SaveSelection();
         string key = InputDev.text.ToString().ToLower();
-        for (int i=0;i< devSearch.Count; i++)
+        for (int i = 0; i < devSearch.Count; i++)
         {
             string devName = devSearch[i].Name.ToLower();
-            string devIP = devSearch[i].IP.ToLower();
-            if (string .IsNullOrEmpty(key))
+            string devIP = "";
+            if (!string.IsNullOrEmpty(devSearch[i].IP))
+            {
+                devIP = devSearch[i].IP.ToLower();
+            }
+            if (string.IsNullOrEmpty(key))
             {
                 if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
                 {
                     SeachDevName.Add(devSearch[i]);
                 }
-            }else
+            }
+            else
             {
                 if (devName.ToLower().Contains(key) || devIP.ToLower().Contains(key))
                 {
@@ -369,7 +388,7 @@ public class DeviceDataPaging : MonoBehaviour {
                     }
                 }
             }
-                  
+
         }
         if (SeachDevName.Count == 0)
         {
@@ -379,11 +398,11 @@ public class DeviceDataPaging : MonoBehaviour {
         }
         else
         {
-            promptText.gameObject.SetActive(false );
+            promptText.gameObject.SetActive(false);
             TotaiLine(SeachDevName);
             GetPageDevData(SeachDevName);
         }
-      
+
     }
     /// <summary>
     /// 输入搜索名字
@@ -399,7 +418,11 @@ public class DeviceDataPaging : MonoBehaviour {
         for (int i = 0; i < devSearch.Count; i++)
         {
             string devName = devSearch[i].Name.ToLower();
-            string devIP = devSearch[i].IP.ToLower();
+            string devIP = "";
+            if (!string.IsNullOrEmpty(devSearch[i].IP))
+            {
+                devIP = devSearch[i].IP.ToLower();
+            }
             if (string.IsNullOrEmpty(key))
             {
                 if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
@@ -432,18 +455,22 @@ public class DeviceDataPaging : MonoBehaviour {
         }
 
     }
-    public void DeviceType_Click(int  valu)
+    public void DeviceType_Click(int valu)
     {
         StartPageNum = 0;
         PageNum = 1;
         pageNumText.text = "1";
         SeachDevName.Clear();
         SaveSelection();
-        string key = InputDev .text .ToString ().ToLower();
+        string key = InputDev.text.ToString().ToLower();
         for (int i = 0; i < devSearch.Count; i++)
         {
             string devName = devSearch[i].Name.ToLower();
-            string devIP = devSearch[i].IP.ToLower();
+            string devIP = "";
+            if (!string .IsNullOrEmpty(devSearch[i].IP))
+            {
+                devIP = devSearch[i].IP.ToLower();
+            }
             if (string.IsNullOrEmpty(key))
             {
                 if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
@@ -487,7 +514,11 @@ public class DeviceDataPaging : MonoBehaviour {
         for (int i = 0; i < devSearch.Count; i++)
         {
             string devName = devSearch[i].Name.ToLower();
-            string devIP = devSearch[i].IP.ToLower();
+            string devIP = "";
+            if (!string.IsNullOrEmpty(devSearch[i].IP))
+            {
+                devIP = devSearch[i].IP.ToLower();
+            }
             if (string.IsNullOrEmpty(key))
             {
                 if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
@@ -524,29 +555,29 @@ public class DeviceDataPaging : MonoBehaviour {
     /// 点击定位设备
     /// </summary>
     /// <param name="devId"></param>
-    public void DevBut_Click(string devId,int DepID,string devName)
+    public void DevBut_Click(string devId, int DepID, string devName)
     {
-       
+
         DevSubsystemManage.Instance.QueryToggle.isOn = false;
-        RoomFactory.Instance.FocusDev(devId,DepID,result=> 
-        {
-            if (!result)
-            {
-                string msgTitle = "找不到对应区域和设备!";
-                if (!string.IsNullOrEmpty(devName)) msgTitle = string.Format("{0} : {1}", devName, msgTitle);
-                UGUIMessageBox.Show(msgTitle);
-            }
-        });   
-      //  DeviceSearchTween.instance.ShowMinWindow(true);
+        RoomFactory.Instance.FocusDev(devId, DepID, result =>
+          {
+              if (!result)
+              {
+                  string msgTitle = "找不到对应区域和设备!";
+                  if (!string.IsNullOrEmpty(devName)) msgTitle = string.Format("{0} : {1}", devName, msgTitle);
+                  UGUIMessageBox.Show(msgTitle);
+              }
+          });
+        //  DeviceSearchTween.instance.ShowMinWindow(true);
         devSearchUI.SetActive(false);
         //  SearchDevInfo.Instance.SaveSelection();
         // SearchDevInfo.Instance.ExitSearchUI();
-        deviceNameDropdown.devNameDropdown.captionText.text  = deviceNameDropdown.devNameList[0].ToString ();
+        deviceNameDropdown.devNameDropdown.captionText.text = deviceNameDropdown.devNameList[0].ToString();
         deviceNameDropdown.devNameDropdown.transform.GetComponent<Dropdown>().value = 0;
         deviceTypeDropdown.DevTypeDropdown.captionText.text = deviceTypeDropdown.devTyprList[0].ToString();
         deviceTypeDropdown.DevTypeDropdown.transform.GetComponent<Dropdown>().value = 0;
         //AlarmPushManage.Instance.IsShow.isOn = false;
-         AlarmPushManage.Instance.CloseAlarmPushWindow(false);
+        AlarmPushManage.Instance.CloseAlarmPushWindow(false);
         // DevSubsystemManage.Instance.QueryToggle.isOn = false;
         //AlarmPushManage.Instance.IsShow.isOn = false;
     }
@@ -565,7 +596,7 @@ public class DeviceDataPaging : MonoBehaviour {
             TotalPage.SetActive(false);
         }
     }
- 
+
     /// <summary>
     /// 打开设备搜索界面
     /// </summary>
@@ -576,9 +607,9 @@ public class DeviceDataPaging : MonoBehaviour {
         //{
         //    rect.localPosition = Vector3.zero;
         //}
-       
+
         devSearchUI.SetActive(true);
-      
+
     }
     /// <summary>
     /// 关闭设备搜索界面
@@ -592,21 +623,21 @@ public class DeviceDataPaging : MonoBehaviour {
         devSearchUI.SetActive(false);
         DevSubsystemManage.Instance.ChangeImage(false, DevSubsystemManage.Instance.QueryToggle);
         DevSubsystemManage.Instance.QueryToggle.isOn = false;
-        if (SeachDevName!=null)
+        if (SeachDevName != null)
         {
             SeachDevName.Clear();
         }
-       
-       // SearchDevInfo.Instance.SaveSelection();
-       //  SearchDevInfo.Instance.ExitSearchUI();
-       // DeviceSearchTween.instance.ShowMinWindow(false);
+
+        // SearchDevInfo.Instance.SaveSelection();
+        //  SearchDevInfo.Instance.ExitSearchUI();
+        // DeviceSearchTween.instance.ShowMinWindow(false);
     }
     /// <summary>
     /// 保留选中项
     /// </summary>
     public void SaveSelection()
     {
-        for (int j = grid.transform.childCount - 1; j >=0; j--)
+        for (int j = grid.transform.childCount - 1; j >= 0; j--)
         {
             DestroyImmediate(grid.transform.GetChild(j).gameObject);
         }
@@ -633,7 +664,7 @@ public class DeviceDataPaging : MonoBehaviour {
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public bool DeviceType(DevInfo  type)
+    public bool DeviceType(DevInfo type)
     {
         int level = DeviceTypeDropdown.Instance.DevTypeDropdown.value;
         if (level == 0) return true;
@@ -672,11 +703,16 @@ public class DeviceDataPaging : MonoBehaviour {
     public bool DeviceName(DevInfo name)
     {
         pageNumText.text = "1";
-        int level = DeviceNameDropdown.Instance.devNameDropdown.value;
-        if (level == 0) return true;
-        else
+        string Name = "";
+        if (!string.IsNullOrEmpty(name.Manufactor))
         {
-            if (name.Name  == GetDevSeachName())
+            Name = name.Manufactor;
+        }
+        int level = DeviceNameDropdown.Instance.devNameDropdown.value;
+        if (level == 0) return true;    
+        else
+        {   
+            if (Name == GetDevSeachName())
             {
                 return true;
             }
@@ -691,12 +727,12 @@ public class DeviceDataPaging : MonoBehaviour {
         pageNumText.text = "1";
         SaveSelection();
         SeachDevName.Clear();
-        for (int i=0;i < devSearch.Count;i++)
+        for (int i = 0; i < devSearch.Count; i++)
         {
-            string key= InputDev.text.ToString().ToLower();
-            if (key =="")
+            string key = InputDev.text.ToString().ToLower();
+            if (key == "")
             {
-                if (DeviceType(devSearch[i])&& DeviceName(devSearch[i]))
+                if (DeviceType(devSearch[i]) && DeviceName(devSearch[i]))
                 {
                     SeachDevName.Add(devSearch[i]);
                 }

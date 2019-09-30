@@ -1,6 +1,7 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class BorderDevFollowUI : DeviceAlarmFollowUI {
     //   /// <summary>
     //   /// 页面Toggle

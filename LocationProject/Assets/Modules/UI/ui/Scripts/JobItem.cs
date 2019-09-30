@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,18 +10,26 @@ public class JobItem : MonoBehaviour {
     public Text JobName;
     List<Personnel> PersonnelList;
     public Button DeleteBut;
+    Post CurrentPost;
+    string CurrentInputKey;
+    string CurrentInputValue;
     void Start () {
-		
-	}
-	public void ShowJobItemInfo(Post post, List<Personnel> personnelList)
+        DeleteBut.onClick.AddListener(() =>
+        {
+            DeletePost(CurrentPost, PersonnelList);
+        });
+    }
+	
+	public void ShowJobItemInfo(Post post, List<Personnel> personnelList, string inputKey, string inputValue)
     {
+        CurrentInputKey = inputKey;
+        CurrentInputValue = inputValue;
+        CurrentPost = new Post() ;
+        CurrentPost = post;
         JobName.text = post.Name.ToString();
         PersonnelList = new List<Personnel>();
         PersonnelList.AddRange(personnelList);
-        DeleteBut.onClick.AddListener(() =>
-       {
-           DeletePost(post, personnelList);
-       });
+      
     }
 	public void DeletePost(Post post, List<Personnel> personnelList)
     {
@@ -37,7 +46,8 @@ public class JobItem : MonoBehaviour {
             {
                 UGUIMessageBox.Show("删除岗位信息成功！", "确定", "",
               () => {
-                  EditPersonnelInformation.Instance.RefreshEditJobInfo();
+                  EditDeletePostInfo();
+                //  EditPersonnelInformation.Instance.RefreshEditJobInfo();
               }, null, null);
 
             }
@@ -49,7 +59,32 @@ public class JobItem : MonoBehaviour {
         }
 
     }
+    public void EditDeletePostInfo()
+    {
+        JobList.Instance.ShowAndCloseEditPostWindow(true);
+        JobList.Instance.JobData.RemoveAll(item => item.Id == CurrentPost.Id);
+        JobList.Instance.ScreenList.RemoveAll(item => item.Id == CurrentPost.Id);
+        JobList.Instance.JobSelected.text = CurrentInputKey;
+        JobList.Instance.ShowPostInfo();
 
+        double pageNum = Math.Ceiling((double)(JobList.Instance.ScreenList.Count) / 10);
+        if (int.Parse(CurrentInputValue) > pageNum && JobList.Instance.ScreenList.Count != 0)
+        {
+            JobList.Instance.pegeNumText.text = pageNum.ToString();
+        }
+        else if (JobList.Instance.ScreenList.Count == 0)
+        {
+
+            JobList.Instance.pegeNumText.text = "1";
+
+        }
+        else
+        {
+            JobList.Instance.pegeNumText.text = CurrentInputValue;
+        }
+        JobList.Instance.InputJobPage(JobList.Instance.pegeNumText.text);
+        
+    }
     void Update () {
 		
 	}

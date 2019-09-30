@@ -156,6 +156,10 @@ public class CameraSceneManager : MonoBehaviour
                 defaultAlign = new AlignTarget(mouseTranslate.areaSettings.center, new Vector2(40, 0),
                                 160, new Range(0, 90), new Range(1, 300));
                 break;
+            case FactoryTypeEnum.ZiBo:
+                defaultAlign = new AlignTarget(mouseTranslate.areaSettings.center, new Vector2(40, 0),
+                    800, new Range(0, 90), new Range(1, 1000));
+                break;
         }
     }
 

@@ -24,10 +24,10 @@ public class MobileInspectionHistoryItem : MonoBehaviour {
     /// <summary>
     /// 初始化数据
     /// </summary>
-    public void Init(InspectionTrackHistory infoT)
+    public void Init(InspectionTrackHistory infoT,int currentIndex)
     {
         info = infoT;
-        NumText.text = info.Id .ToString();
+        NumText.text = currentIndex.ToString();
         NumberInspectionText.text = info.Code.ToString();
         RoutingNameText.text = info.Name;
         if (info.dtStartTime != null)
@@ -37,7 +37,7 @@ public class MobileInspectionHistoryItem : MonoBehaviour {
         }
         else
         {
-            StartTimeText.text = "";
+            StartTimeText.text = "--";
         }
         if (info.dtEndTime != null)
         {
@@ -47,7 +47,7 @@ public class MobileInspectionHistoryItem : MonoBehaviour {
         }
         else
         {
-            EndTimeText.text = "";        
+            EndTimeText.text = "--";        
         }
         StateText.text = info.State;
      
@@ -58,7 +58,8 @@ public class MobileInspectionHistoryItem : MonoBehaviour {
     /// </summary>
     public void DetailBtn_OnClick()
     {
-        MobileInspectionHistoryDetailInfo.Instance.DateUpdate(info);
-        MobileInspectionHistory_N.Instance.CloseBtn_OnClick();//关闭巡检历史路线窗口
+        InspectionTrackHistory infoDetail = CommunicationObject.Instance.GetInspectionDetailInfo(info);
+        MobileInspectionHistoryDetailInfo.Instance.DateUpdate(infoDetail);
+        //MobileInspectionHistory_N.Instance.CloseBtn_OnClick();//关闭巡检历史路线窗口
     }
 }

@@ -160,7 +160,9 @@ public class TopoTreeManager : MonoBehaviour
     /// <param name="root"></param>
     public void StructureTree(PhysicalTopology root)
     {
-        if (root == null || root.Children == null)
+        if (root == null 
+            //|| root.Children == null //这部分要去掉，不如，新项目的空的厂区无法关联
+            )
         {
             Log.Error("StructureTree root == null");
             return;

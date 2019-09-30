@@ -247,6 +247,11 @@ public class SceneAssetManager : MonoBehaviour {
     [ContextMenu("RemoveAsset")]
     private void UnloadOneAsset()
     {
+        bool EnableUnload = SystemSettingHelper.assetLoadSetting.EnableUnloadFunction;
+        if(!EnableUnload)
+        {
+            return;
+        }
         if (unloadBoxList.Count > 0)
         {
             AssetBundleInfo first = GetUnloadOne();
@@ -554,7 +559,7 @@ if (item == null) return false;
         }
         else if (FactoryDepManager.currentDep.TopoNode == null)
         {
-            Debug.LogError("SceneAssetManager.LoadBuildingByDistance FactoryDepManager.currentDep.TopoNode == null");//一般意味着初始化有问题
+            Debug.LogError("SceneAssetManager.LoadBuildingByDistance FactoryDepManager.currentDep.TopoNode == null :" + FactoryDepManager.currentDep.NodeName);//一般意味着初始化有问题
             isInPark = false;
             //#if UNITY_EDITOR
             //            this.enabled = false;//不继续执行

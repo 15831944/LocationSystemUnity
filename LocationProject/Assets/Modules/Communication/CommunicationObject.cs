@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.ServiceModel.Channels;
 using Unity.Modules.Context;
+using Tag = Location.WCFServiceReferences.LocationServices.Tag;
 
 public class CommunicationObject : MonoBehaviour, IDataClient
 {
@@ -564,6 +565,10 @@ public class CommunicationObject : MonoBehaviour, IDataClient
         lock (serviceClient)
         {
             IList<Tag> results = serviceClient.GetTags();
+            if (results == null)
+            {
+                results = new List<Tag>();
+            }
             return results;
         }
     }
@@ -2214,6 +2219,15 @@ public class CommunicationObject : MonoBehaviour, IDataClient
             {
                 return ps.ToList();
             }
+        }
+    }
+    public InspectionTrackHistory GetInspectionDetailInfo(InspectionTrackHistory history)
+    {
+        serviceClient = GetServiceClient();
+        if (serviceClient == null) return null;
+        lock (serviceClient)
+        {
+            return serviceClient.GetInspectionHistoryById(history);
         }
     }
 

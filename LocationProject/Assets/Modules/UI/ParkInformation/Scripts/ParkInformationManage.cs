@@ -275,24 +275,32 @@ public class ParkInformationManage : MonoBehaviour
         //todo:设置时间、告警等级。
 
         var devAlarms = CommunicationObject.Instance.GetDeviceAlarms(searchArg);
-        if (devAlarms != null)
-            DeviceAlarmList = new List<DeviceAlarm>();
-        if (devAlarms.devAlarmList != null )
+        DeviceAlarmList = new List<DeviceAlarm>();
+        if (devAlarms != null && devAlarms.devAlarmList != null)
         {
-            DeviceAlarmList.AddRange(devAlarms.devAlarmList);
-        }
-        
+            DeviceAlarmList .AddRange(devAlarms.devAlarmList);
+        }  
         DevScreenAlarm(DeviceAlarmList);
     }
     public void DevScreenAlarm(List<DeviceAlarm> DevList)
     {
-        if (FactoryDepManager.currentDep == null) return;
-        string AreaDevName = FactoryDepManager.currentDep.NodeName;
-        int ParkDevId = FactoryDepManager.currentDep.NodeID;
-        //List<DeviceAlarm>alarms = DevList.FindAll(i=> i.AreaId==ParkDevId);//只显示当前区域下的告警数据
-        ParkDeviceAlarmList.AddRange(DevList);
-        ParkDevAlarmInfo.Instance.ShowDevAlarm();
-        ParkDevAlarmInfo.Instance.GetDevAlarmList(ParkDeviceAlarmList, AreaDevName);
+        try
+        {
+            Log.Info("ParkInfomationManage.DevScreenAlarm", "DevList:" + DevList.Count);
+            if (FactoryDepManager.currentDep == null) return;
+            string AreaDevName = FactoryDepManager.currentDep.NodeName;
+            int ParkDevId = FactoryDepManager.currentDep.NodeID;
+            //List<DeviceAlarm>alarms = DevList.FindAll(i=> i.AreaId==ParkDevId);//只显示当前区域下的告警数据
+            ParkDeviceAlarmList.AddRange(DevList);
+            ParkDevAlarmInfo.Instance.ShowDevAlarm();
+            ParkDevAlarmInfo.Instance.GetDevAlarmList(ParkDeviceAlarmList, AreaDevName);
+        }
+        catch (System.Exception ex)
+        {
+
+            Log.Error("ParkInfomationManage.DevScreenAlarm", "Exception:" + ex);
+        }
+        
 
     }
      

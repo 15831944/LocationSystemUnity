@@ -20,6 +20,7 @@ public class BuildingController : DepNode {
         foreach (var item in floors)
         {
             ChildNodes.Add(item);
+            item.ParentNode = this;
         }
         foreach (var item in ChildNodes)
         {

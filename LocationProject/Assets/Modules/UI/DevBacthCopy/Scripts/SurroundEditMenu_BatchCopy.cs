@@ -197,7 +197,7 @@ public class SurroundEditMenu_BatchCopy : MonoBehaviour
                 //Vector3 center = RoomObject.Current.CalculateSelectObjsCenter(RoomObject.Current.SelectObjs);
                 //GameObject centerObj = RoomObject.Current.GetSelectObjsCenterObj(center);
                 //RoomObject.Current.SaveParent(RoomObject.Current.SelectObjs, centerObj);
-
+                SetCopyCubeState(false);
                 SelectObjsHighlighter();
                 CloseUI();
                 SetDevEditWindow(true);
@@ -786,7 +786,7 @@ public class SurroundEditMenu_BatchCopy : MonoBehaviour
     public Vector3 UnityPosToCad(Transform dev, DevNode devNode)
     {
         Vector3 pos;
-        if (devNode.IsLocal())
+        if (!devNode.IsLocal())//不在楼层内
         {
             pos = LocationManager.GetCadVector(dev.position);
         }

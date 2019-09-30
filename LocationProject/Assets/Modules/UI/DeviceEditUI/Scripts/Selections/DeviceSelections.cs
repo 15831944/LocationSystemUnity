@@ -60,7 +60,7 @@ public class DeviceSelections : MonoBehaviour {
                     cameraDev++;
                     cameraDevTemp.Add(dev.gameObject);
                 }
-                else if (TypeCodeHelper.IsDoorAccess(dev.Info.ModelName))
+                else if (TypeCodeHelper.IsDoorAccess(typeCode))
                 {
                     doorDev++;
                     doorDevTemp.Add(dev.gameObject);

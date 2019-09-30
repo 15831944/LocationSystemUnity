@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,14 +10,37 @@ public class DepartmentItem : MonoBehaviour {
     public Text DepartName;
     public Text SuperiorDepartments;    
     public Button DeleteBut;
+    public Button DetailBut;
     private int DepID;
+    Department CurrentDepartment;
+    List<Department> departmentList;
+    GridLayoutGroup Grid;
+    string CurrentInputKey;
+    string CurrentInputValue;
     
     void Start () {
-		
-	}
-    public void ShowDepartmentItemInfo(Department dep, List<Department> depList)
+        DeleteBut.onClick.AddListener(() =>
+        {
+            DeleteDepartmentItem(CurrentDepartment);
+        });
+        DetailBut.onClick.AddListener(() =>
+      {
+          EditDepartment.Instance.EditOrAdd = true;
+          DepartmentList.Instance.ShowAndCloseDepartmentListUI(false );
+          EditDepartment.Instance.CloseOrShowEditDepWindow(true);
+          EditDepartment.Instance.GetDepartmentData(CurrentDepartment, departmentList, Grid,this .gameObject );
+          
+      });
+    }
+    public void ShowDepartmentItemInfo(Department dep, List<Department> depList, GridLayoutGroup grid,string inputKey,string inputValue)
     {
-        
+        Grid = grid;
+        CurrentInputKey = inputKey;
+        CurrentInputValue = inputValue;
+        CurrentDepartment = new Department();
+        departmentList = new List<Department>();
+        departmentList.AddRange(depList);
+        CurrentDepartment = dep;
         DepID = dep.Id;
         DepartName.text = dep.Name.ToString();
         if (string.IsNullOrEmpty(dep.ParentId.ToString ()))
@@ -34,10 +58,7 @@ public class DepartmentItem : MonoBehaviour {
             }
         }
      
-        DeleteBut.onClick.AddListener(() =>
-      {
-          DeleteDepartmentItem(dep);
-      });
+     
     }
     /// <summary>
     /// 删除某一个部门
@@ -113,8 +134,9 @@ public class DepartmentItem : MonoBehaviour {
             PersonnelTreeManage.Instance.departmentDivideTree.ReshDeleteDepartTree(CurrentDep);
             UGUIMessageBox.Show("删除部门信息成功！", "确定", "",
            () => {
-               EditPersonnelInformation.Instance.RefreshEditDepartData();
-               
+               //   EditPersonnelInformation.Instance.RefreshEditDepartData();
+               EditDeleteDepartmentInfo(CurrentDep);
+
            }, null, null);
 
         }
@@ -122,6 +144,31 @@ public class DepartmentItem : MonoBehaviour {
         {
             UGUIMessageBox.Show("删除部门信息失败！", "确定", "", null, null, null);
         }
+    }
+    public void EditDeleteDepartmentInfo(Department currentDep)
+    {
+        DepartmentList.Instance.ShowAndCloseDepartmentListUI(true);
+        DepartmentList.Instance.DepartList.RemoveAll (item=> item.Id== currentDep.Id);
+        DepartmentList.Instance.ScreenList.RemoveAll(item => item.Id == currentDep.Id);
+        DepartmentList.Instance.DepSelected.text = CurrentInputKey;
+        DepartmentList.Instance.ShowEditDepartmentInfo();
+        double pageNum = Math.Ceiling((double)(DepartmentList.Instance.ScreenList.Count) / 10);
+        if (int.Parse(CurrentInputValue) > pageNum && DepartmentList.Instance.ScreenList.Count != 0)
+        {
+            DepartmentList.Instance.pegeNumText.text = pageNum.ToString();
+        }
+        else if (DepartmentList.Instance.ScreenList.Count == 0)
+        {
+
+            DepartmentList.Instance.pegeNumText.text = "1";
+
+        }
+        else
+        {
+            DepartmentList.Instance.pegeNumText.text = CurrentInputValue;
+        }
+        DepartmentList.Instance.InputDepartmentPage(DepartmentList.Instance.pegeNumText.text);
+        PersonnelTreeManage.Instance.departmentDivideTree.GetTopoTree();
     }
     /// <summary>
     /// 如果该部门下有子部门或者有人，不能删除

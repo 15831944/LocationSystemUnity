@@ -377,7 +377,10 @@ public class FactoryDepManager : DepNode {
         //创建区域设备
         if (SystemSettingHelper.deviceSetting.LoadParkDevWhenEnter)
         {
-            CreateParkDevs();
+            CreateParkDevs(() => 
+            {
+                SceneEvents.OnDepCreateCompleted(this);
+            });           
         }
     }
 
@@ -385,13 +388,17 @@ public class FactoryDepManager : DepNode {
     /// 创建厂区设备
     /// </summary>
     [ContextMenu("CreateParkDevs")]
-    private void CreateParkDevs()
+    private void CreateParkDevs(Action onComplete=null)
     {
         //Debug.LogError("IsFactory dev create:"+IsDevCreate);
-        if (IsDevCreate) return;
+        if (IsDevCreate)
+        {
+            if (onComplete != null) onComplete();
+            return;
+        }
         IsDevCreate = true;
         //RoomFactory.Instance.CreateDepDev(NodeID, FactoryDevContainer, RoomFactory.DevType.DepDev);
-        RoomFactory.Instance.CreateDepDev(this);
+        RoomFactory.Instance.CreateDepDev(this,onComplete);
     }
 
     private void InitDoorAccessModelAdd()

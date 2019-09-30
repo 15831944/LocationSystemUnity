@@ -40,7 +40,8 @@ public class MobileInspectionItemUI : MonoBehaviour {
     public void Init(InspectionTrack infoT)
     {
         InspectionTrackInfo = infoT;
-        UpdateData(InspectionTrackInfo.Code, InspectionTrackInfo.Name );
+        string code = string.Format("{0}({1})",InspectionTrackInfo.Code,InspectionTrackInfo.State);
+        UpdateData(code, InspectionTrackInfo.Name);
         NumText.text = MobileInspectionUI_N.Instance.mobileInspectionNum.ToString();
     }
 
@@ -65,14 +66,21 @@ public class MobileInspectionItemUI : MonoBehaviour {
             //print("ItemBtn_OnClick!");
             GetInspectionDetail(InspectionTrackInfo,infoDetail=> 
             {
-                InspectionTrackInfo = infoDetail;
-                MobileInspectionDetailsUI.Instance.Show(InspectionTrackInfo);
-                MobileInspectionInfoFollow.Instance.DateUpdate(InspectionTrackInfo);
-                ToggleGroup toggleGroup = MobileInspectionUI_N.Instance.toggleGroup;
-                FunctionSwitchBarManage.Instance.SetTransparentToggle(true);
+                //FunctionSwitchBarManage.Instance.SetTransparentToggle(true);//暂时先不透明
                 changeTextColor.ClickTextColor();
                 MobileInspectionInfoManage.Instance.CloseWindow();//关闭巡检点详情窗口
                 MobileInspectionHistoryDetailsUI.Instance.CloseBtn_OnClick();//关闭巡检项窗口
+                if(infoDetail==null||infoDetail.Route==null)
+                {
+                    if (UGUIMessageBox.Instance) UGUIMessageBox.Instance.ShowMessage("该巡检路线，详情为空！");
+                    return;
+                }
+                InspectionTrackInfo = infoDetail;
+                MobileInspectionDetailsUI.Instance.Show(InspectionTrackInfo);
+                MobileInspectionInfoFollow.Instance.DateUpdate(InspectionTrackInfo);
+                //ToggleGroup toggleGroup = MobileInspectionUI_N.Instance.toggleGroup;  
+				//FunctionSwitchBarManage.Instance.SetTransparentToggle(true);
+                //changeTextColor.ClickTextColor();         
             });           
         }
         else
@@ -80,7 +88,7 @@ public class MobileInspectionItemUI : MonoBehaviour {
            	changeTextColor.NormalTextColor();
 
 			MobileInspectionInfoFollow.Instance.Hide();
-			FunctionSwitchBarManage.Instance.SetTransparentToggle(false);
+			//FunctionSwitchBarManage.Instance.SetTransparentToggle(false);
 			MobileInspectionDetailsUI.Instance.SetWindowActive(false);
             MobileInspectionInfoManage.Instance.CloseWindow();//关闭巡检点详情窗口
             MobileInspectionHistoryDetailsUI.Instance.CloseBtn_OnClick();//关闭巡检项窗口

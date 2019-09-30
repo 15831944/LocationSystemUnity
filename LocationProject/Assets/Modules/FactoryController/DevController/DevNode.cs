@@ -92,6 +92,9 @@ public class DevNode : MonoBehaviour {
         if(Info!=null)DevId = Info.DevID;
         CreateFollowUI();
     }
+
+    public GameObject FollowUI;
+
     /// <summary>
     /// 创建设备漂浮UI
     /// </summary>
@@ -100,16 +103,16 @@ public class DevNode : MonoBehaviour {
         if (Info != null && ParentDepNode != null)
         {
             string typeCode = Info.TypeCode.ToString();
-            if (TypeCodeHelper.IsDoorAccess(Info.ModelName)) return;
+            if (TypeCodeHelper.IsDoorAccess(typeCode)) return;
             if (TypeCodeHelper.IsCamera(typeCode))
             {
-                FollowTargetManage.Instance.CreateCameraUI(gameObject,ParentDepNode, this);
+                FollowUI = FollowTargetManage.Instance.CreateCameraUI(gameObject, ParentDepNode, this);
             }else if(TypeCodeHelper.IsStaticDev(typeCode))
             {
-                FollowTargetManage.Instance.CreateDevFollowUI(gameObject,ParentDepNode, this);
+                FollowUI = FollowTargetManage.Instance.CreateDevFollowUI(gameObject, ParentDepNode, this);
             }else if(TypeCodeHelper.IsLocationDev(typeCode))
             {
-                FollowTargetManage.Instance.CreateArchorFollowUI(gameObject,ParentDepNode,this);
+                FollowUI = FollowTargetManage.Instance.CreateArchorFollowUI(gameObject, ParentDepNode, this);
             }
         }
     }

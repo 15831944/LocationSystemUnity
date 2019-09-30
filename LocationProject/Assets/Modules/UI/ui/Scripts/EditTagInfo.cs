@@ -330,7 +330,15 @@ public class EditTagInfo : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (vale.Contains("-") || vale.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(vale);
+            }
         }
 
         int MaxPage = (int)Math.Ceiling((double)ScreenList.Count / (double)pageSize);
@@ -418,12 +426,13 @@ public class EditTagInfo : MonoBehaviour
         // EnsureSaveData();
 
     }
-    string SelectName = "";
-    string SelectID = "";
+   public  string SelectName = "";
+  public   string SelectID = "";
     public void CloseCurrentWindow()
     {
         SelectName = "";
         SelectID = "";
+        TagCode = "";
         EditTagInfoWindow.SetActive(false);
     }
     public void ShowEditTagInfoWindow()
@@ -456,24 +465,25 @@ public class EditTagInfo : MonoBehaviour
         }
       
     }
-
+    
+    public string TagCode="";
     public void EnsureGetData(Action action)
     {
        
         SelectName = "";
         SelectID = "";
-
+        TagCode = "";
         for (int i = 0; i < grid.transform.childCount; i++)
         {
             Toggle tog = grid.transform.GetChild(i).GetChild(1).GetChild(0).gameObject.GetComponent<Toggle>();
-            string id = grid.transform.GetChild(i).GetChild(2).gameObject.GetComponent<Text>().text;
-            string name = grid.transform.GetChild(i).GetChild(0).gameObject.GetComponent<Text>().text;
-
+            string id = grid.transform.GetChild(i).GetChild(0).gameObject.GetComponent<Text>().text;
+            string name = grid.transform.GetChild(i).GetChild(3).gameObject.GetComponent<Text>().text;
+            string NumTag= grid.transform.GetChild(i).GetChild(2).gameObject.GetComponent<Text>().text;
             //if (tog.isOn)
             //{
             //    EditPersonnelInformation.Instance.TagName.text = name;
             //    int CurrentTagId = int.Parse(id);
-            //    Tag locationObjectT = LocationCardData.Find((item) => item.Id == CurrentTagId);
+            //    
             //    if (locationObjectT != null)
             //    {
             //        ChooseTag = locationObjectT;
@@ -483,6 +493,7 @@ public class EditTagInfo : MonoBehaviour
             {
                 SelectName = name;
                 SelectID = id;
+                TagCode = NumTag;
             }
         }
         ServePersonnelDate(SelectID, SelectName);

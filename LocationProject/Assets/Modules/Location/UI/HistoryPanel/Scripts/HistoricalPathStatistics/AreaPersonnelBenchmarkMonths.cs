@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
+public class AreaPersonnelBenchmarkMonths : MonoBehaviour
+{
     public static AreaPersonnelBenchmarkMonths Instance;
     List<PositionList> AllList;
     public Text CurrentTimeText;
@@ -22,7 +23,8 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
     public GameObject coordinate;
     public GameObject PointParent;
     public GameObject UGUI_LineChartObj;
-    void Start () {
+    void Start()
+    {
         CurrentStartTime = Convert.ToDateTime(DateTime.Now.ToString(("yyyy年MM月dd日")));
         StartcalendarDay.onDayClick.AddListener(ScreenPersonnelStartTime);
         timeDropdown.timeDropdown.onValueChanged.AddListener(ScreenPersonnelMonths);
@@ -30,7 +32,7 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
     private void Awake()
     {
         Instance = this;
-    } 
+    }
     public void GetPersonnelMonthsDate(List<PositionList> listInfo)
     {
 
@@ -90,29 +92,28 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
     public void ScreenPersonnel()
     {
         ScreenPersonnelList = new List<PositionList>();
-        if (AllList == null)
-        {
-            NullDate();
 
-        }
-        if (AllList != null && AllList.Count == 0)
+        if (AllList != null && AllList.Count != 0)
         {
-            NullDate();
-        }
-        for (int i = 0; i < AllList.Count; i++)
-        {
-            if (TimeType(AllList[i].Name))
+            for (int i = 0; i < AllList.Count; i++)
             {
-                ScreenPersonnelList.Add(AllList[i]);
+                if (TimeType(AllList[i].Name))
+                {
+                    ScreenPersonnelList.Add(AllList[i]);
+                }
             }
-        }
-        if (ScreenPersonnelList.Count == 0)
-        {
-            NullDate();
+            if (ScreenPersonnelList.Count == 0)
+            {
+                NullDate();
+            }
+            else
+            {
+                SetLineChart(ScreenPersonnelList);
+            }
         }
         else
         {
-            SetLineChart(ScreenPersonnelList);
+            NullDate();
         }
 
     }
@@ -122,7 +123,7 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
         {
             return x.Count.CompareTo(y.Count);
         });//根据数量排列
-       
+
         DeleteLinePrefabs();
         LineChart_Y_value.DateY(PosLIst[PosLIst.Count - 1].Count);
         PersonnelLineChart.yMax = (float)PosLIst[PosLIst.Count - 1].Count;
@@ -134,7 +135,7 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
         DateTime dt = Convert.ToDateTime(PosLIst[PosLIst.Count - 1].Name);
         DateTime MinDt = Convert.ToDateTime(PosLIst[0].Name);
         int DifferencetIME = int.Parse((dt - MinDt).TotalDays.ToString());
-   
+
         for (int i = 0; i <= DifferencetIME; i++)
         {
             TimeInstantiateLine();
@@ -150,10 +151,11 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
             {
                 data.Add(1);//没有数据的日期补上1
             }
-        }if (data .Count == 1)
+        }
+        if (data.Count == 1)
         {
             TimeInstantiateLine();
-            data.Add(1);
+            data.Insert(0, 1);
         }
         float Width = data.Count * 120f;
         scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 377);
@@ -165,7 +167,7 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
             PersonnelLineChart.pointImageList.Clear();
             ClearLinePoint();
         }
-        SetHourLineChartDate(PosLIst, Personnel_X_Data, data.Count );
+        SetHourLineChartDate(PosLIst, Personnel_X_Data, data.Count);
         PersonnelLineChart.UpdateData(data);
     }
     public void ClearLinePoint()
@@ -183,8 +185,8 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
         {
             //LastTime = long.Parse(DataList[DataList.Count - 1].RecordTime);
             DateTime dt = Convert.ToDateTime(DataList[DataList.Count - 1].Name);
-            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt.AddDays (1));
-            
+            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt);
+
         }
 
     }
@@ -239,7 +241,8 @@ public class AreaPersonnelBenchmarkMonths : MonoBehaviour {
             return false;
         }
     }
-    void Update () {
-		
-	}
+    void Update()
+    {
+
+    }
 }

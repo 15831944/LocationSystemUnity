@@ -94,12 +94,31 @@ namespace Jacovone.AssetBundleMagic
             }
         }
         /// <summary>
+        /// 最大遮罩时间
+        /// </summary>
+        private float maxMaskTime = 5f;
+        /// <summary>
         /// 设置遮罩
         /// </summary>
         /// <param name="isShow"></param>
         public void SetMaskImangeState(bool isShow)
         {
-            if (MaskBg != null) MaskBg.enabled = isShow;
+            if (IsInvoking("HideMaskAuto")) CancelInvoke("HideMaskAuto");
+            if(isShow)
+            {
+                if (!IsInvoking("HideMaskAuto")) Invoke("HideMaskAuto",maxMaskTime);
+            }
+            if (MaskBg != null)
+            {
+                MaskBg.enabled = isShow;
+            }
+        }
+        /// <summary>
+        /// 自动关闭遮罩
+        /// </summary>
+        private void HideMaskAuto()
+        {
+            if (MaskBg != null) MaskBg.enabled = false;
         }
         public void ShowBuildingLoadingProcessEx()
         {

@@ -96,29 +96,27 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
     public void ScreenPersonnel()
     {
         ScreenPersonnelList = new List<PositionList>();
-        if (AllList==null)
+       if (AllList != null && AllList.Count != 0)
         {
-            NullDate();
-           
-        }
-        if (AllList!=null && AllList.Count == 0)
-        {
-            NullDate();
-        }
-        for (int i = 0; i < AllList.Count; i++)
-        {
-            if (TimeType(AllList[i ].Name ))
+            for (int i = 0; i < AllList.Count; i++)
             {
-                ScreenPersonnelList.Add (AllList[i]);
+                if (TimeType(AllList[i].Name))
+                {
+                    ScreenPersonnelList.Add(AllList[i]);
+                }
+            }
+            if (ScreenPersonnelList.Count == 0)
+            {
+                NullDate();
+            }
+            else
+            {
+                SetLineChart(ScreenPersonnelList);
             }
         }
-        if (ScreenPersonnelList.Count == 0)
+       else
         {
             NullDate();
-        }
-        else
-        {
-            SetLineChart(ScreenPersonnelList);
         }
       
     }
@@ -160,7 +158,7 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
         if (data.Count == 1)
         {
             TimeInstantiateLine();
-            data.Add(1);
+            data.Insert(0, 1);
         }
         float Width = data.Count * 120f;
         scrollView.transform.GetComponent<RectTransform>().sizeDelta  = new Vector2((data.Count+1) * 120f, 375);       
@@ -172,6 +170,7 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
             PersonnelLineChart.pointImageList.Clear();
             ClearLinePoint();
         }
+        
         SetHourLineChartDate(PosLIst, Personnel_X_Data, data.Count );
         PersonnelLineChart.UpdateData(data);
     }
@@ -190,7 +189,7 @@ public class PersonnelBenchmarkMonths : MonoBehaviour
         {
             //LastTime = long.Parse(DataList[DataList.Count - 1].RecordTime);
             DateTime dt = Convert.ToDateTime(DataList[DataList.Count - 1].Name);
-            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt.AddDays (1));
+            LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt);
             //if (CurrentLevel == 0)
             //{
             //    LineChart.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt);

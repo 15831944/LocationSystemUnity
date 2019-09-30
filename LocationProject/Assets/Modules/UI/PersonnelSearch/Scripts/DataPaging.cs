@@ -104,11 +104,11 @@ public class DataPaging : MonoBehaviour
         // StartPerSearchUI();
         AddPageBut.onClick.AddListener(AddPersonnelPage);
         MinusPageBut.onClick.AddListener(MinusPersonnelPage);
-        pegeNumText.onValueChanged.AddListener(InputPersonnelPage);
+        pegeNumText.onEndEdit.AddListener(InputPersonnelPage);
         selectedBut.onClick.AddListener(SetPerFindData_Click);
         CloseBut.onClick.AddListener(ClosepersonnelSearchWindow);
         CreatBut.onClick.AddListener(OPenAddPersonnelUI);
-        PerSelected.onValueChanged.AddListener(InputPerFindData);
+        PerSelected.onEndEdit.AddListener(InputPerFindData);
         ToggleAuthoritySet();
 
     }
@@ -133,21 +133,22 @@ public class DataPaging : MonoBehaviour
 
                 peraonnelData = new List<Personnel>(personnels);
                 selectedItem = new List<Personnel>(personnels);
-                //PersonnelSearchTweener.Instance.ShowMinWindow(false);
-
-                personnelSearchUI.SetActive(true);
-                StartPageNum = 0;
-                PageNum = 1;
-                TotaiLine(peraonnelData);
-         
-                InputPerFindData(Key );
-               // GetPageData(peraonnelData);
-                promptText.gameObject.SetActive(false);
-                EditPersonnelInformation.Instance.GetJobInfo();
+                ShowPersonnelInfo();
             });
         });
       
         listT = LocationManager.Instance.GetPersonObjects();
+    }
+    public void ShowPersonnelInfo()
+    {
+        personnelSearchUI.SetActive(true);
+        StartPageNum = 0;
+        PageNum = 1;
+        TotaiLine(peraonnelData);
+        InputPerFindData(Key);
+        // GetPageData(peraonnelData);
+        promptText.gameObject.SetActive(false);
+        EditPersonnelInformation.Instance.GetJobInfo();
     }
     /// <summary>
     /// 有几页数据
@@ -171,7 +172,7 @@ public class DataPaging : MonoBehaviour
         {
             GameObject obj = InstantiateLine();
             PersonnelDetailItem item = obj.GetComponent<PersonnelDetailItem>();
-            item.ShowPersonnelDetailInfo(InfoList[i], peraonnelData, listT);
+            item.ShowPersonnelDetailInfo(InfoList[i], peraonnelData, listT, grid );
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -264,7 +265,15 @@ public class DataPaging : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
         if (selectedItem == null) return;
         int maxPage = (int)Math.Ceiling((double)(selectedItem.Count) / (double)pageSize);
@@ -284,7 +293,7 @@ public class DataPaging : MonoBehaviour
     }
 
     [System.NonSerialized]
-    List<Personnel> selectedItem;
+  public   List<Personnel> selectedItem;
 
     /// <summary>
     /// 搜索人员
@@ -453,11 +462,16 @@ public class DataPaging : MonoBehaviour
         personnelDropdown.PerDropdown.captionText.text = "全部";
         personnelSearchUI.SetActive(true);
     }
+    public void  ShowAndClosePersonnelWindow(bool b)
+    {
+        personnelSearchUI.SetActive(b);
+    }
     /// <summary>
     /// 人员搜索界面关闭
     /// </summary>
     public void ClosepersonnelSearchWindow()
     {
+        Key = "";
         SaveSelection();
         personnelSearchUI.SetActive(false);
         IsGetPersonData = false;
@@ -466,6 +480,7 @@ public class DataPaging : MonoBehaviour
     }
     public void ClosepersonnelSearchUI()
     {
+        Key = "";
         SaveSelection();
         personnelSearchUI.SetActive(false);
         IsGetPersonData = false;

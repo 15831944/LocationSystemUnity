@@ -68,10 +68,10 @@ public class MobileInspectionHistoryDetailsUI : MonoBehaviour {
         PatrolPointItemList.AddRange (info.Checks);
         UpdateData();
         //CreateMeasuresItems();
-        if (MobileInspectionInfoManage.Instance.window.activeInHierarchy)
-        {
-            MobileInspectionInfoManage.Instance.CloseWindow();
-        }
+        //if (MobileInspectionInfoManage.Instance.window.activeInHierarchy)
+        //{
+        //    MobileInspectionInfoManage.Instance.CloseWindow();
+        //}
         SetWindowActive(true);
  
         startPageNum = 0;
@@ -112,7 +112,7 @@ public class MobileInspectionHistoryDetailsUI : MonoBehaviour {
             {
                 newPatrolPointItemList.Add(list);
             }
-            CreateMeasuresItems(newPatrolPointItemList);
+            CreateMeasuresItems(newPatrolPointItemList,startPageNum);
         }
     }
 
@@ -121,49 +121,31 @@ public class MobileInspectionHistoryDetailsUI : MonoBehaviour {
     /// </summary>
     public void UpdateData()
     {
-        if (PatrolPointItems.StaffCode==null)
-        {
-            TxtPersonnelNum.text = "--";
-        }
-        else
-        {
-            TxtPersonnelNum.text = PatrolPointItems.StaffCode.ToString();
-        }
-        if (MobileInspectionInfoManage.Instance .DevName ==null)
-        {
-            devText.text  = "--";
-        }
-        else
-        {
-            devText.text = MobileInspectionInfoManage.Instance.DevName.ToString();
-        }
-        if (MobileInspectionInfoManage.Instance.PersonnelName ==null)
-        {
-            TxtPerson.text = "--";
-        }
-        else
-        {
-            TxtPerson.text = MobileInspectionInfoManage.Instance.PersonnelName.ToString();
-        }
-            Title.text = MobileInspectionDetailsUI.Instance.TitleText + PatrolPointItems.Id.ToString();
+        TxtPersonnelNum.text = string.IsNullOrEmpty(info.StaffCode) ? "--" : info.StaffCode;
+        string devName = string.IsNullOrEmpty(info.DevName) ? info.DeviceCode : info.DevName;
+        devText.text = string.IsNullOrEmpty(devName) ? "--" : devName;
+        TxtPerson.text = string.IsNullOrEmpty(info.StaffName) ? "--" : info.StaffName;       
+        Title.text = MobileInspectionDetailsUI.Instance.TitleText;
     }
 
-    int i = 0;
+    int recordIndex = 0;
     /// <summary>
     /// 创建巡检项列表
     /// </summary>
-    public void CreateMeasuresItems(List<PatrolPointItem> newPatrolPointItemList)
+    public void CreateMeasuresItems(List<PatrolPointItem> newPatrolPointItemList,int pageNum)
     {
         ClearMeasuresItems();
         if (newPatrolPointItemList == null || newPatrolPointItemList.Count  == 0) return;
+        recordIndex = 0;
         foreach (PatrolPointItem sm in newPatrolPointItemList)
         {
-            i = i + 1;
+            recordIndex = recordIndex + 1;
+            int dataIndex = pageNum * pageLine + recordIndex;
             GameObject itemT = CreateMeasuresItem();
-            Text[] ts = itemT.GetComponentsInChildren<Text>();
+            Text[] ts = itemT.GetComponentsInChildren<Text>();          
             if (ts.Length > 0)
             {
-                ts[0].text = sm.CheckId .ToString();
+                ts[0].text = dataIndex.ToString();
             }
             if (ts.Length > 1)
             {
@@ -171,18 +153,25 @@ public class MobileInspectionHistoryDetailsUI : MonoBehaviour {
             }
             if (ts.Length > 2)
             {
-               
-                    if (sm.dtCheckTime == null)
+                if (sm.dtCheckTime == null)
                 {
                     ts[2].text = "--";
                 }
-                    else
+                else
                 {
                     DateTime timeT = Convert.ToDateTime(sm.dtCheckTime);
                     ts[2].text = timeT.ToString("yyyy/MM/dd HH:mm");
                 }
             }
-            if (i % 2 == 0)
+            if(ts.Length>3)
+            {
+                ts[3].text = string.IsNullOrEmpty(sm.CheckResult) ? "--" : sm.CheckResult;
+            }
+            if(ts.Length>4)
+            {
+                ts[4].text = string.IsNullOrEmpty(sm.CheckId) ? "--" : sm.CheckId;
+            }
+            if (recordIndex % 2 == 0)
             {
                 itemT.transform.gameObject.GetComponent<Image>().sprite = DoubleLine;
             }

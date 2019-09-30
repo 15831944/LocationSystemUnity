@@ -126,7 +126,7 @@ public class BuildingBox : AssetBundleInfo
     }
 
     public override BuildingController UnloadAsset(string tag)//这个由SceneAssetManager调用
-    {
+    {        
         if (IsLoaded == false)
         {
             //Debug.Log("BuildingBox.UnloadAsset IsLoaded == false:"+this);

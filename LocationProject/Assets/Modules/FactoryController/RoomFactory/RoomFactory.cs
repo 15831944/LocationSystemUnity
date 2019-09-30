@@ -13,7 +13,8 @@ using Unity.Modules.Context;
 public enum FactoryTypeEnum
 {
     SiHui,
-    BaoXin
+    BaoXin,
+    ZiBo
 }
 
 public class RoomFactory : MonoBehaviour, IDevManager
@@ -399,9 +400,9 @@ public class RoomFactory : MonoBehaviour, IDevManager
     {
         isTopoInited = false;//开始 
         Debug.Log("Roomfatory.Init,store dep info start...");
-        StoreDepInfo();
+        StoreDepInfo();//将DepNode存到NodeDic里面
         Debug.Log("Roomfatory.Init,store dep info end...");
-        BindingModelIDByNodeName(()=> 
+        BindingModelIDByNodeName(()=> //获取AreaTree并关联DepNode
         {
             Debug.Log("Roomfatory.Start save static dev info...");
             SaveStaticDevInfo();
@@ -697,7 +698,9 @@ public class RoomFactory : MonoBehaviour, IDevManager
         try
         {
             Log.Info("RoomFactory->StartBindingTopolgy Start !!!!!!!!!!!!!!!11");
-            if (toplogy == null || toplogy.Children == null || toplogy.Children.Length == 0)
+            if (toplogy == null
+                //|| toplogy.Children == null || toplogy.Children.Length == 0  
+                )
             {
                 Debug.LogError("RoomFactory->PhysicalTopology is null!");
                 return;
@@ -710,30 +713,34 @@ public class RoomFactory : MonoBehaviour, IDevManager
                 //if (factoryTopo.Name == "四会热电厂" || factoryTopo.Name == "高新软件园")
                 {
                     var rangesT = new List<PhysicalTopology>();
-                    var factoryTopologies = factoryTopo.Children.ToList();
-                    foreach (var topoNode in factoryTopologies)
+                    if (factoryTopo.Children != null)
                     {
-                        var node = GetDepNode(topoNode.Name);
-                        if (node != null)
+                        var factoryTopologies = factoryTopo.Children.ToList();
+                        foreach (var topoNode in factoryTopologies)
                         {
-                            node.SetTopoNode(topoNode);
-                            if (topoNode.Children != null)
+                            var node = GetDepNode(topoNode.Name);
+                            if (node != null)
                             {
-                                BindingChild(node, topoNode.Children.ToList());
-                            }
-                        }
-                        else
-                        {
-                            if (topoNode.Type == Types.范围)
-                            {
-                                rangesT.Add(topoNode);
+                                node.SetTopoNode(topoNode);
+                                if (topoNode.Children != null)
+                                {
+                                    BindingChild(node, topoNode.Children.ToList());
+                                }
                             }
                             else
                             {
-                                Log.Alarm("RoomFactory->StartBindingTopolgy", "未找到DepNode:" + topoNode.Name);
+                                if (topoNode.Type == Types.范围)
+                                {
+                                    rangesT.Add(topoNode);
+                                }
+                                else
+                                {
+                                    Log.Alarm("RoomFactory->StartBindingTopolgy", "未找到DepNode:" + topoNode.Name);
+                                }
                             }
                         }
                     }
+                    
                     DepNode toplogyNode = GetDepNode(factoryTopo.Name);
                     if (toplogyNode != null)
                     {
@@ -842,6 +849,7 @@ public class RoomFactory : MonoBehaviour, IDevManager
     /// <param name="depNodeT"></param>
     public void AddRanges(DepNode depNodeT, List<PhysicalTopology> roomTopo)
     {
+        Log.Error("AddRanges", "depNodeT:" + depNodeT.NodeName);
         foreach (var topo in roomTopo)
         {
             AddRange(depNodeT, topo);
@@ -1380,7 +1388,7 @@ public class RoomFactory : MonoBehaviour, IDevManager
             {
                 RecordTime = DateTime.Now;
                 List<int> pidList = GetPidList(deps);
-                List<DevInfo> devInfos = service.GetDevInfoByParent(pidList);
+                List<DevInfo> devInfos = RemoveRepeateDev(service.GetDevInfoByParent(pidList));
                 int count = devInfos == null ? 0 : devInfos.Count;
                 ResultText += string.Format("Get dep info, length:{0} cost :{1}ms\n", count, (DateTime.Now - RecordTime).TotalMilliseconds);
                 recordTime = DateTime.Now;
@@ -1396,6 +1404,27 @@ public class RoomFactory : MonoBehaviour, IDevManager
         {
             Log.Error("RoomFactory.GetDevInfo.Exception:"+e.ToString());
         }
+    }
+    /// <summary>
+    /// 移除重复数据
+    /// </summary>
+    /// <param name="devListTemp"></param>
+    /// <returns></returns>
+    private List<DevInfo>RemoveRepeateDev(List<DevInfo> devListTemp)
+    {
+        int repeatDevCount = 0;
+        Dictionary<string, DevInfo> devDicNoRepeat = new Dictionary<string, DevInfo>();
+        foreach(var item in devListTemp)
+        {
+            if (!devDicNoRepeat.ContainsKey(item.DevID)) devDicNoRepeat.Add(item.DevID,item);
+            else
+            {
+                if (devDicNoRepeat[item.DevID].Id > item.Id) devDicNoRepeat[item.DevID] = item;
+                repeatDevCount++;
+            }
+        }
+        Debug.LogError("RemoveRepeatDev,RepeatDevCount:"+repeatDevCount);
+        return devDicNoRepeat.Values.ToList();
     }
     private void GetDoorAccessInfo(List<int> pidList)
     {
@@ -1848,7 +1877,7 @@ CreateDepDev All cost:2729.1469ms count:142
     {
         try
         {
-            if (TypeCodeHelper.IsDoorAccess(info.ModelName))
+            if (TypeCodeHelper.IsDoorAccess(info.TypeCode.ToString()))
             {
                 DoorAccessDevController doorController = dev.AddComponent<DoorAccessDevController>();
                 Dev_DoorAccess doorAccess = DoorAccessList.Find(i => i.DevID == info.DevID);

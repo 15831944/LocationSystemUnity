@@ -86,25 +86,17 @@ public class MobileInspectionDetailsUI : MonoBehaviour
         {
             GameObject itemT = CreateMeasuresItem();
             Text[] ts = itemT.GetComponentsInChildren<Text>();
+            PatrolPoint point = patrolPointList[i];
+            string staffName=string.IsNullOrEmpty(point.StaffName)?point.StaffCode:point.StaffName;
+            //string devName=string.IsNullOrEmpty(point.DevName)?point.DeviceCode:point.DevName;
             if (ts.Length > 0)
             {
-                ts[0].text = patrolPointList[i].DeviceId.ToString();
+                ts[0].text = string.IsNullOrEmpty(staffName) ? "--" : staffName;
             }
             if (ts.Length > 1)
             {
 
-                if (patrolPointList[i].StaffCode != null)
-                {
-                    ts[1].text = patrolPointList[i].StaffCode.ToString();
-                }
-                else
-                {
-                    ts[1].text = "";
-                }
-            }
-             if (ts.Length > 2)
-            {
-          
+                ts[1].text = string.IsNullOrEmpty(point.KksCode) ? "--" : point.KksCode;
             }
         }
     }

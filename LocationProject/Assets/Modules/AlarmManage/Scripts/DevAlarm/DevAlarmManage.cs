@@ -68,6 +68,7 @@ public class DevAlarmManage : MonoBehaviour {
     }
     private void OnDeviceAlarmRecieved(List<DeviceAlarm> devList)
     {
+        //Debug.LogError("RecieveAlarmDevs,Count:"+devList.Count);
         foreach (var dev in devList)
         {
             if (dev.Level!=Abutment_DevAlarmLevel.无)
@@ -296,6 +297,7 @@ public class DevAlarmManage : MonoBehaviour {
             }
             if (!AlarmDevList.Contains(info)) AlarmDevList.Add(info);
 
+            //Debug.LogError("增加告警信息："+alarmInfo.Message);
             info.InitAlarmInfo(alarmInfo, dev);//设置告警内容
             info.AlarmOn();//高亮显示
 

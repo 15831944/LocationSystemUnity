@@ -44,8 +44,8 @@ public class AddPosCard : MonoBehaviour
     public void CloseCurrentWindow()
     {
         CloseAddPosCardWindow();
-        LocationCardManagement.Instance.GetLocationCardManagementData();
-        LocationCardManagement.Instance.ShowLocationCardManagementWindow();
+        LocationCardManagement.Instance.ShowCardRoleInfo();
+        LocationCardManagement.Instance.ShowAndCloseLocationCardManagementWindow(true );
     }
     public void ShowRoleCardEditInfo()
     {
@@ -118,9 +118,14 @@ public class AddPosCard : MonoBehaviour
         UGUIMessageBox.Show("定位卡信息已保存！", "确定", "", ()=> 
         {
             CloseAddPosCardWindow();
-            LocationCardManagement.Instance.GetLocationCardManagementData();
-            LocationCardManagement.Instance.ShowLocationCardManagementWindow();
-         
+            LocationCardManagement.Instance.LocationCardData.Insert(0, data);
+            LocationCardManagement.Instance.ScreenList.Insert(0, data);
+            LocationCardManagement.Instance.LocationRole.text = "";
+            LocationCardManagement.Instance.ShowCardRoleInfo();
+            LocationCardManagement.Instance.ShowAndCloseLocationCardManagementWindow(true);
+     
+
+
         }, null, null);
     }
     public void ShowAddPosCardWindow(List<Tag> TagT)

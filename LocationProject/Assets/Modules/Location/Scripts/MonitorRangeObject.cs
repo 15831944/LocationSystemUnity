@@ -1182,10 +1182,6 @@ public class MonitorRangeObject : MonoBehaviour, IRTEditorEventListener
     public void SetRendererEnable(bool isEnable)
     {
         //if (MonitorRangeManager.Instance.IsShowAlarmArea && IsOnAlarmArea && !isEnable) return;
-        if (depNode!=null&&depNode.NodeID == 499)
-        {
-            int i = 0;
-        }
         GetRenderer();
         render.enabled = isEnable;
         SetFollowNameUIEnable(isEnable);

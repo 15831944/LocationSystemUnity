@@ -62,6 +62,7 @@ public class PersonInfoUI : MonoBehaviour
     public GameObject historyBtn;//历史轨迹按钮
                                  // public Button historyBtn;//历史轨迹按钮
     public GameObject videomonitorBtn;//视频监控按钮
+    [HideInInspector]
     public GameObject arVideoButton;//AR视频按钮
 
     private Tweener contentGridTweener;//内容列表动画

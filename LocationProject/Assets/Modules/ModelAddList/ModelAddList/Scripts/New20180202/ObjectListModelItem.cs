@@ -321,7 +321,7 @@ public class ObjectListModelItem : MonoBehaviour, IPointerEnterHandler, IPointer
         dev.ParentId = GetPID(model);
         try
         {
-            dev.TypeCode = int.Parse(TypeCode);
+            dev.TypeCode = TypeCodeHelper.IsDoorAccess(ModelName)?TypeCodeHelper.DoorAccessTypecode:int.Parse(TypeCode);
         }
         catch (Exception e)
         {

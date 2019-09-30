@@ -37,8 +37,9 @@ public class DevAlarmInfo : MonoBehaviour {
         currentDev.isAlarm = true;
         AlarmInfo = alarmContent;
         dev.AddAlarm(alarmContent);
+        SetNormalFollowUIState(dev,false);
     }
-
+   
     /// <summary>
     /// 开始告警
     /// </summary>
@@ -66,6 +67,10 @@ public class DevAlarmInfo : MonoBehaviour {
     {
         if(isRemoveAlarm&&currentDev!=null)
         {
+            SetNormalFollowUIState(currentDev,true);
+        }
+        if(isRemoveAlarm&&currentDev!=null)
+        {
             currentDev.isAlarm = false;
             if (FollowTargetManage.Instance) FollowTargetManage.Instance.RemoveAlarmDevFollowUI(currentDev);
         }
@@ -80,6 +85,17 @@ public class DevAlarmInfo : MonoBehaviour {
             Highlighter h = gameObject.AddMissingComponent<Highlighter>();
             h.FlashingOff();
         }        
+    }
+
+    private void SetNormalFollowUIState(DevNode dev,bool isShow)
+    {
+        if(dev==null||dev.FollowUI==null)return;
+        UGUIFollowTarget follow = dev.FollowUI.GetComponent<UGUIFollowTarget>();
+        if(follow)
+        {
+            follow.enabled = isShow;
+            dev.FollowUI.SetActive(isShow);
+        }
     }
     /// <summary>
     /// 区域告警/消警

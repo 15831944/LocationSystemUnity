@@ -96,13 +96,14 @@ public class MobileInspectionInfoManage : MonoBehaviour
 	}
 
 	//设置移动巡检点详情列表界面
-	public void SetInspectionInfo(List<PatrolPoint> data)
+	public void SetInspectionInfo(List<PatrolPoint> data,int pageNum)
 	{		
 		for (int i = 0; i < data.Count; i++)
 		{
 			GameObject obj = InstantiateLine ();
 			MobileInspectionInfoDetail item = obj.GetComponent<MobileInspectionInfoDetail> ();
-			item.Init(data[i]);
+            int dataIndex=pageNum*pageLine+(i+1);
+			item.Init(data[i],dataIndex);
 			DevName = data [i].DevName;
 			PersonnelName = data [i].StaffName;
 			if (i % 2 == 0)
@@ -138,7 +139,7 @@ public class MobileInspectionInfoManage : MonoBehaviour
 			{
 				newPatrolPointList.Add(list);
 			}
-			SetInspectionInfo(newPatrolPointList);
+			SetInspectionInfo(newPatrolPointList,startPageNum);
 		}
 	}
 

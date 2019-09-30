@@ -22,14 +22,13 @@ public class MobileInspectionHistoryDetailInfoItem : MonoBehaviour {
 
     }
 
-    public void ShowInspectionTrackHistory(PatrolPointHistory info)
+    public void ShowInspectionTrackHistory(PatrolPointHistory info,int currentIndex)
     {
-     
-       
-        NumText.text = info.DeviceId.ToString();
-        TxtPersonnelNum.text = info.StaffCode.ToString();
-        TxtPerson.text = info.StaffName.ToString();
-        devText.text = info.DevName.ToString();
+        NumText.text = currentIndex.ToString();
+        TxtPersonnelNum.text = string.IsNullOrEmpty(info.StaffCode)?"--":info.StaffCode;
+        TxtPerson.text = string.IsNullOrEmpty(info.StaffName) ? "--" : info.StaffName;
+        string devName = string.IsNullOrEmpty(info.DevName) ? "--" : info.DevName;
+        devText.text = string.IsNullOrEmpty(devName) ? "--" : info.DeviceCode;
         ItemsBut.onClick.AddListener(() =>
         {
             ItemTog_OnClick(info);
@@ -39,9 +38,9 @@ public class MobileInspectionHistoryDetailInfoItem : MonoBehaviour {
     public void ItemTog_OnClick(PatrolPointHistory item)
     {
         MobileInspectionHistoryRouteDetails.Instance.Show(item);
-        if (item.Checks != null)
-        {
-            MobileInspectionHistoryDetailInfo.Instance.CloseMobileInspectionHistoyItemWindow();
-        }
+        //if (item.Checks != null)
+        //{
+        //    MobileInspectionHistoryDetailInfo.Instance.CloseMobileInspectionHistoyItemWindow();
+        //}
     }
 }

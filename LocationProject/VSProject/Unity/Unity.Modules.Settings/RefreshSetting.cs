@@ -46,5 +46,11 @@ public class RefreshSetting
     /// </summary>
     public int ScreenShot = 6;
 
+    [XmlAttribute]
+    /// <summary>
+    /// 机组运行状态刷新间隔
+    /// </summary>
+    public int GroupPowerState=10;
+
 }
 

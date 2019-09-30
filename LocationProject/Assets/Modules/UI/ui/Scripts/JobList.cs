@@ -41,11 +41,11 @@ public class JobList : MonoBehaviour
     /// <summary>
     /// 筛选后的数据
     /// </summary>
-    List<Post> ScreenList;
+    public List<Post> ScreenList;
     /// <summary>
     /// 部门总数据
     /// </summary>
-    List<Post> JobData;
+    public List<Post> JobData;
     /// <summary>
     /// 展示的10条信息
     /// </summary>
@@ -75,9 +75,9 @@ public class JobList : MonoBehaviour
         ShowList = new List<Post>();
         AddPageBut.onClick.AddListener(AddJobPage);
         MinusPageBut.onClick.AddListener(MinusJobPage);
-        pegeNumText.onValueChanged.AddListener(InputJobPage);
+        pegeNumText.onEndEdit.AddListener(InputJobPage);
         selectedBut.onClick.AddListener(SetJob_Click);
-        JobSelected.onValueChanged.AddListener(SetInputJob_Click);
+        JobSelected.onEndEdit.AddListener(SetInputJob_Click);
         CloseBut.onClick.AddListener(() =>
         {
             CloseJobListWindow();
@@ -98,8 +98,8 @@ public class JobList : MonoBehaviour
         AddJobs.Instance.isAdd = false;
         AddJobs.Instance.GetPostList(JobData);
     }
-    
-    public void GetJobListData( List<Personnel> personnelList)
+
+    public void GetJobListData(List<Personnel> personnelList)
     {
         PostList = new List<Post>();
         PostList = CommunicationObject.Instance.GetJobsList();
@@ -126,7 +126,12 @@ public class JobList : MonoBehaviour
         JobData.AddRange(PostList);
         TotaiLine(PostList);
         pegeNumText.text = "1";
-        GetPageData(JobData);
+        ShowPostInfo();
+    }
+    public void ShowPostInfo()
+    {
+        SetInputJob_Click(JobSelected.text);
+        // GetPageData(JobData);
     }
     void Update()
     {
@@ -138,7 +143,7 @@ public class JobList : MonoBehaviour
         {
             GameObject Obj = InstantiateLine();
             JobItem item = Obj.GetComponent<JobItem>();
-            item.ShowJobItemInfo(info[i], PersonnelList);
+            item.ShowJobItemInfo(info[i], PersonnelList, JobSelected.text, pegeNumText.text);
             if (i % 2 == 0)
             {
                 item.GetComponent<Image>().sprite = DoubleImage;
@@ -205,7 +210,15 @@ public class JobList : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
         if (ScreenList == null) return;
         int maxPage = (int)Math.Ceiling((double)(ScreenList.Count) / (double)pageSize);
@@ -226,7 +239,7 @@ public class JobList : MonoBehaviour
     string Key = "";
     public void SetInputJob_Click(string key)
     {
-    
+
         Key = key.ToLower();
         ScreenJobInfo();
     }
@@ -237,7 +250,7 @@ public class JobList : MonoBehaviour
         pegeNumText.text = "1";
         ScreenList.Clear();
         SaveSelection();
-        
+
         for (int i = 0; i < JobData.Count; i++)
         {
             string name = JobData[i].Name;
@@ -264,11 +277,16 @@ public class JobList : MonoBehaviour
     {
         JobListUI.SetActive(true);
         Key = "";
+        JobSelected.text = "";
     }
     public void CloseJobListWindow()
     {
         JobSelected.text = "";
         JobListUI.SetActive(false);
+    }
+    public void ShowAndCloseEditPostWindow(bool b)
+    {
+        JobListUI.SetActive(b);
     }
     /// <summary>
     /// 每一行的预设

@@ -86,8 +86,8 @@ public class DevAlarmListManage : MonoBehaviour
         CloseBut.onClick.AddListener(CloseDevAlarmWindow);
         StartcalendarDay.onDayClick.AddListener(ScreeningStartTimeAlaim);
         EndcalendarDay.onDayClick.AddListener(ScreeningSecondTimeAlarm);
-        pegeNumText.onValueChanged.AddListener(InputDevPage);
-        if (AlarmStatistics!=null)
+        pegeNumText.onEndEdit.AddListener(InputDevPage);
+        if (AlarmStatistics != null)
         {
             AlarmStatistics.onClick.AddListener(() =>
             {
@@ -95,7 +95,7 @@ public class DevAlarmListManage : MonoBehaviour
                 ColseDevAlarm();
             });
         }
-     
+
     }
     /// <summary>
     /// 刚打开设备告警时的界面
@@ -134,11 +134,18 @@ public class DevAlarmListManage : MonoBehaviour
             Loom.DispatchToMainThread(() =>
             {
                 IsGetData = false;
-                BanClick.SetActive(false );
-                pegeNumText.interactable = true ;
+                BanClick.SetActive(false);
+
                 DevAlarmInfo = new DeviceAlarmInformation();
                 DevAlarmInfo = devAlarms;
-                pegeTotalText.text = DevAlarmInfo.Total.ToString();
+                if (DevAlarmInfo.Total == 0)
+                {
+                    pegeTotalText.text = "1";
+                }
+                else
+                {
+                    pegeTotalText.text = DevAlarmInfo.Total.ToString();
+                }
                 if (DevAlarmInfo.devAlarmList != null && DevAlarmInfo.Total != 0)
                 {
                     ShowDevAlarmList = new List<DeviceAlarm>();
@@ -156,10 +163,10 @@ public class DevAlarmListManage : MonoBehaviour
     public void AddDevAlarmPage()
     {
         StartPageNum += 1;
-        //searchArg = new AlarmSearchArg();
-        //searchArg.Page = new PageInfo();
-        //searchArg.End = EndTimeText.text;
-        //searchArg.Start = StartTimeText.text;
+        searchArg = new AlarmSearchArg();
+        searchArg.Page = new PageInfo();
+        searchArg.End = EndTimeText.text;
+        searchArg.Start = StartTimeText.text;
         if (int.Parse(pegeNumText.text) >= int.Parse(pegeTotalText.text))
         {
 
@@ -170,15 +177,15 @@ public class DevAlarmListManage : MonoBehaviour
         {
             pegeNumText.text = (StartPageNum + 1).ToString();
         }
-        //searchArg.Page.Number = StartPageNum;
-        //GetDeviceAlarmInfo(searchArg, searchArg.Page);
+        searchArg.Page.Number = StartPageNum;
+        GetDeviceAlarmInfo(searchArg, searchArg.Page);
     }
     public void MinDevAlarmPage()
     {
-        //searchArg = new AlarmSearchArg();
-        //searchArg.Page = new PageInfo();
-        //searchArg.End = EndTimeText.text;
-        //searchArg.Start = StartTimeText.text;
+        searchArg = new AlarmSearchArg();
+        searchArg.Page = new PageInfo();
+        searchArg.End = EndTimeText.text;
+        searchArg.Start = StartTimeText.text;
         if (StartPageNum > 0)
         {
             StartPageNum--;
@@ -190,8 +197,8 @@ public class DevAlarmListManage : MonoBehaviour
             {
                 pegeNumText.text = (StartPageNum + 1).ToString();
             }
-            //  searchArg.Page.Number = StartPageNum;
-            //  GetDeviceAlarmInfo(searchArg, searchArg.Page);
+            searchArg.Page.Number = StartPageNum;
+            GetDeviceAlarmInfo(searchArg, searchArg.Page);
         }
 
     }
@@ -201,10 +208,10 @@ public class DevAlarmListManage : MonoBehaviour
     /// <param name="value"></param>
     public void InputDevPage(string value)
     {
-        pegeNumText.interactable = false;
+
         Debug.LogError("--------------value:" + value);
         int currentPage;
-        if (IsStartShow) return;      
+        if (IsStartShow) return;
         searchArg = new AlarmSearchArg();
         searchArg.Page = new PageInfo();
         searchArg.End = EndTimeText.text;
@@ -216,7 +223,15 @@ public class DevAlarmListManage : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
         if (currentPage <= 0)
         {

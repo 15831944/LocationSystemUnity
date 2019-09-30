@@ -403,11 +403,13 @@ public class RangeEditWindow : MonoBehaviour
         area.Transfrom.RY = 0;
         area.Transfrom.RZ = 0;
 
-        Vector3 realSizeT = LocationManager.GetDisRealSizeVector(Vector3.one * 3f);//一个单位
+        Vector3 realSizeT = LocationManager.GetDisRealSizeVector(Vector3.one * DefaultSize);//一个单位
         area.Transfrom.SX = Mathf.Abs(realSizeT.x);
         area.Transfrom.SY = Mathf.Abs(realSizeT.y);
         area.Transfrom.SZ = Mathf.Abs(realSizeT.z);
     }
+
+    public float DefaultSize = 3f;
 
     public void CreateArea()
     {
@@ -434,13 +436,17 @@ public class RangeEditWindow : MonoBehaviour
             return;
         }
 
-        Log.Info("RangeEditWindow.CreateArea", string.Format("type:{0}", parentDep.TopoNode.Type));
+        Log.Info("RangeEditWindow.CreateArea", string.Format("type:{0},name:{1}", parentDep.TopoNode.Type, parentDep.TopoNode.Name));
 
         PhysicalTopology p = CreateDefaultArea();
 
         TransformM tm = parentDep.TopoNode.Transfrom;
-        Log.Info("RangeEditWindow.CreateArea", string.Format("SX:{0},SY:{1},SZ:{2}", tm.SX, tm.SY, tm.SZ));
-        Vector3 centerPos = new Vector3((float)(tm.SX / 2f), (float)(tm.SY / 2), (float)(tm.SZ / 2));//父物体的尺寸的一半也就是父物体的中心
+        Vector3 centerPos = Vector3.zero;
+        if (tm != null)
+        {
+            Log.Info("RangeEditWindow.CreateArea", string.Format("SX:{0},SY:{1},SZ:{2}", tm.SX, tm.SY, tm.SZ));
+            centerPos = new Vector3((float)(tm.SX / 2f), (float)(tm.SY / 2), (float)(tm.SZ / 2));//父物体的尺寸的一半也就是父物体的中心
+        }
 
         //if(RoomFactory.Instance.FactoryType==FactoryTypeEnum.BaoXin)
         //{
@@ -483,41 +489,51 @@ public class RangeEditWindow : MonoBehaviour
         {
             Log.Info("RangeEditWindow.CreateArea", string.Format("realpos:{0}", realpos));
             PhysicalTopology newArea = CommunicationObject.Instance.AddMonitorRange(p);//发送信息给服务端
-            Log.Info("RangeEditWindow.CreateArea", string.Format("newPos:({0},{1},{2})", newArea.Transfrom.X, newArea.Transfrom.Y, newArea.Transfrom.Z));
             Loom.DispatchToMainThread(() =>
             {
-                if (newArea != null)
+                try
                 {
-                    RangeNode parentRangeNode = parentDep.monitorRangeObject.rangeNode;//区域的根节点
-                    RangeNode newNode = parentRangeNode.NewNode();
+                    if (newArea != null && newArea.Transfrom != null)
+                    {
+                        var newT = newArea.Transfrom;
+                        Log.Info("RangeEditWindow.CreateArea", string.Format("newPos:({0},{1},{2})", newT.X, newT.Y, newT.Z));
 
-                    MonitorRangeManager.Instance.CreateRangesByRootNode(newArea, newNode);
-                    MonitorRangeObject monitorRangeObject = newNode.rangeObject;
-                    monitorRangeObject.SetIsNewAdd(true);
-                    monitorRangeObject.SetEditEnable(true);
-                    monitorRangeObject.SetRendererEnable(true);
-                    //monitorRangeObject.SetSelectedUI(true);
-                    newNode.rangeObject.gameObject.layer = LayerMask.NameToLayer(Layers.Range);
-                    EditorObjectSelection.Instance.ClearSelection(false);
-                    EditorObjectSelection.Instance.SetSelectedObjects(new List<GameObject>() { monitorRangeObject.gameObject }, false);
-                    //if (depnodeT.ChildNodes == null)
-                    //{
-                    //    //depnodeT.ChildNodes.Add()
-                    RangeController rangeController = RoomFactory.Instance.AddRange(parentDep, newArea);
-                    //}
-                    Debug.LogError("CreateArea:成功！");
-                    rangeController.monitorRangeObject = monitorRangeObject;
-                    Show(monitorRangeObject);
-                    MonitorRangeManager.Instance.AddRangeToList(monitorRangeObject);
-                    //PersonnelTreeManage.Instance.areaDivideTree.RefreshShowAreaDivideTree();
-                    PersonnelTreeManage.Instance.areaDivideTree.AddAreaChild(parentDep.TopoNode, newArea);
-                    //monitorRangeObject.Focus();
+                        RangeNode parentRangeNode = parentDep.monitorRangeObject.rangeNode;//区域的根节点
+                        RangeNode newNode = parentRangeNode.NewNode();
 
+                        MonitorRangeManager.Instance.CreateRangesByRootNode(newArea, newNode);
+                        MonitorRangeObject monitorRangeObject = newNode.rangeObject;
+                        monitorRangeObject.SetIsNewAdd(true);
+                        monitorRangeObject.SetEditEnable(true);
+                        monitorRangeObject.SetRendererEnable(true);
+                        //monitorRangeObject.SetSelectedUI(true);
+                        newNode.rangeObject.gameObject.layer = LayerMask.NameToLayer(Layers.Range);
+                        EditorObjectSelection.Instance.ClearSelection(false);
+                        EditorObjectSelection.Instance.SetSelectedObjects(new List<GameObject>() { monitorRangeObject.gameObject }, false);
+                        //if (depnodeT.ChildNodes == null)
+                        //{
+                        //    //depnodeT.ChildNodes.Add()
+                        RangeController rangeController = RoomFactory.Instance.AddRange(parentDep, newArea);
+                        //}
+                        Debug.LogError("CreateArea:成功！");
+                        rangeController.monitorRangeObject = monitorRangeObject;
+                        Show(monitorRangeObject);
+                        MonitorRangeManager.Instance.AddRangeToList(monitorRangeObject);
+                        //PersonnelTreeManage.Instance.areaDivideTree.RefreshShowAreaDivideTree();
+                        PersonnelTreeManage.Instance.areaDivideTree.AddAreaChild(parentDep.TopoNode, newArea);
+                        //monitorRangeObject.Focus();
+
+                    }
+                    else//else要有
+                    {
+                        UGUIMessageBox.Show("服务端创建子区域失败!");
+                    }
                 }
-                else//else要有
+                catch (Exception e)
                 {
-                    UGUIMessageBox.Show("服务端创建子区域失败!");
+                    Log.Error("RangeEditWindow.CreateArea", ""+e);
                 }
+                
             });
         });
 

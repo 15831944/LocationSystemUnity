@@ -1,4 +1,5 @@
 ﻿using Location.WCFServiceReferences.LocationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,17 +10,39 @@ public class AddDepartmentItem : MonoBehaviour
 
     public Text DepartName;
     public Text SuperiorDepartments;
-   
+
     public Button DeleteBut;
-
-
+    public Button DetailBut;
+    Department CurrentDep;
+    List<Department> DepList;
+    GridLayoutGroup Grid;
+    string CurrentInputKey;
+    string CurrentInputValue;
     void Start()
     {
+        DeleteBut.onClick.AddListener(() =>
+        {
+            DeleteDepartmentItem(CurrentDep);
+            AddPersonnel.Instance.RefreshDepartmentInfo();
 
+        });
+        DetailBut.onClick.AddListener(() =>
+        {
+            EditDepartment.Instance.EditOrAdd = false;
+            AddDepartmentList.Instance.ShowAndCloseAddDepartmentListUI(false);
+            EditDepartment.Instance.CloseOrShowEditDepWindow(true);
+            EditDepartment.Instance.GetDepartmentData(CurrentDep, DepList, Grid, this.gameObject);
+        });
     }
-    public void ShowDepartmentItemInfo(Department dep, List<Department> depList)
+    public void ShowDepartmentItemInfo(Department dep, List<Department> depList, GridLayoutGroup grid, string inputKey, string inputValue)
     {
-
+        Grid = grid;
+        CurrentInputKey = inputKey;
+        CurrentInputValue = inputValue;
+        CurrentDep = new Department();
+        CurrentDep = dep;
+        DepList = new List<Department>();
+        DepList.AddRange(depList);
         DepartName.text = dep.Name.ToString();
         if (string.IsNullOrEmpty(dep.ParentId.ToString()))
         {
@@ -36,13 +59,8 @@ public class AddDepartmentItem : MonoBehaviour
                 }
             }
         }
-       
-        DeleteBut.onClick.AddListener(() =>
-        {
-            DeleteDepartmentItem(dep);
-            AddPersonnel.Instance.RefreshDepartmentInfo();
 
-        });
+
     }
     /// <summary>
     /// 删除某一个部门
@@ -117,16 +135,45 @@ public class AddDepartmentItem : MonoBehaviour
         {
             PersonnelTreeManage.Instance.departmentDivideTree.ReshDeleteDepartTree(CurrentDep);
             UGUIMessageBox.Show("删除部门成功！", "确定", "",
-           () => {
-               EditPersonnelInformation.Instance.RefreshEditDepartData();
-
-           }, null,null);
+           () =>
+           {
+               // EditPersonnelInformation.Instance.RefreshEditDepartData();
+               AddDeleteDepartmentInfo(CurrentDep);
+           }, null, null);
 
         }
         else
         {
-            UGUIMessageBox.Show("删除部门失败！" ,"确定", "", null, null, null);
+            UGUIMessageBox.Show("删除部门失败！", "确定", "", null, null, null);
         }
+    }
+    public void AddDeleteDepartmentInfo(Department currentDep)
+    {
+        AddDepartmentList.Instance.ShowAndCloseAddDepartmentListUI(true);
+        AddDepartmentList.Instance.DepartList.RemoveAll(item => item.Id == currentDep.Id);
+        AddDepartmentList.Instance.ScreenList.RemoveAll(item => item.Id == currentDep.Id);
+        AddDepartmentList.Instance.DepSelected.text = CurrentInputKey;
+        AddDepartmentList.Instance.ShowAddDepartmentInfo();
+
+        double pageNum = Math.Ceiling((double)(AddDepartmentList.Instance.ScreenList.Count) / 10);
+        if (int.Parse(CurrentInputValue) > pageNum && AddDepartmentList.Instance.ScreenList.Count != 0)
+        {
+            AddDepartmentList.Instance.pegeNumText.text = pageNum.ToString();
+        }
+        else if (AddDepartmentList.Instance.ScreenList.Count == 0)
+        {
+
+            AddDepartmentList.Instance.pegeNumText.text = "1";
+
+        }
+        else
+        {
+            AddDepartmentList.Instance.pegeNumText.text = CurrentInputValue;
+        }
+
+       // AddDepartmentList.Instance.pegeNumText.text  = CurrentInputValue;
+        AddDepartmentList.Instance.InputDepartmentPage(AddDepartmentList.Instance.pegeNumText.text);
+        PersonnelTreeManage.Instance.departmentDivideTree.GetTopoTree();
     }
     /// <summary>
     /// 如果该部门下有子部门或者有人，不能删除
@@ -137,4 +184,4 @@ public class AddDepartmentItem : MonoBehaviour
         UGUIMessageBox.Show("当前部门已关联多个人员信息，不能删除！", "确定", "", null, null, null);
     }
 
-    }
+}

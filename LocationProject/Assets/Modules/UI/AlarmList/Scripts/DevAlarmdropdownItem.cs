@@ -42,9 +42,9 @@ public class DevAlarmdropdownItem : MonoBehaviour
 	public void AddName()
     {
         string n1 = "全部告警";
-        string n2 = "高级告警";
+        string n2 = "低级告警";
         string n3 = "中级告警";
-        string n4 = "低级告警";
+        string n4 = "高级告警";
         string n5 = "告警等级未定";
 
         tempNames.Add(n1);

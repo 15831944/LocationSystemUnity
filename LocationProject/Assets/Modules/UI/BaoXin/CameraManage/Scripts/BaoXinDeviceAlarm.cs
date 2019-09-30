@@ -176,7 +176,15 @@ public class BaoXinDeviceAlarm : MonoBehaviour
         }
         else
         {
-            currentPage = int.Parse(pegeNumText.text);
+            if (value.Contains("-") || value.Contains("—"))
+            {
+                pegeNumText.text = "1";
+                currentPage = 1;
+            }
+            else
+            {
+                currentPage = int.Parse(value);
+            }
         }
         if (ScreenDevAlarmList == null) return;
         int maxPage = (int)Math.Ceiling((double)ScreenDevAlarmList.Count / (double)pageLine);

@@ -1513,6 +1513,11 @@ public class LocationManager : MonoBehaviour
                 locationObjectT = code_character.GetByTagId(tagId);
                 SetCurrentLocationFocusObj(locationObjectT);
             }
+            if(locationObjectT==null)
+            {
+                Debug.LogError("LocationManager.FocusPersonAndShowInfo.locationObjectT is null! TagId:" + tagId);
+                return;
+            }
             FocusPerson(locationObjectT.AlignTarget, () =>
              {
                 //CameraThroughWallManage.Instance.SetIsCanThroughWall(false);

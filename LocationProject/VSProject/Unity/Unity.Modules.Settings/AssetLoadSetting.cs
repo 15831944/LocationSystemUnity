@@ -6,6 +6,9 @@ using UnityEngine;
 [XmlType(TypeName = "AssetLoadSetting")]
 public class AssetLoadSetting {
 
+    [XmlAttribute]
+    public bool EnableUnloadFunction = true;
+
     /// <summary>
     /// 卸载策略 0:按数量 
     /// todo:1:按顶点数 2:按时间 3:按频率

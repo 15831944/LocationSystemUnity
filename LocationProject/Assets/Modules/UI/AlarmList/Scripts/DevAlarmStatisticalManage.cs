@@ -111,7 +111,7 @@ public class DevAlarmStatisticalManage : MonoBehaviour
     public void ScreenDevMonths(int level)
     {
         DevAlarmTypeStatistics.Instance.DelectItem();
-        string StartTime = TimeType(level).ToString() + "年01月01日";
+        string StartTime = TimeType(level).ToString() ;
         string EndTime = CurrentEndTime.ToString("yyyy年MM月dd日");
         GetDevAlarmTypeStatisticsData(StartTime, EndTime);
     }
@@ -120,11 +120,14 @@ public class DevAlarmStatisticalManage : MonoBehaviour
     /// </summary>
     public void StartShowDevAlarmStatisticalInfo()
     {
-        string StartTime = DateTime.Now.Year.ToString() + "年01月01日";
+        string StartTime = DateTime.Now.Year.ToString() ;
         string EndTime = DateTime.Now.ToString("yyyy年MM月dd日");
         ScreenDevMonths(3);
-
+        DevAlarmLineChartTimeDropdown.timeDropdown.value = 3;
+        DevAlarmLineChartTimeDropdown.timeDropdown.captionText.text = "一年";
         ScreenTimeLineChartData(3);
+        DevAlarmTypeDropdown.timeDropdown.value = 3;
+        DevAlarmTypeDropdown.timeDropdown.captionText.text = "一年";
     }
     /// <summary>
     /// 得到所有设备告警折线图数据信息
@@ -155,7 +158,7 @@ public class DevAlarmStatisticalManage : MonoBehaviour
     /// <param name="value"></param>
     public void ScreenTimeLineChartData(int value)
     {
-        StartTimeLineChart = TimeType(value).ToString() + "年01月01日";
+        StartTimeLineChart = TimeType(value).ToString() ;
         EndTimeLineChart = CurrentEndTime.ToString("yyyy年MM月dd日");
         GetDevTypeAlarmLineData(StartTimeLineChart, EndTimeLineChart);
     }

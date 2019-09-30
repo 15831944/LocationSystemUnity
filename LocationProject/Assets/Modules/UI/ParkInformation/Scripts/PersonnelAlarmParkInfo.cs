@@ -56,7 +56,7 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     public Button CloseBut;
     public Text title;
     bool isPage;
-  
+
     public ParkPersonnelAlarmType parkPersonnelAlarmType;
     /// <summary>
     // Use this for initialization
@@ -66,28 +66,29 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
         SeachPerItems = new List<LocationAlarm>();
         PersonnelAlarm = new List<LocationAlarm>();
         SearchBut.onClick.AddListener(PerAlarmSearchBut_Click);
-        pegeNumText.onValueChanged.AddListener(InputPersonnelPage);
+        pegeNumText.onEndEdit .AddListener(InputPersonnelPage);
         AddPageBut.onClick.AddListener(AddPerAlarmPage);
         MinusPageBut.onClick.AddListener(MinPerAlarmPage);
-        InputPerAlarm.onValueChanged.AddListener(InputPerAlarmSearch);
+        InputPerAlarm.onEndEdit .AddListener(InputPerAlarmSearch);
         CloseBut.onClick.AddListener(() =>
         {
             ShowPersonnelAlarmParkWindow(false);
-            });
+        });
     }
     /// <summary>
     /// 得到园区统计人员告警的全部数据
     /// </summary>
     /// <param name="date"></param>
-    public void GetPerAlarmList(List<LocationAlarm> date,string name)
+    public void GetPerAlarmList(List<LocationAlarm> date, string name)
     {
-        title.text = "定位告警—"+name ;
+        title.text = "定位告警—" + name;
         if (date.Count == 0)
         {
             pegeNumText.text = "1";
             pegeTotalText.text = "1";
-           
-        }else
+
+        }
+        else
         {
             PersonnelAlarm.AddRange(date);
             SeachPerItems.AddRange(date);
@@ -97,9 +98,9 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
             pegeNumText.text = "1";
             InputPerAlarm.text = "";
             TotaiLine(PersonnelAlarm);
-             isPage = false;
+            isPage = false;
         }
-        
+
     }
     /// <summary>
     /// 生成多少页
@@ -156,22 +157,22 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     }
     public void ShowPersonnelAlarmParkWindow(bool b)
     {
-        if (b==true )
+        if (b == true)
         {
-            PersonnelAlarmParkWindow.SetActive(true );
+            PersonnelAlarmParkWindow.SetActive(true);
             ParkInformationManage.Instance.PersonToggle.isOn = true;
-           
+
         }
         else
         {
             ParkInformationManage.Instance.IsGetPerData = false;
-            PersonnelAlarmParkWindow.SetActive(false );
+            PersonnelAlarmParkWindow.SetActive(false);
             ParkInformationManage.Instance.PersonToggle.isOn = false;
             PersonnelAlarm.Clear();
             SaveSelection();
         }
     }
-    
+
     /// <summary>
     /// 生成的页数
     /// </summary>
@@ -203,8 +204,8 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
             DestroyImmediate(grid.transform.GetChild(j).gameObject);
         }
     }
-   
-   
+
+
     public void InputPerAlarmSearch(string value)
     {
         SaveSelection();
@@ -215,18 +216,18 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
         for (int i = 0; i < PersonnelAlarm.Count; i++)
         {
             if (string.IsNullOrEmpty(key))
-            {        
-                    SeachPerItems.Add(PersonnelAlarm[i]);
+            {
+                SeachPerItems.Add(PersonnelAlarm[i]);
             }
 
             else
             {
-                if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel .Name .ToLower().Contains(key))
+                if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel.Name.ToLower().Contains(key))
                 {
-                   
-                        SeachPerItems.Add(PersonnelAlarm[i]);
-                   
-                    
+
+                    SeachPerItems.Add(PersonnelAlarm[i]);
+
+
                 }
 
             }
@@ -253,20 +254,20 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
         string key = InputPerAlarm.text.ToString().ToLower();
         for (int i = 0; i < PersonnelAlarm.Count; i++)
         {
-            if (string .IsNullOrEmpty (key))
+            if (string.IsNullOrEmpty(key))
             {
-                
-                    SeachPerItems.Add(PersonnelAlarm[i]);
-               
+
+                SeachPerItems.Add(PersonnelAlarm[i]);
+
             }
-            
-            else 
+
+            else
             {
                 if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel.Name.ToLower().Contains(key))
                 {
-                    
-                        SeachPerItems.Add(PersonnelAlarm[i]);
-                    
+
+                    SeachPerItems.Add(PersonnelAlarm[i]);
+
 
                 }
 
@@ -291,15 +292,15 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
         string key = InputPerAlarm.text.ToString().ToLower();
         for (int i = 0; i < PersonnelAlarm.Count; i++)
         {
-            if (key == "" )
+            if (key == "")
             {
                 SeachPerItems.Add(PersonnelAlarm[i]);
             }
-           else  if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel.Name.ToLower().Contains(key))
+            else if (PersonnelAlarm[i].Id.ToString().ToLower().Contains(key) || PersonnelAlarm[i].Personnel.Name.ToLower().Contains(key))
             {
-                
-                    SeachPerItems.Add(PersonnelAlarm[i]);
-                
+
+                SeachPerItems.Add(PersonnelAlarm[i]);
+
 
             }
         }
@@ -316,7 +317,7 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     }
     public void AddPerAlarmPage()
     {
-     
+
         double a = Math.Ceiling((double)SeachPerItems.Count / (double)pageLine);
         int m = (int)a;
         if (StartPageNum == 0)
@@ -324,7 +325,7 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
             StartPageNum += 1;
             PageNum += 1;
         }
-      else  if (StartPageNum < m&&StartPageNum !=0)
+        else if (StartPageNum < m && StartPageNum != 0)
         {
             StartPageNum += 1;
             PageNum += 1;
@@ -335,12 +336,12 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
     }
     public void MinPerAlarmPage()
     {
-      if (StartPageNum == 1)
+        if (StartPageNum == 1)
         {
             StartPageNum--;
             PageNum -= 1;
         }
-       else  if (StartPageNum > 0)
+        else if (StartPageNum > 0)
         {
             StartPageNum--;
             PageNum -= 1;
@@ -357,24 +358,37 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
             GetPersonnelAlarmPage(SeachPerItems);
         }
     }
-    
+
     public void InputPersonnelPage(string value)
     {
         if (isPage == true) return;
         isPage = true;
         int currentPage = 0;
         currentPage = int.Parse(pegeNumText.text);
-        int MaxPage = (int)Math.Ceiling((double)SeachPerItems.Count /(double)pageLine);
+        int MaxPage = (int)Math.Ceiling((double)SeachPerItems.Count / (double)pageLine);
         if (MaxPage == 0)
         {
             pegeNumText.text = "1";
-        }else
+        }
+        else
         {
             if (string.IsNullOrEmpty(pegeNumText.text))
             {
                 currentPage = 1;
             }
-            else if (currentPage >= MaxPage)
+            else
+            {
+                if (value.Contains("-") || value.Contains("—"))
+                {
+                    pegeNumText.text = "1";
+                    currentPage = 1;
+                }
+                else
+                {
+                    currentPage = int.Parse(value);
+                }
+            }
+            if (currentPage >= MaxPage)
             {
                 currentPage = MaxPage;
                 pegeNumText.text = currentPage.ToString();
@@ -390,7 +404,7 @@ public class PersonnelAlarmParkInfo : MonoBehaviour
             GetPersonnelAlarmPage(SeachPerItems);
             isPage = false;
         }
-        
+
     }
     void Update()
     {

@@ -8,7 +8,8 @@ using System;
 public class EditPersonnelInformation : MonoBehaviour
 {
     public static EditPersonnelInformation Instance;
-    [System.NonSerialized] Personnel PerInfo;
+    [System.NonSerialized]
+    Personnel PerInfo;
     public Text SerialNum;
     public InputField Name;
     public Text BornTime;
@@ -37,11 +38,15 @@ public class EditPersonnelInformation : MonoBehaviour
     public JobsManagement JobManagements;
     public Button EnsureBut;
     public Button CancelBut;
-    [System.NonSerialized] public Personnel CreatPersonnel;
+    [System.NonSerialized]
+    public Personnel CreatPersonnel;
     public int CurrentId;
-    [System.NonSerialized] List<Personnel> PersonnelList;
+    [System.NonSerialized]
+    List<Personnel> PersonnelList;
     string InputKey;
     int Value = 0;
+    GridLayoutGroup Grid;
+    GameObject CurrentObj;
     void Start()
     {
         Instance = this;
@@ -62,6 +67,8 @@ public class EditPersonnelInformation : MonoBehaviour
         TagBut.onClick.AddListener(() =>
         {
             ShowTagCardWindow();
+            CloseEditPersonnelWindow();
+
         });
         ToggleAuthoritySet();
     }
@@ -79,8 +86,10 @@ public class EditPersonnelInformation : MonoBehaviour
     /// 得到人员的详细信息
     /// </summary>
     /// <param name="id"></param>
-    public void GetPersonnelInformation(int id, List<Personnel> PerList,string inputKey,int Level)
+    public void GetPersonnelInformation(int id, List<Personnel> PerList, string inputKey, int Level, GridLayoutGroup grid,GameObject obj)
     {
+        CurrentObj = obj;
+        Grid = grid;
         InputKey = inputKey;
         Value = Level;
         PersonnelList = new List<Personnel>();
@@ -117,13 +126,13 @@ public class EditPersonnelInformation : MonoBehaviour
             TagName.text = perInfo.Tag.Name;
         }
         WorkNum.text = perInfo.WorkNumber.ToString();
-        if (string.IsNullOrEmpty(perInfo.PhoneNumber))
+        if (string.IsNullOrEmpty(perInfo.Mobile))
         {
-            Phone.text = "";
+            Phone.text = "--";
         }
         else
         {
-            Phone.text = perInfo.PhoneNumber.ToString();
+            Phone.text = perInfo.Mobile.ToString();
         }
 
         UseTog.isOn = perInfo.Enabled;
@@ -150,7 +159,6 @@ public class EditPersonnelInformation : MonoBehaviour
     }
     public void ShowAndCloseEditPersonnelInfo(bool b)
     {
-
         EditPerWindow.SetActive(b);
         if (b == false)
         {
@@ -177,22 +185,40 @@ public class EditPersonnelInformation : MonoBehaviour
     /// </summary>
     public void CloseCurrentWindow()
     {
-        //   ShowAndCloseEditPersonnelInfo(false);
-        CloseEditPersonnelWindow();
-        DataPaging.Instance.IsGetPersonData = false;
-        DataPaging.Instance.ShowpersonnelSearchWindow();
-       
-        DataPaging.Instance.StartPerSearchUI();
-        DataPaging.Instance.PerSelected.text = InputKey;
-        DataPaging.Instance.Level = Value;
-        DataPaging.Instance.personnelDropdown.PerDropdown.value = Value;
-        DataPaging.Instance.personnelDropdown.PerDropdown.captionText.text = DataPaging.Instance.personnelDropdown.devTyprList[Value];
-      //  DataPaging.Instance.
-        if (EditDepartmentTreeViewManger.Instance.DepBut.isOn)
+        if (EditDepartmentTreeViewManger.Instance.DepBut.isOn == true)
         {
             EditDepartmentTreeViewManger.Instance.DepBut.isOn = false;
         }
+        else
+        {
+            EditDepartmentTreeViewManger.Instance.showDepUI(false);
+        }
+        CloseEditPersonnelWindow();
+     
+      //  DataPaging.Instance.IsGetPersonData = false;
+        DataPaging.Instance.ShowAndClosePersonnelWindow(true );
+        //DataPaging.Instance.StartPerSearchUI();
+        //DataPaging.Instance.PerSelected.text = InputKey;
+        //DataPaging.Instance.Level = Value;
+        //DataPaging.Instance.personnelDropdown.PerDropdown.value = Value;
+        //DataPaging.Instance.personnelDropdown.PerDropdown.captionText.text = DataPaging.Instance.personnelDropdown.devTyprList[Value];
+        //  DataPaging.Instance.
+    
     }
+    public void EditCurrentPersonnelInfo(GameObject Obj)
+    {
+        int k = Obj.transform.GetSiblingIndex();
+        Transform line = Grid.transform.GetChild(k );
+        line.GetChild(0).GetComponent<Text>().text = Name.text; ;
+        line.GetChild(1).GetComponent<Text>().text = personnelSex.PerSexDropdownItem.captionText.text;
+        line.GetChild(2).GetComponent<Text>().text = WorkNum.text;
+        line.GetChild(3).GetComponent<Text>().text = JobManagements.JobsDropdownItem.captionText.text;
+        line.GetChild(4).GetComponent<Text>().text = departmentText.text;
+        line.GetChild(6).GetComponent<Text>().text = EditTagInfo.Instance.TagCode;
+        line.GetChild(7).GetComponent<Text>().text = EditTagInfo.Instance.SelectName;
+        line.GetChild(9).GetComponent<Text>().text = Phone.text;
+    }
+
     public void CloseEditPersonnelUI(bool b)
     {
         EditPerWindow.SetActive(b);
@@ -223,18 +249,18 @@ public class EditPersonnelInformation : MonoBehaviour
     {
         JobManagements.GetJobsManagementData();
         JobManagements.JobsDropdownItem.value = 0;
-        if (PersonSubsystemManage.Instance .SearchToggle .isOn ==false )
+        if (PersonSubsystemManage.Instance.SearchToggle.isOn == false)
         {
             Personnel[] personnels;
             List<Personnel> personnelLists = new List<Personnel>();
             personnels = CommunicationObject.Instance.GetPersonnels(); ;
             personnelLists = new List<Personnel>(personnels);
-            JobList.Instance.GetJobListData( personnelLists);
-           
+            JobList.Instance.GetJobListData(personnelLists);
+
         }
         else
         {
-            JobList.Instance.GetJobListData( PersonnelList);
+            JobList.Instance.GetJobListData(PersonnelList);
         }
         JobList.Instance.ShowJobListWindow();
         CloseEditPersonnelWindow();
@@ -245,7 +271,7 @@ public class EditPersonnelInformation : MonoBehaviour
     public void ShowJobInfo()
     {
         JobManagements.GetJobsManagementData();
-        JobList.Instance.GetJobListData( PersonnelList);
+        JobList.Instance.GetJobListData(PersonnelList);
         JobList.Instance.ShowJobListWindow();
         CloseEditPersonnelWindow();
     }
@@ -263,8 +289,8 @@ public class EditPersonnelInformation : MonoBehaviour
             CreatPersonnel.Name = Name.text;
             Personnel Per = PersonnelList.Find(i => i.WorkNumber == WorkNum.text);
             if (Per == null)
-            {              
-                CreatPersonnel.WorkNumber = WorkNum.text;            
+            {
+                CreatPersonnel.WorkNumber = WorkNum.text;
             }
             else
             {
@@ -272,19 +298,23 @@ public class EditPersonnelInformation : MonoBehaviour
             }
         }
         CreatPersonnel.Tag = null;
-        if (EditDepartmentTreeViewManger.Instance.DepBut.isOn)
+        if (EditDepartmentTreeViewManger.Instance.DepBut.isOn == true)
         {
             EditDepartmentTreeViewManger.Instance.DepBut.isOn = false;
-        }     
+        }
+        else
+        {
+            EditDepartmentTreeViewManger.Instance.showDepUI(false);
+        }
         if (!string.IsNullOrEmpty(Name.text))
         {
-           // CreatPersonnel.Name = Name.text;
+            // CreatPersonnel.Name = Name.text;
         }
         if (!string.IsNullOrEmpty(Phone.text))
         {
-            CreatPersonnel.PhoneNumber = Phone.text;
+            CreatPersonnel.Mobile = Phone.text;
         }
-       
+
         CreatPersonnel.TargetType = personnelSex.PerSexDropdownItem.value;
         if (!string.IsNullOrEmpty(TagName.text))
         {
@@ -296,14 +326,15 @@ public class EditPersonnelInformation : MonoBehaviour
                     CreatPersonnel.TagId = tagT.Id;
                 }
             }
-        }else
+        }
+        else
         {
             TagName.text = "-尚未选择-";
         }
         DateTime BirthTime = Convert.ToDateTime(BornTime.text);
         CreatPersonnel.BirthDay = BirthTime;
 
-      //  CreatPersonnel.WorkNumber = WorkNum.text;
+        //  CreatPersonnel.WorkNumber = WorkNum.text;
         if (CurrentId == 0)
         {
             CurrentId = 1;
@@ -328,11 +359,11 @@ public class EditPersonnelInformation : MonoBehaviour
             if (per == null)
             {
                 CreatPersonnel.Name = Name.text;
-                CreatPersonnel.WorkNumber = WorkNum.text;             
+                CreatPersonnel.WorkNumber = WorkNum.text;
                 bool IsEditPer = CommunicationObject.Instance.EditPerson(PerInfo);
                 if (IsEditPer)
                 {
-                    UGUIMessageBox.Show("人员信息已保存！", "确定", "", null,null ,null);
+                    UGUIMessageBox.Show("人员信息已保存！", "确定", "", null, null, null);
                 }
                 else
                 {
@@ -341,10 +372,11 @@ public class EditPersonnelInformation : MonoBehaviour
             }
             else
             {
-                if (CreatPersonnel.Id !=per .Id)
+                if (CreatPersonnel.Id != per.Id)
                 {
                     UGUIMessageBox.Show("该工号已存在！", "确定", "", null, null, null);
-                }else
+                }
+                else
                 {
                     bool IsEditPer = CommunicationObject.Instance.EditPerson(PerInfo);
                     if (IsEditPer)
@@ -356,8 +388,9 @@ public class EditPersonnelInformation : MonoBehaviour
                         UGUIMessageBox.Show("数据保存失败！", "确定", "", null, null, null);
                     }
                 }
-               
+
             }
+            EditCurrentPersonnelInfo(CurrentObj);
         }
     }
     /// <summary>

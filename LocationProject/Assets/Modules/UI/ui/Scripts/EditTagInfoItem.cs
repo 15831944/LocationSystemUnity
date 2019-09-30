@@ -66,9 +66,9 @@ public class EditTagInfoItem : MonoBehaviour
         currentTag = info;
         CardRoleList = new List<CardRole>();
         CardRoleList.AddRange(list);
-        num.text = info.Id.ToString();
+        num.text = info.Code;
         Name.text = info.Name;
-        tagName.text = info.Name;
+        tagName.text = info.Id .ToString();
         CurrentPerName = currentPer.Name;
 
         Personnel per = perList.Find(i => i.Id == info.PersonId);

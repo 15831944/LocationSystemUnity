@@ -69,14 +69,14 @@ public class DevAlarmStatisticsLineChart : MonoBehaviour
             if (data.Count == 1)
             {
                 TimeInstantiateLine();
-                data.Add(1);
+                data.Insert(0, 1);
             }
 
             float Width = (data.Count) * 120f;
-            scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count+1) * 120f, 457);
-            coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 450);
-            UGUI_LineChartObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Width, 450);
-            DevAlarmLineChart.width = Width;
+            scrollView.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count+1) * 120f, 456);
+            coordinate.transform.GetComponent<RectTransform>().sizeDelta = new Vector2((data.Count + 1) * 120f, 449);
+            UGUI_LineChartObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(((data.Count - 1) * 120f), 447);
+            DevAlarmLineChart.width = ((data.Count - 1) * 120f);
             if (DevAlarmLineChart.pointImageList.Count != 0)
             {
                 DevAlarmLineChart.pointImageList.Clear();
@@ -90,7 +90,7 @@ public class DevAlarmStatisticsLineChart : MonoBehaviour
     }
     private void SetHourLineChartDate(DateTime dt, int count)
     {
-        DevAlarm_X_Data.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt.AddDays (1));
+        DevAlarm_X_Data.DateFillT(UGUI_LineChartDateFill.DateType.Month, count, dt);
 
     }
     public GameObject TimeInstantiateLine()

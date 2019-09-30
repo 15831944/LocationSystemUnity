@@ -16,7 +16,7 @@ public class AddDepartment : MonoBehaviour
     public Button EnsureBut;
    
     [System.NonSerialized]
-    List<Department> DepartmentList;
+    List<Department> departmentList;
     [System.NonSerialized]
     Department addDepartment;
     public bool IsAdd;
@@ -53,7 +53,7 @@ public class AddDepartment : MonoBehaviour
             return;
         }
         addDepartment.Name = DepartmentName.text;
-        Department CurrentDepart = DepartmentList.Find(i => i.Name == DepartmentName.text);
+        Department CurrentDepart = departmentList.Find(i => i.Name == DepartmentName.text);
         if (CurrentDepart != null)
         {
             UGUIMessageBox.Show("部门已存在！", null, null);
@@ -79,11 +79,24 @@ public class AddDepartment : MonoBehaviour
                     {
                         if (IsAdd == true)
                         {
-                            AddPersonnel.Instance.AddDepartmentData();
+                            //  AddPersonnel.Instance.AddDepartmentData();
+                            AddDepartmentList.Instance.ShowAndCloseAddDepartmentListUI(true);
+
+                            AddDepartmentList.Instance.DepartList.Insert(0, addDepartment);
+                            AddDepartmentList.Instance.ScreenList.Insert(0, addDepartment);
+                            AddDepartmentList.Instance.DepSelected.text = "";
+                            AddDepartmentList.Instance.ShowAddDepartmentInfo();
                         }
                         else
                         {
-                            EditPersonnelInformation.Instance.ShowDepartmentInfo();
+                            DepartmentList.Instance.ShowAndCloseDepartmentListUI(true);
+                            DepartmentList.Instance.DepartList.Insert(0, addDepartment);
+                            DepartmentList.Instance.ScreenList.Insert(0, addDepartment);
+                            DepartmentList.Instance.DepSelected.text = "";
+                            DepartmentList.Instance.ShowEditDepartmentInfo();
+                          
+
+                            // EditPersonnelInformation.Instance.ShowDepartmentInfo();
                         }
                     });
                 }, null, null);     
@@ -98,8 +111,8 @@ public class AddDepartment : MonoBehaviour
     }
     public void GetDepartmentList(List<Department> depart)
     {
-        DepartmentList = new List<Department>();
-        DepartmentList.AddRange(depart);
+        departmentList = new List<Department>();
+        departmentList.AddRange(depart);
     }
     /// <summary>
     /// 打开添加部门信息UI

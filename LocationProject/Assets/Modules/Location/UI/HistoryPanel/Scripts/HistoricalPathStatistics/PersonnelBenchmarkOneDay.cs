@@ -51,7 +51,7 @@ public class PersonnelBenchmarkOneDay : MonoBehaviour
             return x.Name.CompareTo(y.Name);
         });
         DateTime ShowT = Convert.ToDateTime(AllList[0].Name);
-        TimeTitle.text = AllList[0].Name+"起";
+      //  TimeTitle.text = +AllList[0].Name;
         CurrentTimeText.text = ShowT.ToString(("yyyy年MM月dd日"));
         ScreenPersonnelTime(ShowT);
     }
